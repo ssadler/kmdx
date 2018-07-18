@@ -28,9 +28,9 @@ along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 #include <libdevcore/CommonIO.h>
 #include <libevm/ExtVMFace.h>
 #include <libevm/VM.h>
-#include <libethereum/Transaction.h>
-#include <libethereum/ExtVM.h>
-#include <libethereum/State.h>
+#include <libwing/Transaction.h>
+#include <libwing/ExtVM.h>
+#include <libwing/State.h>
 
 #include <json_spirit/json_spirit.h>
 #include <boost/test/unit_test.hpp>

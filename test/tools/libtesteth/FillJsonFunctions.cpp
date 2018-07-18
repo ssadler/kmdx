@@ -18,7 +18,7 @@
  * Helper functions to work with json::spirit and test files
  */
 #include <libdevcore/CommonData.h>
-#include <libethereum/Transaction.h>
+#include <libwing/Transaction.h>
 
 #include <test/tools/libtesteth/ImportTest.h>
 #include <test/tools/libtesteth/Options.h>

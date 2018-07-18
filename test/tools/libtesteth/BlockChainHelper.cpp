@@ -21,10 +21,10 @@
 
 #include <libdevcore/TransientDirectory.h>
 #include <libethashseal/GenesisInfo.h>
-#include <libethereum/Block.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/GenesisInfo.h>
-#include <libethereum/TransactionQueue.h>
+#include <libwing/Block.h>
+#include <libwing/BlockChain.h>
+#include <libwing/GenesisInfo.h>
+#include <libwing/TransactionQueue.h>
 #include <test/tools/libtesteth/BlockChainHelper.h>
 #include <test/tools/libtesteth/TestHelper.h>
 using namespace std;

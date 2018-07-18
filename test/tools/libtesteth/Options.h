@@ -22,7 +22,7 @@
 #include <test/tools/libtestutils/Common.h>
 #include <test/tools/libtesteth/JsonSpiritHeaders.h>
 #include <libdevcore/Exceptions.h>
-#include <libethereum/Executive.h>
+#include <libwing/Executive.h>
 
 namespace dev
 {

@@ -25,10 +25,10 @@
 
 #include <json_spirit/JsonSpiritHeaders.h>
 #include <libdevcore/CommonIO.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/State.h>
-#include <libethereum/ExtVM.h>
-#include <libethereum/Defaults.h>
+#include <libwing/BlockChain.h>
+#include <libwing/State.h>
+#include <libwing/ExtVM.h>
+#include <libwing/Defaults.h>
 #include <libevm/VM.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtesteth/TestSuite.h>

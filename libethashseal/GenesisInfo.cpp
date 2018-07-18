@@ -21,11 +21,13 @@ using namespace dev;
 
 //Client configurations
 #include "genesis/mainNetwork.cpp"
+#include "genesis/komodoNetwork.cpp"
 #include "genesis/ropsten.cpp"
 
 //Test configurations
 #include "genesis/test/mainNetworkTest.cpp"
 #include "genesis/test/mainNetworkNoProofTest.cpp"
+#include "genesis/test/komodoNetworkTest.cpp"
 #include "genesis/test/frontierNoProofTest.cpp"
 #include "genesis/test/frontierTest.cpp"
 #include "genesis/test/homesteadTest.cpp"
@@ -47,11 +49,15 @@ static dev::h256 const c_genesisDefaultStateRoot;
 
 std::string const& dev::eth::genesisInfo(Network _n)
 {
+    initGenesisInfoKomodoNetwork();
+    initGenesisInfoKomodoNetworkTest();
+
 	switch (_n)
 	{
 	//Client genesis
 	case Network::MainNetwork: return c_genesisInfoMainNetwork;
 	case Network::Ropsten: return c_genesisInfoRopsten;
+	case Network::KomodoNetwork: return c_genesisInfoKomodoNetwork;
 
 	//Test genesis
 	case Network::MainNetworkTest: return c_genesisInfoMainNetworkTest;
@@ -65,6 +71,7 @@ std::string const& dev::eth::genesisInfo(Network _n)
 	case Network::ByzantiumTransitionTest: return c_genesisInfoByzantiumTransitionTest;
 	case Network::ConstantinopleTest: return c_genesisInfoConstantinopleTest;
 	case Network::ConstantinopleTransitionTest: return c_genesisInfoConstantinopleTransitionTest;
+	case Network::KomodoNetworkTest: return c_genesisInfoKomodoNetworkTest;
 
 	//Transition test genesis
 	case Network::FrontierToHomesteadAt5: return c_genesisInfoFrontierToHomesteadAt5Test;
@@ -83,6 +90,8 @@ h256 const& dev::eth::genesisStateRoot(Network _n)
 	switch (_n)
 	{
 	case Network::MainNetwork: return c_genesisStateRootMainNetwork;
+    case Network::KomodoNetwork:
+    case Network::KomodoNetworkTest:
 	case Network::Ropsten:
 	case Network::MainNetworkTest:
 	case Network::TransitionnetTest:

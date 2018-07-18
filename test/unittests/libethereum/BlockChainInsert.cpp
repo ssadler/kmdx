@@ -25,9 +25,9 @@
 #include <boost/filesystem.hpp>
 #include <libdevcore/FileSystem.h>
 #include <libethcore/BasicAuthority.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/Block.h>
-#include <libethereum/GenesisInfo.h>
+#include <libwing/BlockChain.h>
+#include <libwing/Block.h>
+#include <libwing/GenesisInfo.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtesteth/BlockChainHelper.h>
 using namespace std;

@@ -29,7 +29,7 @@ using namespace dev;
 using namespace eth;
 using namespace dev::test;
 
-BOOST_FIXTURE_TEST_SUITE(libethereum, TestOutputHelperFixture)
+BOOST_FIXTURE_TEST_SUITE(libwing, TestOutputHelperFixture)
 
 BOOST_AUTO_TEST_CASE(TransactionGasRequired)
 {

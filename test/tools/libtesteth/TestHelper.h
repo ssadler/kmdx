@@ -29,7 +29,7 @@
 #include <boost/progress.hpp>
 
 #include <libethashseal/Ethash.h>
-#include <libethereum/State.h>
+#include <libwing/State.h>
 #include <libethashseal/GenesisInfo.h>
 #include <test/tools/libtestutils/Common.h>
 

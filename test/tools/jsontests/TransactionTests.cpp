@@ -22,7 +22,7 @@
 
 #include <libethcore/SealEngine.h>
 #include <libethashseal/GenesisInfo.h>
-#include <libethereum/ChainParams.h>
+#include <libwing/ChainParams.h>
 #include <test/tools/libtestutils/Common.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/fuzzTesting/fuzzHelper.h>

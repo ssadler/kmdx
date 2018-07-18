@@ -23,7 +23,7 @@
 
 #include <string>
 #include <libdevcore/FixedHash.h>
-#include <libethcore/Common.h>
+#include <libwingcore/Common.h>
 
 namespace dev
 {
@@ -33,6 +33,9 @@ namespace eth
 /// The network id.
 enum class Network
 {
+    KomodoNetwork = 30,
+    KomodoNetworkTest = 31,
+
 	//Olympic = 0,			///< Normal Olympic chain.
 	MainNetwork = 1,		///< Normal Frontier/Homestead/DAO/EIP150/EIP158/Byzantium/Constantinople chain.
 	//Morden = 2,			///< Normal Morden chain.

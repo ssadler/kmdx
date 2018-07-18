@@ -23,8 +23,8 @@
 #include <libdevcore/TransientDirectory.h>
 #include <libethashseal/Ethash.h>
 #include <libethashseal/GenesisInfo.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/TransactionQueue.h>
+#include <libwing/BlockChain.h>
+#include <libwing/TransactionQueue.h>
 
 using namespace std;
 using namespace json_spirit;

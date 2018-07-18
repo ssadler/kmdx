@@ -20,7 +20,7 @@
 
 #pragma once
 
-#include <libethereum/LastBlockHashesFace.h>
+#include <libwing/LastBlockHashesFace.h>
 
 namespace dev
 {

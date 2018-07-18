@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include <libethereum/ClientBase.h>
-#include <libethereum/BlockChain.h>
+#include <libwing/ClientBase.h>
+#include <libwing/BlockChain.h>
 #include <libethcore/Common.h>
 
 namespace dev

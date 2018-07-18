@@ -22,7 +22,7 @@
 #include <test/tools/libtestutils/Common.h>
 #include <libethashseal/GenesisInfo.h>
 #include <test/tools/libtesteth/JsonSpiritHeaders.h>
-#include <libethereum/State.h>
+#include <libwing/State.h>
 
 namespace dev
 {

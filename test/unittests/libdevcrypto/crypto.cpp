@@ -38,7 +38,7 @@
 #include <libdevcore/SHA3.h>
 #include <libdevcrypto/Hash.h>
 #include <libdevcrypto/CryptoPP.h>
-#include <libethereum/Transaction.h>
+#include <libwing/Transaction.h>
 #include <test/tools/libtesteth/TestOutputHelper.h>
 #include <test/tools/libtesteth/Options.h>
 

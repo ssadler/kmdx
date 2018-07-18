@@ -21,12 +21,11 @@
 #include "TestHelper.h"
 #include "Options.h"
 #include "TestOutputHelper.h"
-#include "wast2wasm.h"
 
 #include <libethashseal/EthashCPUMiner.h>
-#include <libethereum/Client.h>
+#include <libwing/Client.h>
 
-#include <aleth-buildinfo.h>
+#include <eth-buildinfo.h>
 
 #include <yaml-cpp/yaml.h>
 #include <boost/algorithm/string/trim.hpp>
@@ -354,7 +353,8 @@ string replaceCode(string const& _code)
         return _code;
     }
     if (_code.find("(module") == 0)
-        return wast2wasm(_code);
+        BOOST_FAIL("don't have wast2wasm");
+        //return wast2wasm(_code);
 
     string compiledCode = compileLLL(_code);
     if (_code.size() > 0)
@@ -625,7 +625,7 @@ void requireJsonFields(json_spirit::mObject const& _o, string const& _section,
 
 string prepareVersionString()
 {
-    return string{"testeth "} + aleth_get_buildinfo()->project_version;
+    return string{"testeth "} + eth_get_buildinfo()->project_version;
 }
 
 string prepareLLLCVersionString()

@@ -20,8 +20,8 @@
 
 #pragma once
 
-#include <libethcore/SealEngine.h>
-#include <libethereum/GenericFarm.h>
+#include <libwingcore/SealEngine.h>
+#include <libwing/GenericFarm.h>
 #include "EthashProofOfWork.h"
 
 #include <ethash/ethash.hpp>

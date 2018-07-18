@@ -25,7 +25,7 @@
 
 #include <json_spirit/JsonSpiritHeaders.h>
 #include <libdevcore/CommonIO.h>
-#include <libethereum/BlockChain.h>
+#include <libwing/BlockChain.h>
 #include <libethashseal/GenesisInfo.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <boost/filesystem/path.hpp>

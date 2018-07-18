@@ -19,13 +19,13 @@
 #include "Exceptions.h"
 #include "Log.h"
 
-#include <aleth-buildinfo.h>
+#include <eth-buildinfo.h>
 
 using namespace std;
 
 namespace dev
 {
-char const* Version = aleth_get_buildinfo()->project_version;
+char const* Version = eth_get_buildinfo()->project_version;
 bytes const NullBytes;
 std::string const EmptyString;
 

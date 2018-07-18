@@ -22,8 +22,8 @@
 
 #include "vm.h"
 #include <test/tools/libtestutils/TestLastBlockHashes.h>
-#include <libethereum/ChainParams.h>
-#include <libethereum/Executive.h>
+#include <libwing/ChainParams.h>
+#include <libwing/Executive.h>
 #include <libevm/VMFactory.h>
 #include <libevm/LegacyVM.h>
 #include <boost/filesystem.hpp>

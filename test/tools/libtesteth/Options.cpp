@@ -19,7 +19,7 @@
  */
 
 #include <libevm/VMFactory.h>
-#include <libweb3jsonrpc/Debug.h>
+//#include <libweb3jsonrpc/Debug.h>  // ssadler
 #include <test/tools/fuzzTesting/fuzzHelper.h>
 #include <test/tools/libtesteth/Options.h>
 #include <boost/iostreams/device/null.hpp>
@@ -180,7 +180,7 @@ Options::Options(int argc, const char** argv)
             auto arg = std::string{argv[++i]};
             Json::Value value;
             Json::Reader().parse(arg, value);
-            jsontraceOptions = debugOptions(value);
+            //jsontraceOptions = debugOptions(value); TODO: find a way to provide this
         }
         else if (arg == "--filltests")
             filltests = true;

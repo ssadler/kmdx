@@ -22,7 +22,7 @@
 
 #include "EthashProofOfWork.h"
 
-#include <libethereum/GenericMiner.h>
+#include <libwing/GenericMiner.h>
 
 namespace dev
 {

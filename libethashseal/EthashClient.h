@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include <libethereum/Client.h>
+#include <libwing/Client.h>
 #include <boost/filesystem/path.hpp>
 #include <tuple>
 

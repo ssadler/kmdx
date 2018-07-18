@@ -24,7 +24,7 @@
 #include <test/tools/fuzzTesting/fuzzHelper.h>
 #include <libethashseal/Ethash.h>
 #include <libethashseal/GenesisInfo.h>
-#include <libethereum/ChainParams.h>
+#include <libwing/ChainParams.h>
 #include <boost/filesystem/path.hpp>
 using namespace std;
 using namespace dev;

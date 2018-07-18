@@ -15,10 +15,10 @@
 	along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <libethereum/SnapshotImporter.h>
-#include <libethereum/StateImporter.h>
-#include <libethereum/BlockChainImporter.h>
-#include <libethereum/SnapshotStorage.h>
+#include <libwing/SnapshotImporter.h>
+#include <libwing/StateImporter.h>
+#include <libwing/BlockChainImporter.h>
+#include <libwing/SnapshotStorage.h>
 #include <test/tools/libtesteth/TestHelper.h>
 
 using namespace dev;

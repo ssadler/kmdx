@@ -21,10 +21,10 @@
  */
 
 #include <libethashseal/Ethash.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/ChainParams.h>
-#include <libethereum/GasPricer.h>
-#include <libethereum/BasicGasPricer.h>
+#include <libwing/BlockChain.h>
+#include <libwing/ChainParams.h>
+#include <libwing/GasPricer.h>
+#include <libwing/BasicGasPricer.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtestutils/BlockChainLoader.h>
 #include <boost/filesystem/path.hpp>

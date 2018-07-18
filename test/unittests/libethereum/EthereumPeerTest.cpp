@@ -15,7 +15,7 @@
 	along with cpp-ethereum.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <libethereum/EthereumPeer.h>
+#include <libwing/EthereumPeer.h>
 #include <libp2p/Host.h>
 #include <test/tools/libtesteth/TestHelper.h>
 

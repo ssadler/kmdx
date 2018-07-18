@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <libethcore/BlockHeader.h>
+#include <libwingcore/BlockHeader.h>
 #include <libdevcore/Guards.h>
 
 namespace dev

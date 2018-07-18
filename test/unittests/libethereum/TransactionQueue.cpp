@@ -20,7 +20,7 @@
  * TransactionQueue test functions.
  */
 
-#include <libethereum/TransactionQueue.h>
+#include <libwing/TransactionQueue.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtesteth/BlockChainHelper.h>
 

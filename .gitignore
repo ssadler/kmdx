@@ -78,3 +78,18 @@ doc/html
 node_modules/
 
 dependency_graph.svg
+
+CMakeCache.txt
+CMakeFiles
+CPack*
+makefile
+_3rdParty
+eth-buildinfo.*
+aya/aya
+cmake_install.cmake
+gitinfo.txt
+Makefile
+CTestTestfile.cmake
+.gdb_history
+test/testeth
+test/Testing/Temporary

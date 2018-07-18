@@ -20,8 +20,8 @@
  * Block test functions.
  */
 
-#include <libethereum/BlockQueue.h>
-#include <libethereum/Block.h>
+#include <libwing/BlockQueue.h>
+#include <libwing/Block.h>
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtesteth/BlockChainHelper.h>
 #include <test/tools/libtesteth/JsonSpiritHeaders.h>

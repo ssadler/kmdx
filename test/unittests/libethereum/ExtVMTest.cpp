@@ -19,8 +19,8 @@
 #include <test/tools/libtesteth/TestHelper.h>
 #include <test/tools/libtestutils/TestLastBlockHashes.h>
 
-#include <libethereum/Block.h>
-#include <libethereum/ExtVM.h>
+#include <libwing/Block.h>
+#include <libwing/ExtVM.h>
 
 using namespace dev;
 using namespace dev::eth;

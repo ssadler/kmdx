@@ -22,8 +22,8 @@
 #pragma once
 #include <json/json.h>
 #include <libdevcore/TransientDirectory.h>
-#include <libethereum/BlockChain.h>
-#include <libethereum/Block.h>
+#include <libwing/BlockChain.h>
+#include <libwing/Block.h>
 #include <libethashseal/GenesisInfo.h>
 
 namespace dev

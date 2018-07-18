@@ -21,7 +21,7 @@
 
 #include <json/writer.h>
 #include <libethashseal/Ethash.h>
-#include <libethereum/BlockChain.h>
+#include <libwing/BlockChain.h>
 #include "BlockChainLoader.h"
 #include "Common.h"
 using namespace std;
