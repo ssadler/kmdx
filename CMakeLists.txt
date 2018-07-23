@@ -74,6 +74,7 @@ configure_project()
 
 include_directories("${CMAKE_SOURCE_DIR}")
 
+add_subdirectory(libtm)
 add_subdirectory(libdevcore)
 add_subdirectory(libdevcrypto)
 add_subdirectory(libp2p)
