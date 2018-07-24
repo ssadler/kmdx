@@ -7,6 +7,7 @@
 
 #include <string>
 #include "../types/HexBytes.h"
+#include "../helpers/Time.h"
 
 using namespace std;
 
@@ -42,19 +43,13 @@ private:
     int peerGossipSleepDuration;
     int peerQueryMaj23SleepDuration;
 
-    int peerGossipSleep();
+    chrono::duration<chrono::system_clock> peerGossipSleep();
 
-    int peerQueryMaj23Sleep();
+    chrono::duration<chrono::system_clock> peerQueryMaj23Sleep();
 
-    time_t commit(time_t time);
+    chrono::duration<chrono::system_clock> propose(int round);
 
-    int precommit(int round);
-
-    int propose(int round);
-
-    int emptyBlocksInterval();
-
-    bool waitForTxs();
+    chrono::duration<chrono::system_clock> emptyBlocksInterval();
 
 
 public:
@@ -95,7 +90,13 @@ public:
 
     int getPeerQueryMaj23SleepDuration() const;
 
-    int prevote(int round);
+    chrono::duration<chrono::system_clock> prevote(int round);
+
+    chrono::duration<chrono::system_clock> precommit(int round);
+
+    bool waitForTxs();
+
+    chrono::duration<chrono::system_clock> commit(Time time);
 };
 
 

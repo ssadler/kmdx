@@ -31,3 +31,13 @@ const HexBytes &Proposal::getPolBlockID() const {
 const Signature &Proposal::getSignature() const {
     return signature;
 }
+
+bool Proposal::isEmpty() {
+    return false;
+}
+
+Proposal::Proposal(int64_t height, const RoundState &roundState, time_t Timestamp, const Block &block, int polRound,
+                   const HexBytes &polBlockID, const Signature &signature) : height(height), roundState(roundState),
+                                                                             Timestamp(Timestamp), block(block),
+                                                                             polRound(polRound), polBlockID(polBlockID),
+                                                                             signature(signature) {}

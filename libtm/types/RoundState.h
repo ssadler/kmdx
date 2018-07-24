@@ -10,6 +10,8 @@
 #include "VoteSet.h"
 #include "HeightVoteSet.h"
 #include "event/Event.h"
+#include "../helpers/Time.h"
+
 
 class Proposal;
 
@@ -34,74 +36,48 @@ class RoundState {
     int64_t height; // Height we are working on
     int roundNumber;
     RoundStepType stepType;
-    time_t startTime;
-    time_t commitTime; // Subjective time when +2/3 precommits for Block at Round were found
-    vector<Validator> validators;
-    Proposal *proposal;
-    Block *proposalBlock;
+    Time startTime;
+    Time commitTime; // Subjective time when +2/3 precommits for Block at Round were found
+    ValidatorSet validators;
+    shared_ptr<Proposal> proposal;
+    shared_ptr<Block> proposalBlock;
     //PartSet* proposalBlockParts;
     int lockedRoundNumber;
-    Block *lockedBlock;
+    shared_ptr<Block> lockedBlock;
     //PartSet* lockedBlockParts;
     int validRoundNumber; // Last known roundNumber with POL for non-nil valid block.
-    Block *validBlock; // Last known block of POL mentioned above.
+    shared_ptr<Block> validBlock; // Last known block of POL mentioned above.
     //PartSet* validBlockParts; // Last known block parts of POL metnioned above.
-    HeightVoteSet *votes;
+    HeightVoteSet votes;
     int commitRoundNumber;
-    VoteSet *lastCommit; // Last precommits at Height-1
-    ValidatorSet *lastValidators;
+    shared_ptr<VoteSet> lastCommit; // Last precommits at Height-1
+    ValidatorSet lastValidators;
 
 public:
     const EventDataRoundState roundStateEvent();
 
+    RoundState();
+
+    bool operator==(const RoundState &other);
 
     int64_t getHeight() const;
 
-    int getRoundNumber() const;
-
-    RoundStepType getStepType() const;
-
-    time_t getStartTime() const;
-
-    time_t getCommitTime() const;
-
-    const vector<Validator> &getValidators() const;
-
-    Proposal *getProposal() const;
-
-    Block *getProposalBlock() const;
-
-    int getLockedRoundNumber() const;
-
-    Block *getLockedBlock() const;
-
-    int getValidRoundNumber() const;
-
-    Block *getValidBlock() const;
-
-    HeightVoteSet *getVotes() const;
-
-    int getCommitRoundNumber() const;
-
-    VoteSet *getLastCommit() const;
-
-    ValidatorSet *getLastValidators() const;
-
     void setLockedRoundNumber(int lockedRoundNumber);
 
-    void setLockedBlock(Block *lockedBlock);
+    void setLockedBlock(const shared_ptr<Block> &lockedBlock);
 
+    void setValidBlock(const shared_ptr<Block> &validBlock);
 
     void setValidRoundNumber(int i);
 
-    void setValidBlock(Block *(*block)() const);
 
-    void setRoundNumber(const int _roundNumber);
+    void updateRoundStep(int number, RoundStepType type);
 
-    void setStepType(RoundStepType type);
+
+    void setHeight(int64_t i);
 };
 
-bool operator==(const RoundState &one, const RoundState &other);
+
 
 //TODO RoundStateSimple for RPC
 

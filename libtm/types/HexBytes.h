@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 
 
 //TODO
@@ -17,9 +18,10 @@ private :
 public:
     HexBytes hash();
 
+    const std::string toString() const;
     bool operator==(const HexBytes &other) {
         if (other.bites.size() != bites.size()) return false;
-        for (size_t i = 0; i < bites.size(); i++) {
+        for (uint i = 0; i < bites.size(); i++) {
             if (bites[i] != other.bites[i]) return false;
         }
         return true;
@@ -33,13 +35,26 @@ public:
 // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 struct BlockID {
     HexBytes bites;
+    HexBytes hash;
 public:
-    HexBytes hash(); //TODO check is this a function or a static?
+
     bool isEmpty();
+
+    const HexBytes &getBites() const;
+
+    const HexBytes &getHash() const;
 };
 
-bool BlockID::isEmpty() { //TODO fugly
-    return bites.getBites().size() == 0;
+bool BlockID::isEmpty() {
+    return bites.getBites().empty();
+}
+
+const HexBytes &BlockID::getBites() const {
+    return bites;
+}
+
+const HexBytes &BlockID::getHash() const {
+    return hash;
 }
 
 bool operator==(const HexBytes &one, const HexBytes &other) {

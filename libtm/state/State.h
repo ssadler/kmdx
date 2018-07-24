@@ -11,7 +11,6 @@
 #include <cstdint>
 #include <thread>
 #include <string>
-#include <zconf.h>
 #include "../types/HexBytes.h"
 #include "../types/Validator.h"
 
@@ -74,6 +73,8 @@ public:
     const HexBytes &getAppHash() const {
         return appHash;
     }
+
+    bool isEmpty();
 
 private:
     // Immutable

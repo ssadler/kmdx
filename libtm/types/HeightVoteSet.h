@@ -6,16 +6,25 @@
 #define TM_LIGHT_HEIGHTVOTESET_H
 
 
+#include <memory>
 #include "VoteSet.h"
 
 class HeightVoteSet {
-//TODO
+
 public :
+    HeightVoteSet(const string &basic_string, int64_t i, ValidatorSet set);
+
     VoteSet getPrevotes(int i);
 
-    VoteSet getPrecommits(int i);
+    shared_ptr<VoteSet> getPrecommits(int i);
 
     int polInfo(BlockID &blockID);
+
+    int64_t addVote(Vote vote, HexBytes bytes);
+
+    void setRoundNumber(int i);
+
+    bool isEmpty();
 };
 
 

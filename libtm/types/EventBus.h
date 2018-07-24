@@ -23,6 +23,8 @@ public:
     void publishEventLock(const EventDataRoundState state);
 
     void publishEventNewRoundStep(EventDataRoundState state);
+
+    void publishEventNewRound(const EventDataRoundState state);
 };
 
 

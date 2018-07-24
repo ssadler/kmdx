@@ -13,7 +13,7 @@
 #include "Signature.h"
 
 enum VoteType {
-    VoteTypePrevote, VoteTypePrecommit,
+    VoteTypePrevote, VoteTypePrecommit, VoteTypeFirstCommit,
 };
 
 std::string voteTypeToString(VoteType type) {
@@ -22,8 +22,11 @@ std::string voteTypeToString(VoteType type) {
             return "VoteTypePrevote";
         case VoteTypePrecommit:
             return "VoteTypePrecommit";
+        case VoteTypeFirstCommit:
+            return "VoteTypeFirstCommit";
+        default:
+            return "invalid Vote type";
     }
-    throw "undefined exception type";
 };
 
 class Vote {
@@ -51,6 +54,8 @@ public:
     const BlockID &getBlockID() const;
 
     const Signature &getSignature() const;
+
+    explicit Vote(VoteType type);
 };
 
 

@@ -28,6 +28,8 @@ State::~State() {
     //TODO state destructor
 }
 
+
+
 //State::State(const State &obj){
 //TODO copy constructor
 //}
@@ -83,3 +85,4 @@ Errorf makeGenesisState(GenesisDoc genDoc, State& state) {
     state = State( genDoc.ChainID, 0, types.BlockID{}, genDoc.GenesisTime, types.NewValidatorSet(validators), types.NewValidatorSet(null), 1, genDoc.ConsensusParams, 1, genDoc.AppHash );	)
     return null;
 }
+*/

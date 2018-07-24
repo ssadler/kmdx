@@ -28,10 +28,10 @@ class Proposal {
 
 
 public:
+    Proposal(int64_t height, const RoundState &roundState, time_t Timestamp, const Block &block, int polRound,
+             const HexBytes &polBlockID, const Signature &signature);
 
-    const HexBytes &signBytes(const string blockChainId) const {
-        //TODO
-    }
+    const HexBytes &signBytes(const string blockChainId) const;
 
     int64_t getHeight() const;
 
@@ -48,6 +48,8 @@ public:
     const Signature &getSignature() const;
 
     const string toString() const;
+
+    bool isEmpty();
 };
 
 

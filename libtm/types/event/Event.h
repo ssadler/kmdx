@@ -14,116 +14,116 @@ class Event {
     virtual std::string TypeString();
 };
 
-class EventCompleteProposal : Event {
+class EventCompleteProposal : public Event {
     virtual std::string TypeString() {
         return "EventCompleteProposal";
     }
 };
 
 
-class EventDupeout : Event {
+class EventDupeout : public Event {
     virtual std::string TypeString() {
         return "EventDupeout";
     }
 };
 
-class EventFork : Event {
+class EventFork : public Event {
     virtual std::string TypeString() {
         return "EventFork";
     }
 };
 
-class EventLock : Event {
+class EventLock : public Event {
     virtual std::string TypeString() {
         return "EventLock";
     }
 };
 
-class EventNewBlock : Event {
+class EventNewBlock : public Event {
     virtual std::string TypeString() {
         return "EventNewBlock";
     }
 };
 
-class EventNewBlockHeader : Event {
+class EventNewBlockHeader : public Event {
     virtual std::string TypeString() {
         return "EventNewBlockHeader";
     }
 };
 
-class EventNewRound : Event {
+class EventNewRound : public Event {
     virtual std::string TypeString() {
         return "EventNewRound";
     }
 };
 
-class EventNewRoundStep : Event {
+class EventNewRoundStep : public Event {
     virtual std::string TypeString() {
         return "EventNewRoundStep";
     }
 };
 
-class EventPolka : Event {
+class EventPolka : public Event {
     virtual std::string TypeString() {
         return "EventPolka";
     }
 };
 
-class EventRebond : Event {
+class EventRebond : public Event {
     virtual std::string TypeString() {
         return "EventRebond";
     }
 };
 
-class EventRelock : Event {
+class EventRelock : public Event {
     virtual std::string TypeString() {
         return "EventRelock";
     }
 };
 
-class EventTimeoutPropose : Event {
+class EventTimeoutPropose : public Event {
     virtual std::string TypeString() {
         return "EventTimeoutPropose";
     }
 };
 
-class EventTimeoutWait : Event {
+class EventTimeoutWait : public Event {
     virtual std::string TypeString() {
         return "EventTimeoutWait";
     }
 };
 
-class EventTx : Event {
+class EventTx : public Event {
     virtual std::string TypeString() {
         return "EventTx";
     }
 };
 
-class EventUnbond : Event {
+class EventUnbond : public Event {
     virtual std::string TypeString() {
         return "EventUnbond";
     }
 };
 
-class EventUnlock : Event {
+class EventUnlock : public Event {
     virtual std::string TypeString() {
         return "EventUnlock";
     }
 };
 
-class EventVote : Event {
+class EventVote : public Event {
     virtual std::string TypeString() {
         return "EventVote";
     }
 };
 
-class EventProposalHeartbeat : Event {
+class EventProposalHeartbeat : public Event {
     virtual std::string TypeString() {
         return "EventProposalHeartbeat";
     }
 };
 
-class EventDataVote : Event {
+class EventDataVote : public Event {
     Vote vote;
 
     virtual std::string TypeString() {
@@ -131,12 +131,10 @@ class EventDataVote : Event {
     }
 
 public:
-    EventDataVote(Vote v) {
-        vote = v;
-    }
+    EventDataVote(Vote v) : vote(v) {}
 };
 
-class EventDataProposalHeartbeat : Event {
+class EventDataProposalHeartbeat : public Event {
     Heartbeat *heartbeat;
 
     virtual std::string TypeString() {
@@ -150,7 +148,7 @@ public :
 };
 
 // NOTE: This goes into the replay WAL
-class EventDataRoundState : Event {
+class EventDataRoundState : public Event {
     int64_t height;
     int round;
     std::string step;

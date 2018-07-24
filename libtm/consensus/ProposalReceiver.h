@@ -7,7 +7,7 @@
 
 
 class ProposalReceiver {
-
+    int i;
 };
 
 

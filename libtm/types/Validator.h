@@ -54,6 +54,10 @@ public:
     HexBytes hash() const;
 
     Validator getProposer() const;
+
+    ValidatorSet copy();
+
+    void incrementAccum(int i);
 };
 
 

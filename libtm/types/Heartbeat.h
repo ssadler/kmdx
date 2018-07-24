@@ -2,7 +2,6 @@
 // Created by utnso on 17/07/18.
 //
 
-#include <zconf.h>
 #include <err.h>
 #include "Signature.h"
 #include "HexBytes.h"
@@ -16,6 +15,11 @@
 * json field tags because we always want the JSON
 * representation to be in its canonical form. **/
 class Heartbeat {
+public:
+    Heartbeat(const HexBytes &validatorAddress, int validatorIndex, int64_t height, int round, int sequence,
+              const Signature &signature);
+
+private:
     HexBytes validatorAddress;
     int validatorIndex;
     int64_t height;

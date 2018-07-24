@@ -7,7 +7,7 @@
 
 
 class Executor {
-
+    int i;
 };
 
 

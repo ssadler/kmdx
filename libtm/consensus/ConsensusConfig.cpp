@@ -2,45 +2,44 @@
 // Created by utnso on 10/07/18.
 //
 
-#include "ConsensusConfig.h"
-
+/*
 // WaitForTxs returns true if the consensus should wait for transactions before entering the propose stepType
 bool ConsensusConfig::waitForTxs() {
     return !createEmptyBlocks || createEmptyBlocksInterval > 0;
 }
 
 // EmptyBlocks returns the amount of time to wait before proposing an empty block or starting the propose timer if there are no txs available
-int ConsensusConfig::emptyBlocksInterval() {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::emptyBlocksInterval() {
     //return time.Duration(createEmptyBlocksInterval) * time.Second;
 }
 
 // Propose returns the amount of time to wait for a proposal
-int ConsensusConfig::propose(int round) {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::propose(int round) {
     //return (timeoutPropose+timeoutProposeDelta*roundNumber) * time.Millisecond;
 }
 
 // Prevote returns the amount of time to wait for straggler votes after receiving any +2/3 prevotes
-int ConsensusConfig::prevote(int round) {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::prevote(int round) {
     //return (timeoutPrevote+timeoutPrevoteDelta*roundNumber) * time.Millisecond;
 }
 
 // Precommit returns the amount of time to wait for straggler votes after receiving any +2/3 precommits
-int ConsensusConfig::precommit(int round) {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::precommit(int round) {
     //return (timeoutPrecommit+timeoutPrecommitDelta*roundNumber) * time.Millisecond;
 }
 
 // Commit returns the amount of time to wait for straggler votes after receiving +2/3 precommits for a single block (ie. a commit).
-time_t ConsensusConfig::commit(time_t time) {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::commit(Time t) {
     //return t.Add(time.Duration(timeoutCommit) * time.Millisecond);
 }
 
 // PeerGossipSleep returns the amount of time to sleep if there is nothing to send from the ConsensusReactor
-int ConsensusConfig::peerGossipSleep() {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::peerGossipSleep() {
     //return time.Duration(peerGossipSleepDuration) * time.Millisecond;
 }
 
 // PeerQueryMaj23Sleep returns the amount of time to sleep after each VoteSetMaj23Message is sent in the ConsensusReactor
-int ConsensusConfig::peerQueryMaj23Sleep() {
+chrono::duration<std::chrono::system_clock> ConsensusConfig::peerQueryMaj23Sleep() {
     //return time.Duration(peerQueryMaj23SleepDuratio) * time.Millisecond;
 }
 
@@ -112,6 +111,7 @@ int ConsensusConfig::getPeerQueryMaj23SleepDuration() const {
     return peerQueryMaj23SleepDuration;
 }
 
+*/
 
 /*
 // WalFile returns the full path to the write-ahead log file

@@ -11,3 +11,8 @@ Validator::Validator(Pubkey _pubKey, int64_t _votingPower) {
     address = pubKey.getAddress();
     accum = 0;
 }
+
+
+
+
+

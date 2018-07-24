@@ -13,10 +13,10 @@ public:
 
 };
 
-static void logInfo(std::string stuff...);
+void logInfo(std::string, ...);
 
-static void logError(std::string stuff...);
+void logError(std::string, ...);
 
-static void logDebug(std::string stuff...);
+void logDebug(std::string, ...);
 
 #endif //TM_LIGHT_LOGGER_H

@@ -15,13 +15,12 @@
 #include "../events/EventSwitch.h"
 #include "../types/EventBus.h"
 #include "../types/Proposal.h"
-#include "../Message/ProposalMessage.h"
 #include "../helpers/Logger.h"
 #include "../Message/Message.h"
 #include "../types/Error.h"
 #include "../types/Vote.h"
 #include "../types/PrivValidator.h"
-#include "../Message/VoteMessage.h"
+#include "../helpers/Time.h"
 
 
 class ConsensusState {
@@ -52,14 +51,15 @@ class ConsensusState {
     // synchronous pubsub between main state and reactor.
     // state only emits EventNewRoundStep, EventVote and EventProposalHeartbeat
     EventSwitch eventSwitch;
+    shared_ptr<Proposal> proposal;
 
-    int setProposal(Proposal);
+    void setProposal(Proposal _proposal); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
-    Proposal *proposal;
-
-    void handleMsg(const ProposalMessage msg);
+    void handleMsg(const ProposalMessage msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
     void handleMsg(const VoteMessage msg);
+
+    void handleMsg(const BlockMessage msg);
 
     void tryAddVote(Vote vote, HexBytes peerID);
 
@@ -72,10 +72,9 @@ public:
 
     ConsensusState(ConsensusConfig config, State state);
 
-    ConsensusState(ConsensusConfig _config);
+    explicit ConsensusState(ConsensusConfig _config);
 
     virtual ~ConsensusState();
-
 
     void addVoteForCurrentRound(Vote vote);
 
@@ -83,7 +82,7 @@ public:
 
     void tryUpdateValidRoundAndBlock(const Vote &vote, BlockID &blockId);
 
-    void enterNewRound(int height, int number);
+    void enterNewRound(int64_t height, int number);
 
     bool isProposalComplete();
 
@@ -93,15 +92,32 @@ public:
 
     void enterPrevote(int64_t _height, int _roundNumber);
 
-    void updateRoundStep(int number, RoundStepType type);
-
     void newStep();
 
     void doPrevote(int64_t height, int _roundNumber);
 
-    void scheduleTimeout(int prevote, int64_t height, int number, RoundStepType type);
+    void scheduleTimeout(chrono::duration<std::chrono::system_clock> prevote, int64_t height, int number,
+                         RoundStepType type);
 
     void enterCommit(int64_t height, int number);
+
+    void signAddVote(VoteType type);
+
+    void signAddVote(VoteType type, const HexBytes &bytes);
+
+    void enterPrecommitWait(int64_t height, int number);
+
+    void handleStragglerCommit(const Vote &vote);
+
+    void tryFinalizeCommit(int64_t height);
+
+    void finalizeCommit(int64_t height);
+
+    void scheduleRound0(RoundState roundState);
+
+    Commit loadSeenCommit(int64_t height);
+
+    void clearProposal();
 };
 
 #endif /* CONSENSUSSTATE_H_ */

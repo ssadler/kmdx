@@ -35,3 +35,7 @@ const BlockID &Vote::getBlockID() const {
 const Signature &Vote::getSignature() const {
     return signature;
 }
+
+Vote::Vote(VoteType _type) {
+    this->type = _type;
+}

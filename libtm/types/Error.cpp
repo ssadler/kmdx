@@ -5,7 +5,7 @@
 
 #include "Error.h"
 
-Error::Error(const string &description) : description(description) {}
+Error::Error(const string description) : description(description) {}
 
 const string &Error::getDescription() const {
     return description;

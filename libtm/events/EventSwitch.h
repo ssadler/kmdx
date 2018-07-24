@@ -13,9 +13,7 @@ class EventSwitch {
 //TODO
 public:
     void fireEvent(Event, Vote); //TODO where is this ?
-    void fireEvent(Event, &
-
-    RoundState); //TODO where is this ?
+    void fireEvent(Event, RoundState &);
 
 };
 
