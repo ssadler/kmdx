@@ -15,7 +15,8 @@ enum NativeVMErrorCode: byte
     BadRequestABI = 0x04,
     MethodNotPayable = 0x10,
     InsufficientBalance = 0x20,
-    InsufficientAllowance = 0x21
+    InsufficientAllowance = 0x21,
+    ValueOversize = 0x50
 };
 
 #define throwRevert(code) \

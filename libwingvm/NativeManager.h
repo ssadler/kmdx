@@ -28,7 +28,7 @@ class NativeManager
 {
 public:
     NativeManager(State& _s): m_vm(DummyVM(RootContractAddress, _s)) {};
-    bool isNativeContract(Address const& _addr) const;
+    bool isNativeContract(Address const& _addr);
     void setNativeContract(Address const& _addr, std::string _name);
     owning_bytes_ref callVM(Address const& _addr, u256& io_gas, ExtVM& _ext, OnOpFunc const& _onOp);
     DummyVM& vm() { return m_vm; }

@@ -69,9 +69,9 @@ Key Key::operator [](K _key) const { return keyOn(m_key, _key); }
 class NativeVMFace
 {
 public:
-    virtual u256 getWord(Key const& _key) const = 0;
+    virtual u256 getWord(Key const& _key) = 0;
     virtual void putWord(Key const& _key, u256 const& _val) = 0;
-    template <typename V> size_t getData(u256 _key, V& out) const;
+    template <typename V> size_t getData(u256 _key, V& out);
     template <typename V> void putData(u256 _key, V const& in);
 };
 
@@ -94,8 +94,10 @@ public:
     owning_bytes_ref exec();
     virtual void call(NativeCall& _call) = 0;
 
-    u256 getWord(Key const& _key) const override { return m_ext.store(_key); }
-    void putWord(Key const& _key, u256 const& _val) override { m_ext.setStore(_key, _val); }
+    void bill(u256 _gas);
+
+    u256 getWord(Key const& _key) override;
+    void putWord(Key const& _key, u256 const& _val) override;
 protected:
     u256& m_io_gas;
     ExtVM& m_ext;
@@ -107,6 +109,19 @@ protected:
 unsigned constexpr METHOD_PAYABLE = 0;
 
 
+class DummyVM : public NativeVMFace
+{
+public:
+    DummyVM(Address _addr, State& _s): m_addr(_addr), m_s(_s) {};
+    u256 getWord(Key const& _key) override { return m_s.storage(m_addr, _key); }
+    void putWord(Key const& _key, u256 const& _val) override { m_s.setStorage(m_addr, _key, _val); }
+    std::string toJsonMap() { return getAccountStorageJson(m_s.account(m_addr)); }
+protected:
+    Address m_addr;
+    State& m_s;
+};
+
+
 class NativeCall
 {
     NativeVM& m_vm;
@@ -116,19 +131,6 @@ public:
     Address const& caller() const { return m_vm.m_ext.caller; }
     bool route(std::string const& _sig) { return route(_sig, 0); }
     bool route(std::string const& _sig, unsigned _flags);
-};
-
-
-class DummyVM : public NativeVMFace
-{
-public:
-    DummyVM(Address _addr, State& _s): m_addr(_addr), m_s(_s) {};
-    u256 getWord(Key const& _key) const override { return m_s.storage(m_addr, _key); }
-    void putWord(Key const& _key, u256 const& _val) override { m_s.setStorage(m_addr, _key, _val); }
-    std::string toJsonMap() { return getAccountStorageJson(m_s.account(m_addr)); }
-protected:
-    Address m_addr;
-    State& m_s;
 };
 
 

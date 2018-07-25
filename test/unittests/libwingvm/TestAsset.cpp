@@ -15,6 +15,8 @@
 #include <libwingvm/Asset.h>
 #include <libwing/Executive.h>
 
+#include "TestNativeHelper.h"
+
 
 using namespace std;
 using namespace dev;
@@ -23,38 +25,12 @@ using namespace dev::wing;
 using namespace dev::test;
 
 
-class NativeVMTestFixture : public TestOutputHelperFixture
-{
-public:
-	NativeVMTestFixture():
-        m_tempDirState(std::unique_ptr<TransientDirectory>(new TransientDirectory())),
-        m_params(ChainParams(genesisInfo(eth::Network::KomodoNetworkTest),
-                             genesisStateRoot(eth::Network::KomodoNetworkTest))),
-        m_bc(std::unique_ptr<BlockChain>(new BlockChain(m_params,
-                m_tempDirState.get()->path(), WithExisting::Kill))),
-        m_db(State::openDB(m_tempDirState.get()->path(), m_bc->genesisHash(), WithExisting::Kill)),
-        m_genesisBlock(m_bc->genesisBlock(m_db))
-        {};
-
-    std::unique_ptr<TransientDirectory> m_tempDirState;
-    ChainParams m_params;
-    std::unique_ptr<BlockChain> m_bc;
-    OverlayDB m_db;
-    Block m_genesisBlock;
-};
-
 class ERC20TestFixture : public NativeVMTestFixture
 {
     DummyVM m_vm;
 public:
     ERC20TestFixture(): NativeVMTestFixture(),
-            m_vm(DummyVM(wing::MinersTokenAddress, m_genesisBlock.mutableState())) {
-        sk = Secret(fromHex("0x3131313131313131313131313131313131313131313131313131313131313131"));
-        sk2 = Secret(fromHex("0x1111111111111111111111111111111111111111111111111111111111111111"));
-        addr = toAddress(sk);
-        addr2 = toAddress(sk2);
-        m_genesisBlock.mutableState().setBalance(addr2, 2 * u256(pow(10, 18)));
-    }
+            m_vm(DummyVM(wing::MinersTokenAddress, m_genesisBlock.mutableState())) {}
 
     ExecutionResult doTx(bytes _data, Secret _sk, u256 _nonce, u256 _value=0)
     {
@@ -66,13 +42,12 @@ public:
     {
         return ERC20(m_vm);
     }
-
-    Secret sk, sk2;
-    Address addr, addr2;
 };
 
 
-BOOST_FIXTURE_TEST_SUITE(NativeContractsSuite, ERC20TestFixture)
+BOOST_AUTO_TEST_SUITE(Native)
+
+BOOST_FIXTURE_TEST_SUITE(Asset, ERC20TestFixture)
 
 namespace Methods
 {
@@ -198,4 +173,5 @@ BOOST_AUTO_TEST_CASE(TestERC20Allowance)
 }
 
 
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()

@@ -23,8 +23,11 @@ namespace wing
 static const Key NativeContracts = keyOn(0);
 
 // TODO: Rename to hasActiveVM
-bool NativeManager::isNativeContract(Address const& _addr) const
+bool NativeManager::isNativeContract(Address const& _addr)
 {
+    if (_addr == RootContractAddress)
+        return true;
+
     std::string vmName;
     return m_vm.getData(NativeContracts[_addr], vmName);
 }
