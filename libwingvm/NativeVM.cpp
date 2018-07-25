@@ -8,6 +8,7 @@
 #include <libevm/ExtVMFace.h>
 #include <libwingcore/Common.h>
 #include "Native.h"
+#include "NativeErrors.h"
 
 using namespace dev;
 using namespace dev::eth;
@@ -20,10 +21,6 @@ namespace wing
 {
 
     
-/*
- * NativeStorage
- */
-
 u256 as256(std::string _s)
 {
     if (_s.size() > 32)
@@ -41,17 +38,12 @@ std::string from256(u256 _h) {
 }
 
 
-std::string NativeStorage::toJsonMap() const
+std::string getAccountStorageJson(Account const* a)
 {
     Json::Value r(Json::objectValue);
-
-    auto a = m_s.account(m_addr);
-
-    if (a)
-    {
+    if (a) 
         for (auto const& i : a->storageOverlay())
             r[toCompactHexPrefixed(i.first, 1)] = toCompactHexPrefixed(i.second, 1);
-    }
     std::ostringstream ss;
     ss << r;
     return ss.str();
@@ -69,9 +61,9 @@ static size_t memcpyr(void* _to, void const* _from, size_t _maxSize)
  * The first 2 bytes of the first word specify the buffer length.
  */
 template <typename V>
-size_t NativeStorage::getData(u256 _key, V& _out) const
+size_t NativeVMFace::getData(u256 _key, V& _out) const
 {
-    u256 first = getWord(_key);
+    u256 first = getWord(Key(_key));
     size_t len = static_cast<size_t>(first >> 240);
     if (!len) return 0;
     _out.resize(len);
@@ -81,7 +73,7 @@ size_t NativeStorage::getData(u256 _key, V& _out) const
     
     while (read < len)
     {
-        h = h256(getWord(++_key));
+        h = h256(getWord(Key(++_key)));
         read += memcpyr(&_out[read], h.data(),
                         std::min(len-read, (size_t)32));
     }
@@ -94,13 +86,16 @@ size_t NativeStorage::getData(u256 _key, V& _out) const
  *
  * XXX: The reason this is hardcoded is that it's indended to become part of
  * standard VM config in the future. VM config is held in root address.
+ *
+ * TODO: Need to read the first element to see if there's already something there.
+ * If there is, delete it before put. If _in is empty, delete.
  */
 template <typename V>
-void NativeStorage::putData(u256 _key, V const& _in)
+void NativeVMFace::putData(u256 _key, V const& _in)
 {
     size_t len = _in.size();
     if (len > 8190)
-        BOOST_THROW_EXCEPTION(ValueTooLarge() << errinfo_comment("NativeStorage putData max size is 8190"));
+        BOOST_THROW_EXCEPTION(DisallowedStateChange() << errinfo_comment("NativeVMFace putData max size is 8190"));
 
     h256 h(static_cast<u256>(len) << 240);
 
@@ -117,10 +112,36 @@ void NativeStorage::putData(u256 _key, V const& _in)
 }
 
 /* Instantiations */
-template size_t NativeStorage::getData<std::string>(u256, std::string&) const;
-template size_t NativeStorage::getData<bytes>(u256, bytes&) const;
-template void NativeStorage::putData<std::string>(u256, std::string const&);
-template void NativeStorage::putData<bytes>(u256, bytes const&);
+template size_t NativeVMFace::getData<std::string>(u256, std::string&) const;
+template size_t NativeVMFace::getData<bytes>(u256, bytes&) const;
+template void NativeVMFace::putData<std::string>(u256, std::string const&);
+template void NativeVMFace::putData<bytes>(u256, bytes const&);
+
+
+owning_bytes_ref NativeVM::exec()
+{
+    if (m_ext.depth != 1)
+        BOOST_THROW_EXCEPTION(NativeContractCalledDirectly());
+
+    NativeCall nativeCall(*this);
+    call(nativeCall);
+    return owning_bytes_ref(std::move(m_output), 0, m_output.size());
+}
+
+
+
+bool NativeCall::route(std::string const& _sig, unsigned _flags)
+{
+    if (abi.method() != ABI(_sig).method()) return false;
+
+    if (!(_flags & METHOD_PAYABLE))
+        if (m_vm.m_ext.value != 0)
+            throwRevert(MethodNotPayable);
+
+    return true;
+}
+
+
 
 }
 }

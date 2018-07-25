@@ -39,7 +39,7 @@ namespace dev
 
 namespace test { class ImportTest; class StateLoader; }
 
-namespace wing { class NativeStorage; }
+namespace wing { class DummyVM; }
 
 namespace eth
 {
@@ -172,7 +172,7 @@ class State
     friend class dev::test::ImportTest;
     friend class dev::test::StateLoader;
     friend class BlockChain;
-    friend class wing::NativeStorage;
+    friend class wing::DummyVM;
 
 public:
     enum class CommitBehaviour

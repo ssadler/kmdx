@@ -93,3 +93,4 @@ CTestTestfile.cmake
 .gdb_history
 test/testeth
 test/Testing/Temporary
+kmdx/kmdx

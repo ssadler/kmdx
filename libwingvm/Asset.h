@@ -16,8 +16,6 @@ using namespace dev::eth;
 using namespace dev::wing;
 
 
-ETH_SIMPLE_EXCEPTION_VM(AssetContractCalledDirectly);
-
 
 namespace dev
 {
@@ -26,47 +24,58 @@ namespace wing
 {
 
 
-bytes abiMethodId(bytes const method);
-/*
-class ERC20
+Address const AssetContractAddress = Address("0301000000000000000000000000000000000000");
+Address const MinersTokenAddress = Address("7777777777777777777777777777777777777777");
+
+
+
+class ERC20 : public NativeContract
 {
-    enum State
+public:
+    using NativeContract::NativeContract;
+    void init();
+    bytes dispatch(NativeCall& _call);
+    u256 totalSupply() const;
+    u256 balanceOf(Address const& _addr) const;
+    void setBalance(Address const& _addr, u256 _amount);
+    bool transferFrom(Address const& _caller, Address const& _from, Address const& _to, u256 const& _amount);
+    u256 allowance(Address const& _owner, Address const& _spender) const;
+    bool approve(Address const& _owner, Address const& _spender, u256 const& _amount);
+    bool transfer(Address const& _from, Address const& _to, u256 const& _amount);
+};
+
+
+class Asset : public NativeContract
+{
+public:
+    using NativeContract::NativeContract;
+
+    ERC20 erc20() const { return ERC20(m_vm); }
+
+    void init()
     {
-        Scalars,
-        TotalSupply,
-        Name,
-        Symbol,
-        Decimals,
-        Balances
+        erc20().init();
     }
 
-    bytes const method_totalSupply = getMethodId("function totalSupply() public constant returns (uint);");
-
-    void exec(bytes const& data)
+    bytes call(NativeCall& _call)
     {
-        bytes const methodId(data.begin(), data.begin()+4);
-        if (methodId == method_totalSupply) {
-            return m_ns.getWord(keyOn(Scalars, TotalSupply), 
-        }
+        return erc20().dispatch(_call);
     }
-}
-*/
+};
+
 
 class AssetVM : public NativeVM
 {
 public:
-    AssetVM(u256& io_gas, ExtVM& _ext, const OnOpFunc& _onOp):
-        NativeVM(io_gas, _ext, _onOp) {};
+    using NativeVM::NativeVM;
 
-    owning_bytes_ref exec() override
+    void call(NativeCall& _call) override
     {
-        // First thing, ensure that depth is 1
-        if (m_ext.depth != 1)
-            BOOST_THROW_EXCEPTION(AssetContractCalledDirectly());
-
-        return owning_bytes_ref{std::move(m_output), 0, 0};
+        m_output = Asset(*this).call(_call);
     }
 };
+
+
 
 }
 }
