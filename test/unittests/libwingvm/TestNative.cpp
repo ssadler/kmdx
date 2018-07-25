@@ -7,10 +7,12 @@
 #include <test/tools/libtestutils/TestLastBlockHashes.h>
 
 #include <libdevcore/Exceptions.h>
+#include <libevm/VM.h>
 #include <libwing/Block.h>
 #include <libwing/ExtVM.h>
 #include <libwingvm/Native.h>
 
+#include "TestNativeHelper.h"
 
 using namespace std;
 using namespace dev;
@@ -51,29 +53,6 @@ BOOST_AUTO_TEST_CASE(EncodingAssumptions)
     BOOST_CHECK_EQUAL(toHex(h2), "fffd3e13aa45fc447c82f73fece1b5b1cda37a29223837524c06e57c319c6ea3");
 }
 
-BOOST_AUTO_TEST_CASE(EncodingStringAs256)
-{
-    std::string d, s = "hello world";
-
-    /// Check string value encode / decode
-    d = from256(as256(s));
-    BOOST_CHECK_EQUAL(s, d);
-
-    /// Now with 0 bytes
-    s = "";
-    d = from256(as256(s));
-    BOOST_CHECK_EQUAL(s, d);
-
-    /// Now with 32 bytes
-    s = "monkeys monkeys monkeys monkeys ";
-    d = from256(as256(s));
-    BOOST_CHECK_EQUAL(s, d);
-
-    /// Check exception for oversize
-    s = "monkeys monkeys monkeys monkeys m";
-    BOOST_CHECK_THROW(as256(s), dev::ValueTooLarge);
-}
-
 BOOST_AUTO_TEST_CASE(NativeVMMultiWord)
 {
     State s(State::Null);
@@ -97,7 +76,8 @@ BOOST_AUTO_TEST_CASE(NativeVMMultiWordLarge)
     BOOST_CHECK_EQUAL(8190, ns.getData(k, after));
     BOOST_CHECK_EQUAL(d, after);
     d = std::string(8191, 'b');
-    BOOST_CHECK_THROW(ns.putData(k, d), dev::ValueTooLarge);
+    BOOST_CHECK_THROW(ns.putData(k, d), RevertInstruction);
+    cout << "OK" << endl;
 }
 
 BOOST_AUTO_TEST_CASE(KomodoNetworkGenesisRootAccountState)
@@ -107,6 +87,37 @@ BOOST_AUTO_TEST_CASE(KomodoNetworkGenesisRootAccountState)
     state.populateFrom(params.genesisState);
     DummyVM ns(RootContractAddress, state);
     //BOOST_CHECK_EQUAL(ns.get(0, "hello"), "world");
+    //TODO
 }
 
+
+BOOST_FIXTURE_TEST_SUITE(Billing, NativeVMTestFixture)
+
+class TestNativeVM : public NativeVM
+{
+    using NativeVM::NativeVM;
+    void call(NativeCall& _call) override {
+        (void)_call;
+    }
+};
+
+BOOST_AUTO_TEST_CASE(NativeVMBill)
+{
+    bytes code;
+    OnOpFunc onOp;
+    h256 codeHash;
+    EnvInfo info(m_genesisBlock.info(), m_bc->lastBlockHashes(), 0);
+    ExtVM ext(m_genesisBlock.mutableState(), info, *m_bc->sealEngine(),
+            addr2, addr, addr, u256(0), u256(10), &code, &code, codeHash, 0, false, true);
+    u256 gas(VMSchedule::sloadGas * 3);
+    TestNativeVM vm(gas, ext, onOp);
+    auto get = [&](u256 k) { return vm.getWord(Key(k)); };
+    get(u256());
+    get(u256());
+    get(u256());
+    BOOST_CHECK_THROW(get(u256()), OutOfGas);
+}
+
+
+BOOST_AUTO_TEST_SUITE_END()
 BOOST_AUTO_TEST_SUITE_END()
