@@ -1,4 +1,5 @@
 #include <regex>
+#include <libwingvm/Asset.h>
 #include <libwingvm/Native.h>
 #include "../GenesisInfo.h"
 
@@ -18,8 +19,8 @@ R"E(
 		"EIP150ForkBlock": "0x00",
 		"EIP158ForkBlock": "0x00",
 		"byzantiumForkBlock": "0x00",
-		"networkID" : "0x10",
-		"chainID": "0x10",
+		"networkID" : "0x95",
+		"chainID": "0x95",
 		"maximumExtraDataSize": "0x20",
 		"tieBreakingGas": false,
 		"minGasLimit": "0x1388",
@@ -48,13 +49,11 @@ R"E(
 }
 )E";
 
-    h160 growTokenKey("0xee00000000000000000000000000000000000000");
-    
     State state(State::Null);
-    wing::NativeStorage ns(wing::RootContractAddress, state);
-    ns.putData(wing::keyOn(0, "hello"), std::string() + "world");
-    ns.putData(wing::keyOn(1, growTokenKey), std::string() + "asset");
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), ns.toJsonMap());
+    NativeManager root(state);
+    root.setNativeContract(wing::AssetContractAddress, "asset");
+
+    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), root.vm().toJsonMap());
     out = std::regex_replace(out, std::regex("ROOT_CONTRACT_ADDRESS"), toHexPrefixed(wing::RootContractAddress));
     c_genesisInfoKomodoNetwork = out;
 }

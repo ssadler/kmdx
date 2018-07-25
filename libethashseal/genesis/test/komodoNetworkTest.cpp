@@ -45,18 +45,42 @@ R"E(
         "ROOT_CONTRACT_ADDRESS": {
             "storage": ROOT_CONTRACT_STORAGE
         },
-        "77952ce83ca3cad9f7adcfabeda85bd2f1f52008": {
-            "balance": "2000000000000000000000"
+        "MINERS_TOKEN_ADDRESS": {
+            "code": "PROXY_TO_ASSET",
+            "storage": MINERS_CONTRACT_STORAGE
+        },
+        "TEST_ADDRESS": {
+            "balance": "2000000000000000000000000"
         }
     }
 }
 )E";
 
+    Secret sk(fromHex("0x3131313131313131313131313131313131313131313131313131313131313131"));
+    //  gdb --args kmdx/kmdx --test --config testChain.json -v4 --import-session-secret 0x3131313131313131313131313131313131313131313131313131313131313131
+
+    Address testAddress("77952ce83ca3cad9f7adcfabeda85bd2f1f52008");
+    out = std::regex_replace(out, std::regex("TEST_ADDRESS"), toHexPrefixed(testAddress));
+
+    bytes assetProxyCode = wing::delegateCallProxyCode(wing::AssetContractAddress);
+
+    // Init Miners's asset
+    {
+        State state(State::Null);
+        DummyVM vm(wing::MinersTokenAddress, state);
+        Asset asset(vm);
+        asset.init();
+        asset.erc20().setBalance(testAddress, 2 * u256(pow(10, 18)));
+        out = std::regex_replace(out, std::regex("PROXY_TO_ASSET"), toHexPrefixed(assetProxyCode));
+        out = std::regex_replace(out, std::regex("MINERS_TOKEN_ADDRESS"), toHexPrefixed(wing::MinersTokenAddress));
+        out = std::regex_replace(out, std::regex("MINERS_CONTRACT_STORAGE"), vm.toJsonMap());
+    }
+
     State state(State::Null);
-    wing::NativeStorage ns(wing::RootContractAddress, state);
-    ns.putData(wing::keyOn(0, "hello"), std::string() + "world");
-    ns.putData(wing::keyOn(PartitionNativeContracts, wing::AssetContractAddress), std::string() + "asset");
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), ns.toJsonMap());
+    NativeManager root(state);
+    root.setNativeContract(wing::AssetContractAddress, "asset");
+
+    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), root.vm().toJsonMap());
     out = std::regex_replace(out, std::regex("ROOT_CONTRACT_ADDRESS"), toHexPrefixed(wing::RootContractAddress));
     c_genesisInfoKomodoNetworkTest = out;
 }

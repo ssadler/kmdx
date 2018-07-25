@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE(KeyManagerConstructor)
 {
 	KeyManager km;
 	BOOST_CHECK_EQUAL(km.keysFile(), km.defaultPath());
-	BOOST_CHECK_EQUAL(km.defaultPath(), getDataDir("ethereum") / fs::path("keys.info"));
+	BOOST_CHECK_EQUAL(km.defaultPath(), getDataDir("kmdx") / fs::path("keys.info"));
 	BOOST_CHECK(km.store().keys() == SecretStore(SecretStore::defaultPath()).keys());
 	for (auto a: km.accounts())
 		km.kill(a);
