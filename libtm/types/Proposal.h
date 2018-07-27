@@ -7,10 +7,14 @@
 
 
 #include <ctime>
+#include <cstdint>
 #include "HexBytes.h"
 #include "Signature.h"
 #include "Block.h"
 #include "RoundState.h"
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+
+
 
 // Proposal defines a block proposal for the consensus.
 // It refers to the block only by its PartSetHeader.
@@ -19,17 +23,26 @@
 // a so-called Proof-of-Lock (POL) roundNumber, as noted in the POLRound and POLBlockID.
 class Proposal {
     int64_t height;
-    RoundState roundState;
-    time_t Timestamp;
-    Block block;//should be type blockPartsHeader;
+    int roundNumber;
+    boost::posix_time::ptime timestamp;
+    shared_ptr<Block> block;//should be type blockPartsHeader;
     int polRound; // -1 if null.
-    HexBytes polBlockID; // zero if null.
+    BlockID polBlockID; // zero if null.
     Signature signature;
 
 
 public:
-    Proposal(int64_t height, const RoundState &roundState, time_t Timestamp, const Block &block, int polRound,
-             const HexBytes &polBlockID, const Signature &signature);
+
+// If there is no POLRound, polRound should be -1.
+    Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID) : polBlockID(
+            _polBlockID.isEmpty() ? BlockID(-1) : _polBlockID) {
+        height = _height;
+        roundNumber = _round;
+        timestamp = boost::posix_time::second_clock::local_time();
+        polRound = _polRound;
+        polBlockID = _polBlockID;
+
+    }
 
     const HexBytes &signBytes(const string blockChainId) const;
 
@@ -37,19 +50,12 @@ public:
 
     const RoundState &getRoundState() const;
 
-    time_t getTimestamp() const;
-
-    const Block &getBlock() const;
-
     int getPolRound() const;
-
-    const HexBytes &getPolBlockID() const;
 
     const Signature &getSignature() const;
 
-    const string toString() const;
+    string toString() const;
 
-    bool isEmpty();
 };
 
 

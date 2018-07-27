@@ -7,16 +7,18 @@
 
 
 #include <string>
+#include <libdevcore/Log.h>
 
+std::string channelTm = "overlaydb";
 class Logger {
 public:
 
 };
 
-void logInfo(std::string, ...);
+void logInfo(std::string, std::string &...);
 
-void logError(std::string, ...);
+void logError(std::string &...);
 
-void logDebug(std::string, ...);
+void logDebug(std::string &...);
 
 #endif //TM_LIGHT_LOGGER_H

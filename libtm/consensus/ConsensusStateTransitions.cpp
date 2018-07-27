@@ -7,19 +7,19 @@ void ConsensusState::enterCommit(int64_t height, int commitRound) {
 //logger = logWith("height", height, "commitRound", commitRound);
 
     if (roundState.height != height || RoundStepCommit <= roundState.stepType) {
-        logDebug("enterCommit(%v/%v): Invalid args. Current step: %v/%v/%v", height, commitRound, roundState.height,
-                 roundState.roundNumber, roundState.stepType);
+        /*    //clog(dev::VerbosityDebug, channelTm) << "enterCommit(%v/%v): Invalid args. Current step: %v/%v/%v", height, commitRound, roundState.height,
+                     roundState.roundNumber, roundState.stepType);*/
         return;
     }
-    logInfo("enterCommit(%v/%v). Current: %v/%v/%v", height, commitRound, roundState.height, roundState.roundNumber,
-            roundState.stepType);
+    //clog(dev::VerbosityInfo, channelTm) << "enterCommit(%v/%v). Current: %v/%v/%v" << height << commitRound
+    // << roundState.height << roundState.roundNumber << roundState.stepType;
 
     // Done enterCommit:
     // keep roundState.roundNumber the same, commitRound points to the right Precommits set.
     auto guard = finally([&]() {
         roundState.updateRoundStep(roundState.roundNumber, RoundStepCommit);
         roundState.commitRoundNumber = commitRound;
-        roundState.commitTime = Time();
+        roundState.commitTime = boost::posix_time::second_clock::local_time();
         newStep();
 
         // Maybe finalize immediately.
@@ -35,7 +35,7 @@ void ConsensusState::enterCommit(int64_t height, int commitRound) {
     // Move them over to ProposalBlock if they match the commit hash ,
     // otherwise they'll be cleared in updateToState.
     /*if (LockedBlock.HashesTo(blockID.Hash) ) {
-        logInfo("Commit is for locked block. Set ProposalBlock=LockedBlock", "blockHash", blockID.Hash);
+        //clog(dev::VerbosityInfo, channelTm) << "Commit is for locked block. Set ProposalBlock=LockedBlock", "blockHash", blockID.Hash);
         ProposalBlock = LockedBlock
         ProposalBlockParts = LockedBlockParts
     }*/
@@ -43,7 +43,7 @@ void ConsensusState::enterCommit(int64_t height, int commitRound) {
     // If we don't have the block being committed, set up to get it .
     if (!roundState.proposalBlock->hashesTo(blockID.getHash()) ) {
         if (!ProposalBlockParts.HasHeader(blockID.PartsHeader) ) {
-            logInfo("Commit is for a block we don't know about. Set ProposalBlock=nil", "proposal", ProposalBlock.Hash(), "commit", blockID.Hash);
+            //clog(dev::VerbosityInfo, channelTm) << "Commit is for a block we don't know about. Set ProposalBlock=nil", "proposal", ProposalBlock.Hash(), "commit", blockID.Hash);
             // We're getting the wrong block.
             // Set up ProposalBlockParts and keep waiting.
             ProposalBlock = nil
@@ -60,8 +60,9 @@ void ConsensusState::enterPrevote(int64_t _height, int _roundNumber) {
         || (roundState.roundNumber == _roundNumber
             && RoundStepPrevote <= roundState.stepType)
             ) {
-        logDebug("enterPrevote(%v/%v): Invalid args. Current step: %v/%v/%v", _height, _roundNumber, roundState.height,
-                 roundState.roundNumber, roundState.stepType);//TODO stepTypeString
+        /*//clog(dev::VerbosityDebug, channelTm) << "enterPrevote(%v/%v): Invalid args. Current step: %v/%v/%v" << _height
+                                             << _roundNumber << roundState.height
+                                             << roundState.roundNumber << roundState.stepType;//TODO stepTypeString*/
         return;
     }
     auto guard = finally([&]() {
@@ -76,10 +77,11 @@ void ConsensusState::enterPrevote(int64_t _height, int _roundNumber) {
         // TODO: catchup event?
     }
 
-    logInfo("enterPrevote(%v/%v). Current: %v/%v/%v", _height, _roundNumber, roundState.height,
-            roundState.roundNumber,
-            roundState.stepType);//TODO stepTypeString
-
+    /* //clog(dev::VerbosityInfo, channelTm)
+         << "enterPrevote(%v/%v). Current: %v/%v/%v" << _height << _roundNumber << roundState.height <<
+                 roundState.roundNumber <<
+                 roundState.stepType;//TODO stepTypeString
+ */
     // Sign and broadcast vote as necessary
     doPrevote(_height, _roundNumber);
 
@@ -90,8 +92,9 @@ void ConsensusState::enterPrevote(int64_t _height, int _roundNumber) {
 void ConsensusState::enterPrevoteWait(int64_t _height, int _roundNumber) {
     if (roundState.height != _height || _roundNumber < roundState.roundNumber ||
         (roundState.roundNumber == _roundNumber && RoundStepPrevoteWait <= roundState.stepType)) {
-        logDebug("enterPrevoteWait(%v/%v): Invalid args. Current step: %v/%v/%v", _height, _roundNumber,
-                 roundState.height, roundState.roundNumber, roundState.stepType);
+        /*clog(dev::VerbosityDebug, channelTm)
+            << "enterPrevoteWait(%v/%v): Invalid args. Current step: %v/%v/%v"<< _height<< _roundNumber<<
+                    roundState.height<< roundState.roundNumber<< roundState.stepType;*/
         return;
     }
     auto guard = finally([&]() {
@@ -105,11 +108,12 @@ void ConsensusState::enterPrevoteWait(int64_t _height, int _roundNumber) {
                 "), but Prevotes does not have any +2/3 votes");
     }
 
-    logInfo("enterPrevoteWait(%v/%v). Current: %v/%v/%v", _height, _roundNumber, roundState.height,
-            roundState.roundNumber, roundState.stepType);
-
+    /*//clog(dev::VerbosityInfo, channelTm)
+        << "enterPrevoteWait(%v/%v). Current: %v/%v/%v"<< _height<< _roundNumber<< roundState.height<<
+                roundState.roundNumber<< roundState.stepType;
+*/
     // Wait for some more prevotes; enterPrecommit
-    scheduleTimeout(consensusConfig.prevote(_roundNumber), _height, _roundNumber, RoundStepPrevoteWait);
+    scheduleTimeout(consensusConfig.getTimeoutPrevote(_roundNumber), _height, _roundNumber, RoundStepPrevoteWait);
 }
 
 void ConsensusState::enterNewRound(int64_t height, int round) {
@@ -117,18 +121,21 @@ void ConsensusState::enterNewRound(int64_t height, int round) {
 
     if (roundState.height != height || round < roundState.roundNumber ||
         (roundState.roundNumber == round && roundState.stepType != RoundStepNewHeight)) {
-        logDebug("enterNewRound(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, roundState.height,
-                 roundState.roundNumber, roundState.stepType);
+        /* //clog(dev::VerbosityDebug, channelTm)
+             << "enterNewRound(%v/%v): Invalid args. Current step: %v/%v/%v"<< height<< round<< roundState.height<<
+                     roundState.roundNumber<< roundState.stepType;*/
         return;
     }
 
-    if (roundState.startTime.after(Time())) {
-        logInfo("Need to set a buffer and log message here for sanity.", "startTime", roundState.startTime,
-                "now"); //TODO now to string
+    if (roundState.startTime > boost::posix_time::second_clock::local_time()) {
+        /*//clog(dev::VerbosityInfo, channelTm)
+            << "Need to set a buffer and log message here for sanity."<< "startTime"<< roundState.startTime<<
+                    "now";*/
     }
 
-    logInfo("enterNewRound(%v/%v). Current: %v/%v/%v", height, round, roundState.height, roundState.roundNumber,
-            roundState.stepType);
+    /*   //clog(dev::VerbosityInfo, channelTm)
+           << "enterNewRound(%v/%v). Current: %v/%v/%v"<< height<< round<< roundState.height<< roundState.roundNumber<<
+                   roundState.stepType;*/
 
     // Increment validators if necessary
     ValidatorSet validators = roundState.validators;
@@ -147,7 +154,7 @@ void ConsensusState::enterNewRound(int64_t height, int round) {
         // and meanwhile we might have received a proposal
         // for round 0.
     } else {
-        logInfo("Resetting Proposal info");
+        //clog(dev::VerbosityInfo, channelTm) << "Resetting Proposal info";
         clearProposal();
         //setProposalBlock(nullptr);
         //setProposalBlockParts(nullptr);
@@ -170,6 +177,51 @@ void ConsensusState::enterNewRound(int64_t height, int round) {
     }*/
 }
 
+void ConsensusState::enterPropose(int64_t height, int round) {
+    //    logger := roundState.logWith("height", height, "round", round);
+
+    if (roundState.height != height || round < roundState.roundNumber ||
+        (roundState.roundNumber == round && RoundStepPropose <= roundState.stepType)) {
+        /* //clog(dev::VerbosityDebug, channelTm)
+             << "enterPropose(%v/%v): Invalid args. Current step: %v/%v/%v"<< height<< round<< roundState.height<< roundState.roundNumber<< roundState.stepType;*/
+        return;
+    }
+    /*//clog(dev::VerbosityInfo, channelTm)
+        << "enterPropose(%v/%v). Current: %v/%v/%v"<< height<< round<< roundState.height<< roundState.roundNumber<< roundState.stepType;*/
+
+    auto guard = finally([&]() {
+        // Done enterPropose:
+        roundState.updateRoundStep(round, RoundStepPropose);
+        newStep();
+
+        // If (we have the whole proposal + POL, then goto Prevote now.
+        // else, we'll enterPrevote when the rest of the proposal is received (in AddProposalBlockPart),
+        // or else after timeoutPropose
+        if (isProposalComplete()) {
+            enterPrevote(height, roundState.roundNumber);
+        }
+    });
+
+// If we don't get the proposal and all block parts quick enough, enterPrevote
+    scheduleTimeout(consensusConfig.getTimeoutPropose(round), height, round, RoundStepPropose);
+
+// Nothing more to do if we're not a validator
+    if (!isValidator()) {
+        //clog(dev::VerbosityDebug, channelTm) << "This node is not a validator";
+        return;
+    }
+
+
+    //clog(dev::VerbosityDebug, channelTm) << "This node is a validator";
+
+    if (isProposer()) {
+//TODO //clog(dev::VerbosityInfo, channelTm) << "enterPropose: Our turn to propose", "proposer", roundState.validators.getProposer().getAddress(), "privValidator", privValidator);
+        decideProposal(height, round);
+    } else {
+//TODO //clog(dev::VerbosityInfo, channelTm) << "enterPropose: Not our turn to propose", "proposer", roundState.validators.GetProposer().Address, "privValidator", roundState.privValidator);
+    }
+}
+
 /** Enter: `timeoutPrevote` after any +2/3 prevotes.
 * Enter: +2/3 precomits for block or nil.
 * Enter: any +2/3 precommits for next round.
@@ -179,13 +231,15 @@ void ConsensusState::enterNewRound(int64_t height, int round) {
 void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
     if (roundState.height != height || _roundNumber < roundState.roundNumber ||
         (roundState.roundNumber == _roundNumber && RoundStepPrecommit <= roundState.stepType)) {
-        logDebug("enterPrecommit(%v/%v): Invalid args. Current step: %v/%v/%v", height, _roundNumber, roundState.height,
-                 roundState.roundNumber, roundState.stepType);
+        /*//clog(dev::VerbosityDebug, channelTm)
+            << "enterPrecommit(%v/%v): Invalid args. Current step: %v/%v/%v"<< height<< _roundNumber<< roundState.height<<
+                    roundState.roundNumber<< roundState.stepType;*/
         return;
     }
 
-    logInfo("enterPrecommit(%v/%v). Current: %v/%v/%v", height, _roundNumber, roundState.height, roundState.roundNumber,
-            roundState.stepType);
+    /*//clog(dev::VerbosityInfo, channelTm)
+        << "enterPrecommit(%v/%v). Current: %v/%v/%v"<< height<< _roundNumber<< roundState.height<< roundState.roundNumber<<
+                roundState.stepType;*/
 
     auto guard = finally([&]() {
         roundState.updateRoundStep(roundState.roundNumber, roundState.stepType);
@@ -199,9 +253,11 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
     // If we don't have a polka, we must precommit nil.
     if (!ok) {
         if (roundState.lockedBlock != nullptr) {
-            logInfo("enterPrecommit: No +2/3 prevotes during enterPrecommit while we're locked. Precommitting nil");
+            /* //clog(dev::VerbosityInfo, channelTm)
+                 << "enterPrecommit: No +2/3 prevotes during enterPrecommit while we're locked. Precommitting nil";*/
         } else {
-            logInfo("enterPrecommit: No +2/3 prevotes during enterPrecommit. Precommitting nil.");
+            /*//clog(dev::VerbosityInfo, channelTm)
+                << "enterPrecommit: No +2/3 prevotes during enterPrecommit. Precommitting nil.";*/
         }
         signAddVote(VoteTypePrecommit);
         return;
@@ -220,9 +276,9 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
     // +2/3 prevoted nil. Unlock and precommit nil.
     if (blockID.isEmpty()) {
         if (roundState.lockedBlock == nullptr) {
-            logInfo("enterPrecommit: +2/3 prevoted for nil.");
+            //clog(dev::VerbosityInfo, channelTm) << "enterPrecommit: +2/3 prevoted for nil.";
         } else {
-            logInfo("enterPrecommit: +2/3 prevoted for nil. Unlocking");
+            //clog(dev::VerbosityInfo, channelTm) << "enterPrecommit: +2/3 prevoted for nil. Unlocking";
             roundState.setLockedRoundNumber(0);
             roundState.setLockedBlock(nullptr);
             //roundState.LockedBlockParts = NULL;
@@ -238,7 +294,8 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
 
     // If +2/3 prevoted for proposal block, stage and precommit it
     if (roundState.proposalBlock->hashesTo(blockID.getHash())) {
-        logInfo("enterPrecommit: +2/3 prevoted proposal block. Locking", "hash", blockID.getHash());
+        /*//clog(dev::VerbosityInfo, channelTm)
+            << "enterPrecommit: +2/3 prevoted proposal block. Locking"<< "hash"<< blockID.getHash();*/
         // Validate the block.
         //throws ExceptionConsensus
         //err :=

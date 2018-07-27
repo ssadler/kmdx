@@ -4,12 +4,15 @@
 
 #ifndef TM_LIGHT_CONSENSUSCONFIG_H
 #define TM_LIGHT_CONSENSUSCONFIG_H
-
+//TODO must make sure that BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG uses 64 bits, else make adjustments!
 #include <string>
 #include "../types/HexBytes.h"
-#include "../helpers/Time.h"
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+
+using namespace boost::posix_time;
 
 using namespace std;
+
 
 /** ConsensusConfig defines the confuguration for the Tendermint consensus service,
 * including timeouts and details about the WAL and the block structure.*/
@@ -37,24 +40,16 @@ private:
 
     // EmptyBlocks mode and possible interval between empty blocks in seconds
     bool createEmptyBlocks;
-    int createEmptyBlocksInterval;
+    int createEmptyBlocksInterval; //in seconds
 
     // Reactor sleep duration parameters are in milliseconds
     int peerGossipSleepDuration;
     int peerQueryMaj23SleepDuration;
 
-    chrono::duration<chrono::system_clock> peerGossipSleep();
-
-    chrono::duration<chrono::system_clock> peerQueryMaj23Sleep();
-
-    chrono::duration<chrono::system_clock> propose(int round);
-
-    chrono::duration<chrono::system_clock> emptyBlocksInterval();
 
 
 public:
     HexBytes hash();
-
 
     const string &getRootDir() const;
 
@@ -62,19 +57,13 @@ public:
 
     const string &getWalFile() const;
 
-    int getTimeoutPropose() const;
+    time_duration getTimeoutPropose(int roundNumber) const;
 
-    int getTimeoutProposeDelta() const;
+    time_duration getTimeoutPrevote(int roundNumber) const;
 
-    int getTimeoutPrevote() const;
+    time_duration getTimeoutPrecommit(int roundNumber) const;
 
-    int getTimeoutPrevoteDelta() const;
-
-    int getTimeoutPrecommit() const;
-
-    int getTimeoutPrecommitDelta() const;
-
-    int getTimeoutCommit() const;
+    time_duration getTimeoutCommit() const;
 
     bool isSkipTimeoutCommit() const;
 
@@ -90,13 +79,17 @@ public:
 
     int getPeerQueryMaj23SleepDuration() const;
 
-    chrono::duration<chrono::system_clock> prevote(int round);
+    bool isWaitForTxs() const;
 
-    chrono::duration<chrono::system_clock> precommit(int round);
+    time_duration getPeerGossipSleepTime() const;
 
-    bool waitForTxs();
+    time_duration getPeerQueryMaj23SleepTime() const;
 
-    chrono::duration<chrono::system_clock> commit(Time time);
+    time_duration propose(int round) const;
+
+    time_duration getEmptyBlocksIntervalTime() const;
+
+
 };
 
 

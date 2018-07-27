@@ -15,6 +15,8 @@ public:
     void fireEvent(Event, Vote); //TODO where is this ?
     void fireEvent(Event, RoundState &);
 
+    void start();
+
 };
 
 

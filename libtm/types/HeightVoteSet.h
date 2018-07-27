@@ -18,6 +18,7 @@ public :
 
     shared_ptr<VoteSet> getPrecommits(int i);
 
+    /*returns int = polRound & sets blockID */
     int polInfo(BlockID &blockID);
 
     int64_t addVote(Vote vote, HexBytes bytes);

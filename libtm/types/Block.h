@@ -6,9 +6,12 @@
 #include <vector>
 #include "Commit.h"
 #include "HexBytes.h"
+#include <boost/date_time/posix_time/posix_time_types.hpp>
 
+using namespace boost::posix_time;
 using namespace std;
 
+#include <libdevcore/RLP.h>
 class State;
 
 class Block {
@@ -49,11 +52,12 @@ public:
 
     HexBytes getHash();
 
+
 private:
 
     string chainID;
     int64_t height;
-    time_t time;
+    ptime time;
     int64_t numTxs;
 
     Commit lastCommit;

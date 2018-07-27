@@ -58,6 +58,8 @@ public:
     ValidatorSet copy();
 
     void incrementAccum(int i);
+
+    bool hasAddress(const HexBytes bytes);
 };
 
 

@@ -66,23 +66,4 @@ Errorf makeGenesisDocFromFile(string genDocFile, string& genDoc) {
     }
     return null;
 }
-
-// MakeGenesisState creates state from types.GenesisDoc.
-Errorf makeGenesisState(GenesisDoc genDoc, State& state) {
-    Errorf err = genDoc.ValidateAndComplete();
-    if (err != null) {
-        state = State();
-        return Errorf("Error in genesis file: %v", err);
-    }
-
-    // Make validators slice
-    validators = vector<types.Validator*>;
-    for(int i = 0; i< genDoc.getValidators().size(); i++ ){
-        Validator val = genDoc.getValidators().get(i);
-        validators.add(Validator(val.getAddress(), val.getPubKey(), val.getPower()));
-    }
-
-    state = State( genDoc.ChainID, 0, types.BlockID{}, genDoc.GenesisTime, types.NewValidatorSet(validators), types.NewValidatorSet(null), 1, genDoc.ConsensusParams, 1, genDoc.AppHash );	)
-    return null;
-}
 */

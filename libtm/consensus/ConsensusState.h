@@ -8,6 +8,9 @@
 #ifndef CONSENSUSSTATE_H_
 #define CONSENSUSSTATE_H_
 
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+
+using namespace boost::posix_time;
 #include <pthread.h>
 #include <cstdlib>
 #include "../state/State.h"
@@ -20,7 +23,12 @@
 #include "../types/Error.h"
 #include "../types/Vote.h"
 #include "../types/PrivValidator.h"
-#include "../helpers/Time.h"
+#include "../types/TimeoutTicker.h"
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "../helpers/Bridge.h"
+#include "../helpers/Finally.h"
+
+using namespace boost::posix_time;
 
 
 class ConsensusState {
@@ -29,7 +37,7 @@ class ConsensusState {
     //TODO communication BaseService baseService;
     ConsensusConfig consensusConfig;
 
-    PrivValidator privValidator;
+    shared_ptr<PrivValidator> privValidator;
 
     //internalState
     mutex mtx;
@@ -38,7 +46,7 @@ class ConsensusState {
     RoundStepType stepType;
     pthread_t peerMsgQueue;
     pthread_t internalMsgQueue;
-    time_t timeoutTicker;
+    TimeoutTicker timeoutTicker;
 
     EventBus *eventBus;
 
@@ -55,11 +63,12 @@ class ConsensusState {
 
     void setProposal(Proposal _proposal); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
-    void handleMsg(const ProposalMessage msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
+    void
+    handleProposalMsg(const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
-    void handleMsg(const VoteMessage msg);
+    void handleVoteMsg(const VoteMessage &msg);
 
-    void handleMsg(const BlockMessage msg);
+    void handleBlockMsg(const BlockMessage &msg);
 
     void tryAddVote(Vote vote, HexBytes peerID);
 
@@ -68,6 +77,7 @@ class ConsensusState {
 public:
     void updateToState(State state);
 
+    void enterPropose(int64_t height, int round);
     void reconstructLastCommit(State state);
 
     ConsensusState(ConsensusConfig config, State state);
@@ -96,7 +106,7 @@ public:
 
     void doPrevote(int64_t height, int _roundNumber);
 
-    void scheduleTimeout(chrono::duration<std::chrono::system_clock> prevote, int64_t height, int number,
+    void scheduleTimeout(time_duration prevote, int64_t height, int number,
                          RoundStepType type);
 
     void enterCommit(int64_t height, int number);
@@ -115,9 +125,29 @@ public:
 
     void scheduleRound0(RoundState roundState);
 
+    void receiveRoutine();
+
+    void receiveRoutine(dev::RLP &rlp);
+
+    void recover();
+
     Commit loadSeenCommit(int64_t height);
 
     void clearProposal();
+
+    bool isValidator();
+
+    bool isProposer();
+
+    void onStart();
+
+    void catchupReplay(int64_t height);
+
+    void decideProposal(int64_t height, int round);
+
+    RoundState getRoundState_copy();
+
+    void sendInternalMessage(Message);
 };
 
 #endif /* CONSENSUSSTATE_H_ */

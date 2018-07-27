@@ -4,16 +4,17 @@
  * Created on: Jul 9, 2018
  * Author: Maru
  */
+#include <boost/exception_ptr.hpp>
+#include <boost/thread.hpp>
 #include "ConsensusState.h"
+
 
 /* ConsensusState handles execution of the main algorithm.
  * It processes votes and proposals, and upon reaching agreement,
  * commits blocks to the chain and executes them against the application.
  * The internal state machine receives input from peers, the internal validator, and from a timer.*/
-ConsensusState::ConsensusState(ConsensusConfig _config) : eventSwitch(EventSwitch()) {
-    consensusConfig = _config;//TODO
-    // timeoutTicker = TODO newTimeoutTicker();
-    //doWALCatchup = true;
+ConsensusState::ConsensusState(ConsensusConfig _config) : consensusConfig(_config), timeoutTicker(), eventSwitch() {
+    doWALCatchup = true;
     //TODO wal = NULL; //TODO nilWAL{};
 }
 
@@ -21,7 +22,7 @@ ConsensusState::ConsensusState(ConsensusConfig _config, State _state) : Consensu
     updateToState(_state);
     // Don't call scheduleRound0 yet We do that upon Start().
     reconstructLastCommit(_state);
-    //cs.setBaseService(newBaseService(nil, "ConsensusState", cs));
+    //TODO cs.setBaseService(newBaseService(nil, "ConsensusState", cs));
 }
 
 
@@ -57,9 +58,8 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
                                                                       _proposal.getSignature()))) {
         throw ErrorInvalidProposalSignature();
     }
-
-    //TODO cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
-    logInfo("Received proposal", _proposal.toString());
+    //clog(dev::VerbosityInfo, channelTm) << "Received proposal: " << _proposal.toString();
+    //cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
 }
 
 /* Updates ConsensusState and increments height to match that of state.
@@ -83,15 +83,14 @@ void ConsensusState::updateToState(State _state) {
     // signal the new round step, because other services (eg. mempool)
     // depend on having an up-to-date peer state!
     if (!this->state.isEmpty() && (_state.getLastBlockHeight() <= this->state.getLastBlockHeight())) {
-        logInfo("Ignoring updateToState()", "newHeight", _state.getLastBlockHeight() + 1, "oldHeight",
-                this->state.getLastBlockHeight() + 1);
+        //clog(dev::VerbosityInfo, channelTm) << "Ignoring updateToState()" << "newHeight" << _state.getLastBlockHeight() + 1 << "oldHeight" << this->state.getLastBlockHeight() + 1;
         newStep();
         return;
     }
 
     // Reset fields based on state.
     ValidatorSet validators = _state.getValidators();
-    shared_ptr<VoteSet> lastPrecommits; //FIXME
+    shared_ptr<VoteSet> lastPrecommits;
     if (roundState.commitRoundNumber > -1 && roundState.votes.isEmpty()) {
         if (!roundState.votes.getPrecommits(roundState.commitRoundNumber).get()->hasTwoThirdMajority()) {
             throw Panic("updateToState(state) called but last Precommit round didn't have +2/3");
@@ -107,10 +106,10 @@ void ConsensusState::updateToState(State _state) {
     // to be gathered for the first block.
     // And alternative solution that relies on clocks:
     //  roundState.startTime = _state.lastBlockTime.add(timeoutCommit)
-    auto t = roundState.commitTime.isZero() ?
-             consensusConfig.commit(Time()) :
-             consensusConfig.commit(roundState.commitTime);
-    roundState.startTime = Time(t);
+    auto t = roundState.commitTime.is_not_a_date_time() ?
+             boost::posix_time::second_clock::local_time() :
+             roundState.commitTime;
+    roundState.startTime = t + consensusConfig.getTimeoutCommit();
 
     roundState.validators = validators;
     roundState.proposal = nullptr;
@@ -144,10 +143,10 @@ void ConsensusState::reconstructLastCommit(State state) {
     VoteSet lastPrecommits = VoteSet(state.getChainID(), state.getLastBlockHeight(), seenCommit.round(),
                                      VoteTypePrecommit, state.getLastValidators());
     for (uint i = 0; i < seenCommit.getPrecommits().size(); ++i) {
-        Vote precommit = *seenCommit.getPrecommits()[i].get();
-        //if(precommit == NULL ) continue ;;
+        shared_ptr<Vote> precommit = seenCommit.getPrecommits()[i];
+        if (precommit == nullptr) continue;
         try {
-            lastPrecommits.addVote(precommit);
+            lastPrecommits.addVote(*precommit.get());
         } catch (Panic &p) {
             throw PanicCrisis("Failed to reconstruct LastCommit: %v", p);
         }
@@ -161,9 +160,8 @@ void ConsensusState::reconstructLastCommit(State state) {
 /** Returns true if the proposal block is complete &&
 * (if POLRound was proposed, we have +2/3 prevotes from there). */
 bool ConsensusState::isProposalComplete() {
-    if (roundState.proposal->isEmpty()
-        //TODO || proposalBlock == NULL
-            )
+    if (//roundState == NULL ||
+            roundState.proposalBlock == nullptr)
         return false;
     // we have the proposal. if there's a POLRound,
     // make sure we have the prevotes from it too
@@ -173,7 +171,64 @@ bool ConsensusState::isProposalComplete() {
     return roundState.votes.getPrevotes(proposal->getPolRound()).hasTwoThirdMajority();
 }
 
+// OnStart implements cmn.Service.
+// It loads the latest state via the WAL, and starts the timeout and receive routines.
+void ConsensusState::onStart() {
+    eventSwitch.start();
 
+/*    // we may set the WAL in testing before calling Start,
+    // so only OpenWAL if its still the nilWAL
+    if _, ok := cs.wal.(nilWAL); ok {
+        walFile := cs.config.WalFile()
+        wal, err := cs.OpenWAL(walFile)
+        if err != nil {
+            cs.Logger.Error("Error loading ConsensusState wal", "err", err.Error())
+            return err
+        }
+        cs.wal = wal
+    }*/
+
+    // we need the timeoutRoutine for replay so
+    // we don't block on the tick chan.
+    // NOTE: we will get a build up of garbage go routines
+    // firing on the tockChan until the receiveRoutine is started
+    // to deal with them (by that point, at most one will be valid)
+    timeoutTicker.start();
+
+    // we may have lost some votes if the process crashed
+    // reload from consensus log to catchup
+    if (doWALCatchup) {
+        try { catchupReplay(roundState.height); } catch (Panic p) {
+            //TODO log {//clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway", "err", p);
+            // NOTE: if we ever do return an error here,
+            // make sure to stop the timeoutTicker
+        }
+
+    }
+
+    // now start the receiveRoutine
+    boost::thread::attributes attrs;
+//attrs.set_stack_size((c_depthLimit - c_offloadPoint) * c_singleExecutionStackSize);
+
+    boost::exception_ptr exception;
+    boost::thread{attrs, [&] {
+        try {
+            receiveRoutine(); //originally 0 -> run forever
+        }
+        catch (...) {
+            exception = boost::current_exception(); // Catch all exceptions to be rethrown in parent thread.
+        }
+    }
+    }.join();
+
+    if (exception)
+        boost::rethrow_exception(exception);
+
+    // schedule the first round!
+    // use GetRoundState so we don't race the receiveRoutine for access
+    scheduleRound0(getRoundState_copy());
+
+}
 
 
 

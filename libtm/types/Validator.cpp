@@ -13,6 +13,9 @@ Validator::Validator(Pubkey _pubKey, int64_t _votingPower) {
 }
 
 
-
-
-
+bool ValidatorSet::hasAddress(const HexBytes bytes) {
+    for (Validator v : validators) {
+        if (v.getAddress() == bytes) return true;
+    }
+    return false;
+}

@@ -10,7 +10,9 @@
 #include "VoteSet.h"
 #include "HeightVoteSet.h"
 #include "event/Event.h"
-#include "../helpers/Time.h"
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+
+using namespace boost::posix_time;
 
 
 class Proposal;
@@ -36,8 +38,8 @@ class RoundState {
     int64_t height; // Height we are working on
     int roundNumber;
     RoundStepType stepType;
-    Time startTime;
-    Time commitTime; // Subjective time when +2/3 precommits for Block at Round were found
+    ptime startTime;
+    ptime commitTime; // Subjective time when +2/3 precommits for Block at Round were found
     ValidatorSet validators;
     shared_ptr<Proposal> proposal;
     shared_ptr<Block> proposalBlock;

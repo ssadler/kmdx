@@ -1,6 +1,5 @@
-#include <err.h>
 #include "ConsensusState.h"
-#include "../helpers/Finally.h"
+#include "../helpers/Bridge.h"
 
 
 void ConsensusState::tryAddVote(Vote vote, HexBytes peerID) {
@@ -13,15 +12,15 @@ void ConsensusState::tryAddVote(Vote vote, HexBytes peerID) {
         // If it's otherwise invalid, punish peer.
         throw heightMismatch;
     } catch (ErrVoteConflictingVotes &conflictingVotes) {
-        if (vote.getValidatorAddress() == privValidator.getAddress()) {
-            logError("Found conflicting vote from ourselves. Did you unsafe_reset a validator?", "height",
-                     vote.getHeight(), "roundNumber", vote.getRoundNumber(), "type", vote.getType());
+        if (vote.getValidatorAddress() == privValidator.get()->getAddress()) {
+            /*//clog(dev::VerbosityError, channelTm) << "Found conflicting vote from ourselves. Did you unsafe_reset a validator?"<< "height"<<
+                     vote.getHeight()<< "roundNumber"<< vote.getRoundNumber()<< "type", vote.getType();*/
             throw conflictingVotes;
         }
     } catch (Error &e) {
         // Probably an invalid signature / Bad peer.
         // Seems this can also err sometimes with "Unexpected stepType" - perhaps not from a bad peer ?
-        logError("Error attempting to add vote", "err", err);
+        //clog(dev::VerbosityError, channelTm) << "Error attempting to add vote"<< "err"<< err;
         throw ErrAddingVote(e.getDescription());
     }
 }
@@ -29,8 +28,8 @@ void ConsensusState::tryAddVote(Vote vote, HexBytes peerID) {
 //-----------------------------------------------------------------------------
 /** returns true if it was added */
 bool ConsensusState::addVote(Vote vote, HexBytes peerID) {
-    logDebug("addVote", "voteHeight", vote.getHeight(), "voteType", voteTypeToString(vote.getType()), "valIndex",
-             vote.getValidatorIndex(), "csHeight", roundState.height);
+    /*//clog(dev::VerbosityDebug, channelTm) << "addVote"<< "voteHeight"<< vote.getHeight()<< "voteType"<< voteTypeToString(vote.getType())<< "valIndex"<<
+             vote.getValidatorIndex()<< "csHeight"<< roundState.height;*/
     switch (roundState.height - vote.getHeight()) {
         case 1:
             if (stepType == RoundStepNewHeight && vote.getType() == VoteTypePrecommit) {
@@ -54,8 +53,8 @@ bool ConsensusState::addVote(Vote vote, HexBytes peerID) {
             // Height mismatch is ignored.
             // Not necessarily a bad peer, but not favourable behaviour.
             if (vote.getHeight() != roundState.height) {
-                logInfo("Vote ignored and not added", "voteHeight", vote.getHeight(), "csHeight", roundState.height,
-                        "err", err);
+                /* //clog(dev::VerbosityInfo, channelTm) << "Vote ignored and not added", "voteHeight"<< vote.getHeight()<< "csHeight"<< roundState.height<<
+                         "err"<< err;*/
                 throw ErrVoteHeightMismatch();
             }
     }
@@ -65,7 +64,7 @@ bool ConsensusState::addVote(Vote vote, HexBytes peerID) {
 
 void ConsensusState::handleStragglerCommit(const Vote &vote) {
     roundState.lastCommit->addVote(vote);
-    logInfo("Added to lastPrecommits: %v", roundState.lastCommit->toStringShort());
+    //clog(dev::VerbosityInfo, channelTm) << "Added to lastPrecommits: %v" << roundState.lastCommit->toStringShort();
     eventBus->publishEventVote(EventDataVote(vote));
     eventSwitch.fireEvent(EventVote(), vote);
 
@@ -88,7 +87,7 @@ void ConsensusState::addVoteForCurrentRound(Vote vote) {
 
         case VoteTypePrevote:
             prevotes = roundState.votes.getPrevotes(vote.getRoundNumber());
-            logInfo("Added to prevote", "vote", vote, "prevotes", prevotes.toStringShort());
+            //clog(dev::VerbosityInfo, channelTm) << "Added to prevote"<< "vote"<< vote<< "prevotes"<< prevotes.toStringShort();
 
             // If +2/3 prevotes for a block or nil for *any* roundNumber:
             if (prevotes.twoThirdMajority(blockId)) {
@@ -121,7 +120,7 @@ void ConsensusState::addVoteForCurrentRound(Vote vote) {
             break;
         case VoteTypePrecommit:
             precommits = *roundState.votes.getPrecommits(vote.getRoundNumber()).get();
-            logInfo("Added to precommit", "vote", vote, "precommits", precommits.toStringShort());
+            //clog(dev::VerbosityInfo, channelTm) << "Added to precommit"<< "vote"<< vote<< "precommits"<< precommits.toStringShort();
 
             if (precommits.twoThirdMajority(blockId)) {
                 if (blockId.getHash().getBites().empty()) {
@@ -158,8 +157,8 @@ void ConsensusState::tryUpdateValidRoundAndBlock(const Vote &vote, BlockID &bloc
         && vote.getRoundNumber() <= roundState.roundNumber
         && roundState.proposalBlock->hashesTo(blockId.getHash())
             ) {
-        logInfo("Updating ValidBlock because of POL.", "validRound", roundState.validRoundNumber, "POLRound",
-                vote.getRoundNumber());
+        //clog(dev::VerbosityInfo, channelTm) << "Updating ValidBlock because of POL."<<  "validRound"<<  roundState.validRoundNumber<<  "POLRound"<< 
+        vote.getRoundNumber();
         roundState.setValidRoundNumber(vote.getRoundNumber());
         roundState.setValidBlock(roundState.proposalBlock);
         //roundState.setValidBlockParts(roundState.proposalBlockParts);
@@ -178,8 +177,8 @@ void ConsensusState::unlockBlock(const Vote &vote,
         && vote.getRoundNumber() <= roundState.roundNumber
         && !roundState.lockedBlock->hashesTo(blockId.getHash())
             ) {
-        logInfo("Unlocking because of POL.", "lockedRound", roundState.lockedRoundNumber, "POLRound",
-                vote.getRoundNumber());
+        //clog(dev::VerbosityInfo, channelTm) << "Unlocking because of POL."<<  "lockedRound"<<  roundState.lockedRoundNumber<<  "POLRound"<< 
+        vote.getRoundNumber();
         roundState.setLockedRoundNumber(0);
         roundState.setLockedBlock(nullptr);
         //roundState.setLockedBlockParts(NULL);
@@ -194,14 +193,14 @@ void ConsensusState::doPrevote(int64_t height, int _roundNumber) {
     if (height == _roundNumber) return;
 // If a block is locked, prevote that.
     if (roundState.lockedBlock != nullptr) {
-        logInfo("enterPrevote: Block was locked");
+        //clog(dev::VerbosityInfo, channelTm) << "enterPrevote: Block was locked";
         //TODO header signAddVote(types.VoteTypePrevote, cs.LockedBlock.Hash(), cs.LockedBlockParts.Header())
         return;
     }
 
     // If ProposalBlock is nil, prevote nil.
     if (roundState.proposalBlock == nullptr) {
-        logInfo("enterPrevote: ProposalBlock is nil");
+        //clog(dev::VerbosityInfo, channelTm) << "enterPrevote: ProposalBlock is nil";
         signAddVote(VoteTypePrevote);
         return;
     }
@@ -211,7 +210,7 @@ void ConsensusState::doPrevote(int64_t height, int _roundNumber) {
         blockExec.validateBlock(state, roundState.proposalBlock);
     } catch (Exception e) {
                    // ProposalBlock is invalid, prevote nil.
-                logError("enterPrevote: ProposalBlock is invalid", "err", e);
+                //clog(dev::VerbosityError, channelTm) << "enterPrevote: ProposalBlock is invalid", "err", e);
                 //signAddVote(types.VoteTypePrevote, nil, types.PartSetHeader{})
                 return;
         }*/
@@ -219,7 +218,7 @@ void ConsensusState::doPrevote(int64_t height, int _roundNumber) {
     // Prevote cs.ProposalBlock
     // NOTE: the proposal signature is validated when it is received,
     // and the proposal block parts are validated as they are received (against the merkle hash in the proposal)
-    logInfo("enterPrevote: ProposalBlock is valid"); //TODO change message if theres no validation
+    //clog(dev::VerbosityInfo, channelTm) << "enterPrevote: ProposalBlock is valid"; //TODO change message if theres no validation
     signAddVote(VoteTypePrevote, roundState.proposalBlock->getBlockHash());
 }
 
@@ -228,23 +227,23 @@ void ConsensusState::doPrevote(int64_t height, int _roundNumber) {
 void ConsensusState::enterPrecommitWait(int64_t height, int round) {
     if (roundState.height != height || round < roundState.roundNumber ||
         (roundState.roundNumber == round && RoundStepPrecommitWait <= roundState.stepType)) {
-        logDebug("enterPrecommitWait(%v/%v): Invalid args. Current step: %v/%v/%v", height, round, roundState.height,
-                 roundState.roundNumber, roundState.stepType);
+        /*//clog(dev::VerbosityDebug, channelTm) << "enterPrecommitWait(%v/%v): Invalid args. Current step: %v/%v/%v"<< height<< round<< roundState.height<<
+                 roundState.roundNumber<< roundState.stepType;*/
         return;
     }
     if (!roundState.votes.getPrecommits(round).get()->hasTwoThirdsAny()) {
         throw PanicEnterRound("enterPrecommitWait(" + to_string(height) + " " + to_string(round) +
                               ") but Precommits does not have any +2/3 votes");
     }
-    logInfo("enterPrecommitWait(%v/%v). Current: %v/%v/%v", height, round, roundState.height, roundState.roundNumber,
-            roundState.stepType);
+    /*//clog(dev::VerbosityInfo, channelTm) << "enterPrecommitWait(%v/%v). Current: %v/%v/%v"<< height<< round<< roundState.height<< roundState.roundNumber<<
+            roundState.stepType;*/
     auto guard = finally([&]() {
         roundState.updateRoundStep(roundState.roundNumber, RoundStepPrecommitWait);
         newStep();
     });
 
     // Wait for some more precommits; enterNewRound
-    scheduleTimeout(consensusConfig.precommit(round), height, round, RoundStepPrecommitWait);
+    scheduleTimeout(consensusConfig.getTimeoutPrecommit(round), height, round, RoundStepPrecommitWait);
 
 }
 
@@ -258,14 +257,14 @@ void ConsensusState::tryFinalizeCommit(int64_t height) {
     BlockID blockID;
     bool ok = roundState.votes.getPrecommits(roundState.commitRoundNumber).get()->twoThirdMajority(blockID);
     if (!ok || blockID.getHash().getBites().empty()) {
-        logError("Attempt to finalize failed. There was no +2/3 majority, or +2/3 was for <nil>.");
+        //clog(dev::VerbosityError, channelTm) << "Attempt to finalize failed. There was no +2/3 majority, or +2/3 was for <nil>.";
         return;
     }
     if (!roundState.proposalBlock->hashesTo(blockID.getHash())) {
         // TODO: this happens every time if we're not a validator (ugly logs)
         // TODO: ^^ wait, why does it matter that we're a validator?
-        logInfo("Attempt to finalize failed. We don't have the commit block.", "proposal-block",
-                roundState.proposalBlock->getHash().toString(), "commit-block", blockID.getHash().toString());
+/*        //clog(dev::VerbosityInfo, channelTm) << "Attempt to finalize failed. We don't have the commit block."<< "proposal-block"<<
+                roundState.proposalBlock->getHash().toString()<< "commit-block"<< blockID.getHash().toString();*/
         return;
     }
 
@@ -276,8 +275,8 @@ void ConsensusState::tryFinalizeCommit(int64_t height) {
 /* Increment height and goto cstypes.RoundStepNewHeight */
 void ConsensusState::finalizeCommit(int64_t _height) {
     if (roundState.height != _height || roundState.stepType != RoundStepCommit) {
-        logDebug("finalizeCommit(%v): Invalid args. Current step: %v/%v/%v", _height, roundState.height,
-                 roundState.roundNumber, roundState.stepType);
+        /* //clog(dev::VerbosityDebug, channelTm) << "finalizeCommit(%v): Invalid args. Current step: %v/%v/%v"<< _height<< roundState.height<<
+                  roundState.roundNumber<< roundState.stepType;*/
         return;
     }
     BlockID blockID;
@@ -297,9 +296,9 @@ void ConsensusState::finalizeCommit(int64_t _height) {
         throw PanicConsensus("+2/3 committed an invalid block: %v", err);
     }*/
 
-    logInfo("Finalizing commit of block with height ", to_string(block->getHeight()), " hash ",
-            block->getBlockHash().toString(), " root ", block->getAppHash().toString());
-    logInfo("%v", block);
+    /* //clog(dev::VerbosityInfo, channelTm) << "Finalizing commit of block with height "<< to_string(block->getHeight())<< " hash "<<
+             block->getBlockHash().toString()<< " root ", block->getAppHash().toString();*/
+    //clog(dev::VerbosityInfo, channelTm) << "%v" << block;
 
     //todo WTF fail.Fail(); // XXX
     //TODO commit block
@@ -312,7 +311,7 @@ void ConsensusState::finalizeCommit(int64_t _height) {
          roundState.blockStore.SaveBlock(block, blockParts, seenCommit);
      } else {
          // Happens during replay if (we already saved the block but didn't commit
-         logInfo("Calling finalizeCommit on already stored block", "_height", block._height);
+         //clog(dev::VerbosityInfo, channelTm) << "Calling finalizeCommit on already stored block", "_height", block._height);
      }
 
     // fail.Fail(); // XXX */
@@ -342,10 +341,10 @@ void ConsensusState::finalizeCommit(int64_t _height) {
     var err error
     stateCopy, err = roundState.blockExec.ApplyBlock(stateCopy, types.BlockID{block.Hash(), blockParts.Header()}, block)
     if (err != nil) {
-        logError("Error on ApplyBlock. Did the application crash? Please restart tendermint", "err", err);
+        //clog(dev::VerbosityError, channelTm) << "Error on ApplyBlock. Did the application crash? Please restart tendermint", "err", err);
         err = cmn.Kill();
         if (err != nil) {
-            logError("Failed to kill this process - please do so manually", "err", err);
+            //clog(dev::VerbosityError, channelTm) << "Failed to kill this process - please do so manually", "err", err);
         }
         return;
     }
@@ -367,18 +366,66 @@ void ConsensusState::finalizeCommit(int64_t _height) {
     // * roundState.startTime is set to when we will start round0.
 }
 
-/*
 
 void ConsensusState::scheduleRound0(RoundState roundState) {
 //cs.Logger.Info("scheduleRound0", "now", time.Now(), "startTime", cs.StartTime)
 
-    //FIXME time
-    std::chrono::duration<seconds> sleepDuration = roundState.startTime - Time(); // nolint: gotype, gosimple
-    scheduleTimeout(sleepDuration, roundState.height, 0, RoundStepNewHeight);
+    scheduleTimeout(roundState.startTime - boost::posix_time::second_clock::local_time(), roundState.height, 0,
+                    RoundStepNewHeight);
 }
-*/
+
 
 void ConsensusState::clearProposal() {
     this->proposal = nullptr;
 
 }
+
+bool ConsensusState::isValidator() {
+    return (privValidator != nullptr && roundState.validators.hasAddress(privValidator->getAddress()));
+}
+
+bool ConsensusState::isProposer() {
+    return roundState.validators.getProposer().getAddress() == privValidator.get()->getAddress();
+}
+
+
+void ConsensusState::decideProposal(int64_t height, int round) {
+    shared_ptr<Block> block;
+
+    // Decide on block
+    if (roundState.lockedBlock != nullptr) {
+        block = roundState.lockedBlock;
+    } else if (roundState.validBlock != nullptr) {
+        block = roundState.validBlock;
+    } else {
+        block = Bridge().getBlockToPropose();
+    }
+
+    // Make proposal
+    BlockID polBlockID(-1);
+    int polRound = roundState.votes.polInfo(polBlockID);
+    Proposal proposal(height, round, polRound, polBlockID);
+    try {
+        privValidator.get()->signProposal(state.getChainID(), proposal);
+    } catch (exception &e) {
+        if (!replayMode) {
+            //TODO LOG //clog(dev::VerbosityError, channelTm) << "enterPropose: Error signing proposal", "height", height, "round", round, "err", err);
+        }
+        return;
+    }
+
+    // Set fields
+    /*  fields set by setProposal and addBlockPart
+    roundStep.Proposal = proposal
+    roundStep.ProposalBlock = block
+    roundStep.ProposalBlockParts = blockParts
+    */
+
+    // send proposal and block parts on internal msg queue
+    sendInternalMessage(ProposalMessage(proposal));
+    sendInternalMessage(BlockMessage(PeerID(), polBlockID, roundState.height, roundState.roundNumber, block));
+
+    //TODO Log //clog(dev::VerbosityInfo, channelTm) << "Signed proposal", "height", height, "round", round, "proposal", proposal);
+    //TODO log //clog(dev::VerbosityDebug, channelTm) << "Signed proposal block: %v", block);
+}
+

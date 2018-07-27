@@ -13,22 +13,22 @@
 //TODO
 struct HexBytes {
 private :
-    std::vector<uint8_t> bites;
+    std::vector<uint8_t> bytes;
 
 public:
     HexBytes hash();
 
     const std::string toString() const;
     bool operator==(const HexBytes &other) {
-        if (other.bites.size() != bites.size()) return false;
-        for (uint i = 0; i < bites.size(); i++) {
-            if (bites[i] != other.bites[i]) return false;
+        if (other.bytes.size() != bytes.size()) return false;
+        for (uint i = 0; i < bytes.size(); i++) {
+            if (bytes[i] != other.bytes[i]) return false;
         }
         return true;
     }
 
     const std::vector<uint8_t> &getBites() const {
-        return bites;
+        return bytes;
     }
 };
 
@@ -37,6 +37,13 @@ struct BlockID {
     HexBytes bites;
     HexBytes hash;
 public:
+
+    BlockID(std::vector<uint8_t> bites);
+
+//TODO set the bites
+    BlockID(int i);
+
+    BlockID();
 
     bool isEmpty();
 

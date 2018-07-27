@@ -7,10 +7,13 @@
 
 
 #include "HexBytes.h"
+#include "Proposal.h"
 
 class PrivValidator {
 public:
     const HexBytes getAddress() const;
+
+    void signProposal(string, Proposal &);
 };
 
 
