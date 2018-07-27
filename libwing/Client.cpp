@@ -28,6 +28,7 @@
 #include "TransactionQueue.h"
 #include <libdevcore/Log.h>
 #include <libp2p/Host.h>
+#include <libtm/TMHost.h>
 #include <boost/filesystem.hpp>
 #include <chrono>
 #include <memory>
@@ -138,6 +139,8 @@ void Client::init(p2p::Host* _extNet, fs::path const& _dbPath, fs::path const& _
 
         _extNet->addCapability(host, EthereumHost::staticName(),
             EthereumHost::c_oldProtocolVersion);  // TODO: remove this once v61+ protocol is common
+
+        m_tmHost = _extNet->registerCapability(make_shared<tm::TMHost>(bc(), _networkId));
     }
 
     // create Warp capability if we either download snapshot or can give out snapshot

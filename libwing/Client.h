@@ -33,6 +33,7 @@
 #include <libdevcore/Guards.h>
 #include <libdevcore/Worker.h>
 #include <libwingcore/SealEngine.h>
+#include <libtm/TMHost.h>
 #include <libp2p/Common.h>
 #include <array>
 #include <atomic>
@@ -321,6 +322,7 @@ protected:
     std::chrono::system_clock::time_point m_lastGetWork;    ///< Is there an active and valid remote worker?
 
     std::weak_ptr<EthereumHost> m_host;     ///< Our Ethereum Host. Don't do anything if we can't lock.
+    std::weak_ptr<tm::TMHost> m_tmHost;         ///< TODO ???
     std::weak_ptr<WarpHostCapability> m_warpHost;
 
     std::condition_variable m_signalled;
