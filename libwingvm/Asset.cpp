@@ -24,12 +24,13 @@ namespace wing
 
 namespace
 {
-static const Key TotalSupply = keyOn(0),
-                 Name = keyOn(1),
-                 Symbol = keyOn(2),
-                 Decimals = keyOn(3),
-                 Balances = keyOn(4),
-                 Allowance = keyOn(5);
+static const Key e2k = keyOn("ERC20"),
+                 TotalSupply = e2k["TotalSupply"],
+                 Name = e2k["Name"],
+                 Symbol = e2k["Symbol"],
+                 Decimals = e2k["Decimals"],
+                 Balances = e2k["Balances"],
+                 Allowance = e2k["Allowance"];
 }
 
 void ERC20::init()
