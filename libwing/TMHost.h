@@ -1,26 +1,16 @@
 #pragma once
 
-#include <mutex>
-#include <unordered_map>
-#include <vector>
-#include <unordered_set>
-#include <memory>
-#include <utility>
-#include <thread>
-
-#include <libdevcore/Guards.h>
 #include <libdevcore/Worker.h>
 #include <libwingcore/Common.h>
 #include <libp2p/Common.h>
-#include <libdevcore/OverlayDB.h>
-#include <libwingcore/BlockHeader.h>
 #include <libwing/BlockChain.h>
 #include "TMPeer.h"
+
 
 namespace dev
 {
 
-namespace tm
+namespace wing
 {
 
 /**
@@ -32,21 +22,22 @@ class TMHost: public p2p::HostCapability<TMPeer>, Worker
 {
 public:
     /// Start server, but don't listen.
-    TMHost(eth::BlockChain const& _ch, u256 _networkId);
+    TMHost(eth::BlockChain const& _bc, u256 _networkId): m_bc(_bc), m_networkId(_networkId) {};
 
     /// Will block on network process events.
-    virtual ~TMHost();
+    ~TMHost();
+
+    void setNetworkId(u256 _networkId) { m_networkId = _networkId; }
 
 protected:
     std::shared_ptr<p2p::Capability> newPeerCapability(std::shared_ptr<p2p::SessionFace> const& _s, unsigned _idOffset, p2p::CapDesc const& _cap) override;
 
 private:
-    virtual void doWork() override;
+    void doWork() override;
 
-    virtual void onStarting() override { startWorking(); }
-    virtual void onStopping() override { stopWorking(); }
+    void onStopping() override { stopWorking(); }
 
-    eth::BlockChain const& m_chain;
+    eth::BlockChain const& m_bc;
     u256 m_networkId;
     
     Logger m_logger{createLogger(VerbosityDebug, "tm")};
