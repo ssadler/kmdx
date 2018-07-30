@@ -138,7 +138,7 @@ void ConsensusState::reconstructLastCommit(State state) {
     if (state.getLastBlockHeight() == 0) {
         return;
     }
-    //TODO Commit seenCommit = blockStore.loadSeenCommit(state.lastBlockHeight);
+
     Commit seenCommit = loadSeenCommit(state.getLastBlockHeight());
     VoteSet lastPrecommits = VoteSet(state.getChainID(), state.getLastBlockHeight(), seenCommit.round(),
                                      VoteTypePrecommit, state.getLastValidators());
@@ -199,7 +199,7 @@ void ConsensusState::onStart() {
     // reload from consensus log to catchup
     if (doWALCatchup) {
         try { catchupReplay(roundState.height); } catch (Panic p) {
-            //TODO log {//clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway", "err", p);
+            //clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway", "err", p);
             // NOTE: if we ever do return an error here,
             // make sure to stop the timeoutTicker
         }

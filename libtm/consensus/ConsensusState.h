@@ -63,8 +63,7 @@ class ConsensusState {
 
     void setProposal(Proposal _proposal); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
-    void
-    handleProposalMsg(const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
+    void handleProposalMsg(const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
 
     void handleVoteMsg(const VoteMessage &msg);
 
@@ -131,7 +130,7 @@ public:
 
     void recover();
 
-    Commit loadSeenCommit(int64_t height);
+    Commit loadSeenCommit(int64_t height); //originally from blockStore
 
     void clearProposal();
 

@@ -8,7 +8,8 @@
 #include <cstdint>
 #include <vector>
 #include <string>
-
+#include <libdevcore/RLP.h>
+#include "Signature.h"
 
 //TODO
 struct HexBytes {
@@ -17,6 +18,8 @@ private :
 
 public:
     HexBytes hash();
+
+    HexBytes(const std::vector<uint8_t> &bytes) : bytes(bytes) {}
 
     const std::string toString() const;
     bool operator==(const HexBytes &other) {
@@ -32,11 +35,17 @@ public:
     }
 };
 
+class PeerID : public HexBytes {
+public:
+    PeerID(std::vector<uint8_t> bytes);
+};
+
 // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 struct BlockID {
     HexBytes bites;
     HexBytes hash;
 public:
+    static BlockID fromRLP(dev::RLP &r);
 
     BlockID(std::vector<uint8_t> bites);
 
@@ -51,6 +60,7 @@ public:
 
     const HexBytes &getHash() const;
 };
+
 
 bool BlockID::isEmpty() {
     return bites.getBites().empty();
@@ -67,5 +77,16 @@ const HexBytes &BlockID::getHash() const {
 bool operator==(const HexBytes &one, const HexBytes &other) {
     return one.getBites() == other.getBites();
 }
+
+class Pubkey {
+    HexBytes address;
+public:
+    const HexBytes &getAddress() const {
+        return address;
+    }
+
+    const bool &verifyBytes(HexBytes signBytes, Signature signature) const;
+
+};
 
 #endif //TM_LIGHT_HEXBYTES_H

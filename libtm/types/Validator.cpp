@@ -5,10 +5,8 @@
 #include <cstdint>
 #include "Validator.h"
 
-Validator::Validator(Pubkey _pubKey, int64_t _votingPower) {
-    pubKey = _pubKey;
+Validator::Validator(Pubkey _pubKey, int64_t _votingPower) : address(_pubKey.getAddress()), pubKey(_pubKey){
     votingPower = _votingPower;
-    address = pubKey.getAddress();
     accum = 0;
 }
 

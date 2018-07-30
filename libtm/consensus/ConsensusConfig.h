@@ -4,7 +4,6 @@
 
 #ifndef TM_LIGHT_CONSENSUSCONFIG_H
 #define TM_LIGHT_CONSENSUSCONFIG_H
-//TODO must make sure that BOOST_DATE_TIME_POSIX_TIME_STD_CONFIG uses 64 bits, else make adjustments!
 #include <string>
 #include "../types/HexBytes.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"

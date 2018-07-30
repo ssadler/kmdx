@@ -152,7 +152,7 @@ void ConsensusState::addVoteForCurrentRound(Vote vote) {
 void ConsensusState::tryUpdateValidRoundAndBlock(const Vote &vote, BlockID &blockId) {
     // NOTE: our proposal block may be nil or not what received a polka..
     // TODO: we may want to still update the ValidBlock and obtain it via gossipping
-    if (!blockId.isEmpty() //TODO replace with isZero()
+    if (!blockId.isEmpty()
         && roundState.validRoundNumber < vote.getRoundNumber()
         && vote.getRoundNumber() <= roundState.roundNumber
         && roundState.proposalBlock->hashesTo(blockId.getHash())
@@ -218,7 +218,7 @@ void ConsensusState::doPrevote(int64_t height, int _roundNumber) {
     // Prevote cs.ProposalBlock
     // NOTE: the proposal signature is validated when it is received,
     // and the proposal block parts are validated as they are received (against the merkle hash in the proposal)
-    //clog(dev::VerbosityInfo, channelTm) << "enterPrevote: ProposalBlock is valid"; //TODO change message if theres no validation
+    //clog(dev::VerbosityInfo, channelTm) << "enterPrevote: ProposalBlock is valid";
     signAddVote(VoteTypePrevote, roundState.proposalBlock->getBlockHash());
 }
 
@@ -409,7 +409,7 @@ void ConsensusState::decideProposal(int64_t height, int round) {
         privValidator.get()->signProposal(state.getChainID(), proposal);
     } catch (exception &e) {
         if (!replayMode) {
-            //TODO LOG //clog(dev::VerbosityError, channelTm) << "enterPropose: Error signing proposal", "height", height, "round", round, "err", err);
+            //clog(dev::VerbosityError, channelTm) << "enterPropose: Error signing proposal", "height", height, "round", round, "err", err);
         }
         return;
     }
@@ -423,9 +423,9 @@ void ConsensusState::decideProposal(int64_t height, int round) {
 
     // send proposal and block parts on internal msg queue
     sendInternalMessage(ProposalMessage(proposal));
-    sendInternalMessage(BlockMessage(PeerID(), polBlockID, roundState.height, roundState.roundNumber, block));
+    sendInternalMessage(BlockMessage(PeerID(std::vector<uint8_t>()), polBlockID, roundState.height, roundState.roundNumber, block));
 
-    //TODO Log //clog(dev::VerbosityInfo, channelTm) << "Signed proposal", "height", height, "round", round, "proposal", proposal);
-    //TODO log //clog(dev::VerbosityDebug, channelTm) << "Signed proposal block: %v", block);
+    //clog(dev::VerbosityInfo, channelTm) << "Signed proposal", "height", height, "round", round, "proposal", proposal);
+    //clog(dev::VerbosityDebug, channelTm) << "Signed proposal block: %v", block);
 }
 

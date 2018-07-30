@@ -106,6 +106,6 @@ vector<shared_ptr<Vote>> Commit::getPrecommits() const {
 
 // Hash returns the hash of the commit;
 HexBytes Commit::getHash() {
-    return HexBytes();    //TODO
+    return HexBytes(vector<uint8_t>());    //TODO
 }
 

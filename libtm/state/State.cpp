@@ -9,20 +9,7 @@
 * including the last validator set and the consensus params.
 * Instead, use state.Copy() or state.NextState(...).*/
 
-State::State(string _chainID, int _lastBlockHeight, BlockID _lastBlockID, time_t _lastBlockTime,
-             ValidatorSet _validators, ValidatorSet _lastValidators, int _lastHeightValidatorsChanged,
-             ConsensusConfig *_consensusParams, int _lastHeightConsensusParamsChanged, HexBytes _appHash) {
-    chainID = _chainID;
-    lastBlockHeight = _lastBlockHeight;
-    lastBlockID = _lastBlockID;
-    lastBlockTime = _lastBlockTime;
-    validators = _validators;
-    lastValidators = _lastValidators;
-    lastHeightValidatorsChanged = _lastHeightValidatorsChanged;
-    consensusParams = _consensusParams; //TODO
-    lastHeightConsensusParamsChanged = _lastHeightConsensusParamsChanged;
-    appHash = _appHash;
-}
+
 
 State::~State() {
     //TODO state destructor

@@ -46,7 +46,7 @@ void ConsensusState::receiveRoutine(dev::RLP &rlp) { //FIXME replace with use of
         try {
             recover();
         } catch (exception &e) {
-            //TODO LOG //clog(dev::VerbosityError, channelTm) << "CONSENSUS FAILURE!!!", "err", r, "stack", string(debug.Stack()))
+            //clog(dev::VerbosityError, channelTm) << "CONSENSUS FAILURE!!!", "err", r, "stack", string(debug.Stack()))
             throw e;
         }
     });

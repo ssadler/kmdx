@@ -11,16 +11,7 @@
 #include "Signature.h"
 #include <vector>
 
-class Pubkey {
-    HexBytes address;
-public:
-    const HexBytes &getAddress() const {
-        return address;
-    }
 
-    const bool &verifyBytes(HexBytes signBytes, Signature signature) const;
-
-};
 
 class Validator {
     HexBytes address;

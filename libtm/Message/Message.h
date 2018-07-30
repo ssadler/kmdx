@@ -9,9 +9,7 @@
 #include <libdevcore/RLP.h>
 #include "../types/Proposal.h"
 #include "../types/Vote.h"
-
-class PeerID : public HexBytes {
-};
+#include <libdevcore/RLP.h>
 
 
 enum class MessageType {
@@ -22,7 +20,7 @@ class Message {
     PeerID peerID;
     MessageType messageType;
 public:
-    Message(const PeerID &peerID, MessageType messageType) : peerID(peerID), messageType(messageType) {}
+    Message(const PeerID peerID, MessageType messageType) : peerID(peerID), messageType(messageType) {}
 
     const PeerID &getPeerID() const {
         return peerID;
@@ -63,13 +61,13 @@ public:
 class VoteMessage : public Message {
     Vote vote;
 public:
-    VoteMessage(const PeerID &peerID, const Vote &vote) : Message(peerID,
+    VoteMessage(const PeerID peerID, const Vote &vote) : Message(peerID,
                                                                   MessageType::VoteType),
                                                           vote(vote) {}
 
-    static VoteMessage fromRLP(dev::RLP &);
+    static VoteMessage fromRLP(dev::RLP &r);
 
-    dev::RLP toRLP();
+    dev::u256 toRLP();
 public:
     const Vote &getVote() const;
 
