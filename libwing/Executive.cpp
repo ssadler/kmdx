@@ -213,6 +213,7 @@ void Executive::initialize(Transaction const& _transaction)
     catch (Exception const& ex)
     {
         m_excepted = toTransactionException(ex);
+        cout << m_excepted << endl;
         throw;
     }
 

@@ -28,6 +28,7 @@
 #include "CommonNet.h"
 #include "StateImporter.h"
 #include "WarpHostCapability.h"
+#include "TMHost.h"
 #include <libdevcore/Common.h>
 #include <libdevcore/CommonIO.h>
 #include <libdevcore/Guards.h>
@@ -321,6 +322,7 @@ protected:
     std::chrono::system_clock::time_point m_lastGetWork;    ///< Is there an active and valid remote worker?
 
     std::weak_ptr<EthereumHost> m_host;     ///< Our Ethereum Host. Don't do anything if we can't lock.
+    std::weak_ptr<wing::TMHost> m_tmHost;         ///< TODO ???
     std::weak_ptr<WarpHostCapability> m_warpHost;
 
     std::condition_variable m_signalled;

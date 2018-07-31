@@ -85,7 +85,10 @@ add_subdirectory(libwingvm)
 add_subdirectory(libwing)
 add_subdirectory(libethashseal)
 
-add_subdirectory(aya)
+add_subdirectory(libwebthree)
+add_subdirectory(libweb3jsonrpc)
+
+add_subdirectory(kmdx)
 
 
 if (TESTS)
