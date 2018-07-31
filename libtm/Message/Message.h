@@ -9,7 +9,7 @@
 #include <libdevcore/RLP.h>
 #include "../types/Proposal.h"
 #include "../types/Vote.h"
-#include <libdevcore/RLP.h>
+
 
 
 enum class MessageType {
