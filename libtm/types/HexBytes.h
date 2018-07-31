@@ -59,6 +59,10 @@ public:
     const HexBytes &getBites() const;
 
     const HexBytes &getHash() const;
+
+    bool operator==(const BlockID &other) const {
+        return bites.getBites() == other.getBites().getBites();
+    }
 };
 
 

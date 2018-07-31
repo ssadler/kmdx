@@ -25,6 +25,7 @@ using namespace boost::posix_time;
 #include "../types/PrivValidator.h"
 #include "../types/TimeoutTicker.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
 #include "../helpers/Bridge.h"
 #include "../helpers/Finally.h"
 
@@ -37,7 +38,7 @@ class ConsensusState {
     //TODO communication BaseService baseService;
     ConsensusConfig consensusConfig;
 
-    shared_ptr<PrivValidator> privValidator;
+    PrivValidator privValidator;
 
     //internalState
     mutex mtx;

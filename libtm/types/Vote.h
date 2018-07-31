@@ -48,7 +48,12 @@ public:
     };
     static Vote fromRLP(dev::RLP & );
 
-    dev::u256 toRLP();
+    std::string toString() {
+        //TODO
+        return voteTypeToString(type) + " " + validatorAddress.toString();
+    }
+
+    dev::RLP toRLP();
 
     const HexBytes &getValidatorAddress() const;
 

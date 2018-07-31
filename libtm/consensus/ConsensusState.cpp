@@ -58,8 +58,8 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
                                                                       _proposal.getSignature()))) {
         throw ErrorInvalidProposalSignature();
     }
-    //clog(dev::VerbosityInfo, channelTm) << "Received proposal: " << _proposal.toString();
-    //cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
+    clog(dev::VerbosityInfo, channelTm) << "Received proposal: " << _proposal.toString();
+//    cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
 }
 
 /* Updates ConsensusState and increments height to match that of state.
@@ -83,7 +83,9 @@ void ConsensusState::updateToState(State _state) {
     // signal the new round step, because other services (eg. mempool)
     // depend on having an up-to-date peer state!
     if (!this->state.isEmpty() && (_state.getLastBlockHeight() <= this->state.getLastBlockHeight())) {
-        //clog(dev::VerbosityInfo, channelTm) << "Ignoring updateToState()" << "newHeight" << _state.getLastBlockHeight() + 1 << "oldHeight" << this->state.getLastBlockHeight() + 1;
+        clog(dev::VerbosityInfo, channelTm) << "Ignoring updateToState()" << "newHeight"
+                                            << _state.getLastBlockHeight() + 1 << "oldHeight"
+                                            << this->state.getLastBlockHeight() + 1;
         newStep();
         return;
     }
@@ -198,8 +200,9 @@ void ConsensusState::onStart() {
     // we may have lost some votes if the process crashed
     // reload from consensus log to catchup
     if (doWALCatchup) {
-        try { catchupReplay(roundState.height); } catch (Panic p) {
-            //clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway", "err", p);
+        try { catchupReplay(roundState.height); } catch (Panic &p) {
+            clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway"
+                                                 << "err" << p.getDesc();
             // NOTE: if we ever do return an error here,
             // make sure to stop the timeoutTicker
         }

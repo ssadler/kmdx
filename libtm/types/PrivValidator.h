@@ -13,7 +13,11 @@ class PrivValidator {
 public:
     const HexBytes getAddress() const;
 
-    void signProposal(string, Proposal &);
+    std::string toString() {
+        return this->getAddress().toString();
+    }
+
+    void signProposal(string, Proposal &); //throw ErrSignProposal
 };
 
 

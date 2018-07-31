@@ -61,6 +61,12 @@ public:
 
 };
 
+class SignError : public Error {
+public:
+    explicit SignError(string _desc) : Error(_desc) {}
+};
+
+
 class ExceptionInvalidPolRound : public std::exception {
     string desc;
 public:
@@ -87,6 +93,10 @@ class Panic : public std::exception {
     string desc;
 public:
     explicit Panic(string d) : desc(d) {}
+
+    const string &getDesc() const {
+        return desc;
+    }
 
     Panic(string d, int n...) : desc(d + to_string(n)) {//FIXME
     }

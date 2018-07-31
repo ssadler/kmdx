@@ -77,8 +77,32 @@ public:
 
 
     void setHeight(int64_t i);
+
+
 };
 
+std::string stateTypeString(RoundStepType stype) {
+    switch (stype) {
+        case RoundStepNewHeight:
+            return "RoundStepNewHeight";
+        case RoundStepNewRound:
+            return "RoundStepNewRound";
+        case RoundStepPropose:
+            return "RoundStepPropose";
+        case RoundStepPrevote:
+            return "RoundStepPrevote";
+        case RoundStepPrevoteWait:
+            return "RoundStepPrevoteWait";
+        case RoundStepPrecommit:
+            return "RoundStepPrecommit";
+        case RoundStepPrecommitWait:
+            return "RoundStepPrecommitWait";
+        case RoundStepCommit:
+            return "RoundStepCommit";
+        default:
+            return "unknown step";
+    }
+}
 
 
 //TODO RoundStateSimple for RPC

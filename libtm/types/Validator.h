@@ -37,6 +37,10 @@ public:
     int64_t getAccum() const {
         return accum;
     }
+
+    std::string toString() {
+        return address.toString();
+    }
 };
 
 class ValidatorSet {

@@ -19,7 +19,7 @@ Vote Vote::fromRLP(dev::RLP & r) {
     );
 }
 
-dev::u256 Vote::toRLP() {
+dev::RLP Vote::toRLP() {
     dev::RLPStream rlp(8);
     rlp.append(validatorAddress.getBites());
     rlp.append(validatorIndex);
@@ -29,7 +29,7 @@ dev::u256 Vote::toRLP() {
     rlp.append(type);
     rlp.append(blockID.getBites().getBites());
     rlp.append(signature.toRLP());
-    return rlp;
+    return dev::RLP(rlp.out());
     //return dev::u256(rlp.out());
 }
 
@@ -76,18 +76,4 @@ const BlockID &Vote::getBlockID() const {
 
 const Signature &Vote::getSignature() const {
     return signature;
-}
-
-
-
-int main (){
-    PeerID pid(std::vector<uint8_t >(1234));
-BlockID bid (std::vector<uint8_t >(1234));
-
-    Vote v(pid, 1, int64_t(2), 3,
-        boost::posix_time::second_clock::local_time(),
-        Vote::allVoteTypes[1], bid);
-    dev::u256 rlp = v.toRLP();
-    Vote o = Vote::fromRLP(RLP(rlp.out()));
-    cout<<o.getHeight();
 }

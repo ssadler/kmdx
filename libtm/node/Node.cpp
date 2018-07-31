@@ -172,9 +172,9 @@ evidencePool.SetLogger(evidenceLogger)
 evidenceReactor := evidence.NewEvidenceReactor(evidencePool)
 evidenceReactor.SetLogger(evidenceLogger)
 
-blockExe//clogger := logger.With("module", "state")
+blockExeclogger := logger.With("module", "state")
 // make block executor for consensus and blockchain reactors to execute blocks
-blockExec := sm.NewBlockExecutor(stateDB, blockExe//clogger, proxyApp.Consensus(), mempool, evidencePool)
+blockExec := sm.NewBlockExecutor(stateDB, blockExeclogger, proxyApp.Consensus(), mempool, evidencePool)
 
 // Make BlockchainReactor
 bcReactor := bc.NewBlockchainReactor(state.Copy(), blockExec, blockStore, fastSync)
@@ -470,15 +470,15 @@ rpccore.AddUnsafeRoutes()
 listeners := make([]net.Listener, len(listenAddrs))
 for i, listenAddr := range listenAddrs {
         mux := http.NewServeMux()
-        rp//clogger := n.Logger.With("module", "rpc-server")
+        rpclogger := n.Logger.With("module", "rpc-server")
         wm := rpcserver.NewWebsocketManager(rpccore.Routes, coreCodec, rpcserver.EventSubscriber(n.eventBus))
-        wm.SetLogger(rp//clogger.With("protocol", "websocket"))
+        wm.SetLogger(rpclogger.With("protocol", "websocket"))
         mux.HandleFunc("/websocket", wm.WebsocketHandler)
-        rpcserver.RegisterRPCFuncs(mux, rpccore.Routes, coreCodec, rp//clogger)
+        rpcserver.RegisterRPCFuncs(mux, rpccore.Routes, coreCodec, rpclogger)
         listener, err := rpcserver.StartHTTPServer(
         listenAddr,
         mux,
-        rp//clogger,
+        rpclogger,
         rpcserver.Config{MaxOpenConnections: n.config.RPC.MaxOpenConnections},
 )
         if err != nil {
