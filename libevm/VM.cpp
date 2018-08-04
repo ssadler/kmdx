@@ -20,6 +20,8 @@
 
 #include <eth-buildinfo.h>
 
+using namespace std;
+
 extern "C" evmc_instance* evmc_create_interpreter() noexcept
 {
     return new (std::nothrow) dev::eth::VM;

@@ -17,6 +17,8 @@
 
 #include "VM.h"
 
+using namespace std;
+
 namespace dev
 {
 namespace eth
