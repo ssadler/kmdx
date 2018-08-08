@@ -1,3 +1,5 @@
+#pragma once
+
 #include <boost/test/unit_test.hpp>
 #include <boost/foreach.hpp>
 #include <test/tools/libtesteth/Options.h>
@@ -53,3 +55,7 @@ public:
 };
 
 
+#define checkRevert(c, er) \
+    { ExecutionResult r = er; \
+      BOOST_CHECK_EQUAL(r.excepted, TransactionException::RevertInstruction); \
+      BOOST_CHECK(r.output == bytes({c})); }

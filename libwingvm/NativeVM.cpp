@@ -40,29 +40,20 @@ void NativeVM::putWord(Key const& _key, u256 const& _val)
     m_ext.setStore(_key, _val);
 }
 
-
-owning_bytes_ref NativeVM::exec()
-{
-    if (m_ext.depth != 1)
-        BOOST_THROW_EXCEPTION(NativeContractCalledDirectly());
-
-    NativeCall nativeCall(*this);
-    call(nativeCall);
-    return owning_bytes_ref(std::move(m_output), 0, m_output.size());
-}
-
-
 bool NativeCall::route(std::string const& _sig, unsigned _flags)
 {
     if (abi.method() != ABI(_sig).method()) return false;
 
     if (!(_flags & METHOD_PAYABLE))
-        if (m_vm.m_ext.value != 0)
+        if (ext.value != 0)
             throwRevert(MethodNotPayable);
 
     return true;
 }
 
-
+CreateResult NativeCall::create(u256 _endowment, bytesConstRef _code)
+{
+    return m_vm.m_ext.create(_endowment, m_vm.m_io_gas, _code, Instruction::CREATE, u256(), m_vm.m_onOp);
+}
 }
 }

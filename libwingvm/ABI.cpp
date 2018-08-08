@@ -56,6 +56,19 @@ u256 ABI::uint()
     return u256(out);
 }
 
+bytes ABI::read(size_t _len)
+{
+    bytes out;
+    out.resize(_len);
+    safeRead(out.data(), 0, _len);
+    return out;
+}
+
+bytes ABI::bytesLong()
+{
+    return read(size_t(uint()));
+}
+
 void ABIWriter::appendBytes(byte const* _mem, size_t _lpad, size_t _len)
 {
     size_t off = m_data.size();

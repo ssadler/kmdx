@@ -24,17 +24,13 @@ namespace wing
 {
 
 
-Address const AssetContractAddress = Address("0301000000000000000000000000000000000000");
-Address const MinersTokenAddress = Address("7777777777777777777777777777777777777777");
-
-
 
 class ERC20 : public NativeContract
 {
 public:
     using NativeContract::NativeContract;
     void init();
-    bytes dispatch(NativeCall& _call);
+    bytes call(NativeCall& _call) override;
     u256 totalSupply() const;
     u256 balanceOf(Address const& _addr) const;
     void setBalance(Address const& _addr, u256 _amount);
@@ -57,25 +53,11 @@ public:
         erc20().init();
     }
 
-    bytes call(NativeCall& _call)
+    bytes call(NativeCall& _call) override
     {
-        return erc20().dispatch(_call);
+        return erc20().call(_call);
     }
 };
-
-
-class AssetVM : public NativeVM
-{
-public:
-    using NativeVM::NativeVM;
-
-    void call(NativeCall& _call) override
-    {
-        m_output = Asset(*this).call(_call);
-    }
-};
-
-
 
 }
 }

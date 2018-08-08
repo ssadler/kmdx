@@ -2,6 +2,6 @@
 #pragma once
 
 #include "ABI.h"
-#include "NativeManager.h"
+#include "Manager.h"
 #include "NativeVM.h"
 

@@ -45,7 +45,7 @@ void ERC20::init()
 }
 
 
-bytes ERC20::dispatch(NativeCall& _call)
+bytes ERC20::call(NativeCall& _call)
 {
     if (_call.route("totalSupply()"))
     {
@@ -58,7 +58,7 @@ bytes ERC20::dispatch(NativeCall& _call)
     else if (_call.route("transfer(address,uint)"))
     {
         Address to = _call.abi.address();
-        bool r = transfer(_call.caller(), to, _call.abi.uint());
+        bool r = transfer(_call.ext.caller, to, _call.abi.uint());
         return toCompactBigEndian(r);
     }
     else if (_call.route("allowance(address,address)"))
@@ -69,13 +69,13 @@ bytes ERC20::dispatch(NativeCall& _call)
     else if (_call.route("approve(address,uint)"))
     {
         Address spender = _call.abi.address();
-        bool r = approve(_call.caller(), spender, _call.abi.uint());
+        bool r = approve(_call.ext.caller, spender, _call.abi.uint());
         return toCompactBigEndian(r);
     }
     else if (_call.route("transferFrom(address,address,uint)"))
     {
         Address from = _call.abi.address(), to = _call.abi.address();
-        u256 r = transferFrom(_call.caller(), from, to, _call.abi.uint());
+        u256 r = transferFrom(_call.ext.caller, from, to, _call.abi.uint());
         return toCompactBigEndian(r);
     }
     

@@ -42,8 +42,8 @@ R"E(
 		"gasLimit": "0x1388000"
 	},
 	"accounts": {
-        "ROOT_CONTRACT_ADDRESS": {
-            "storage": ROOT_CONTRACT_STORAGE
+        "MANAGER_CONTRACT_ADDRESS": {
+            "storage": MANAGER_CONTRACT_STORAGE
         },
         "MINERS_TOKEN_ADDRESS": {
             "code": "PROXY_TO_ASSET",
@@ -62,6 +62,7 @@ R"E(
     Address testAddress("77952ce83ca3cad9f7adcfabeda85bd2f1f52008");
     out = std::regex_replace(out, std::regex("TEST_ADDRESS"), toHexPrefixed(testAddress));
 
+    // TODO: Manager should deploy asset
     bytes assetProxyCode = wing::delegateCallProxyCode(wing::AssetContractAddress);
 
     // Init Miners's asset
@@ -77,10 +78,10 @@ R"E(
     }
 
     State state(State::Null);
-    NativeManager root(state);
-    root.setNativeContract(wing::AssetContractAddress, "asset");
+    DummyVM vm(wing::ManagerContractAddress, state);
+    //Manager root(state);
 
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), root.vm().toJsonMap());
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_ADDRESS"), toHexPrefixed(wing::RootContractAddress));
+    out = std::regex_replace(out, std::regex("MANAGER_CONTRACT_STORAGE"), vm.toJsonMap());
+    out = std::regex_replace(out, std::regex("MANAGER_CONTRACT_ADDRESS"), toHexPrefixed(wing::ManagerContractAddress));
     c_genesisInfoKomodoNetworkTest = out;
 }

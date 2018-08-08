@@ -38,6 +38,8 @@ public:
 
     Address address();
     u256 uint();
+    bytes read(size_t n);
+    bytes bytesLong();
 private:
     void safeRead(byte* _target, size_t _off, size_t _len);
     size_t m_offset = 4;

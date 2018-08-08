@@ -6,7 +6,7 @@
 #include <libdevcrypto/Common.h>
 #include <libevm/ExtVMFace.h>
 #include <libwingcore/Common.h>
-#include "Native.h"
+#include "NativeVM.h"
 #include "NativeErrors.h"
 
 using namespace dev;

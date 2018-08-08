@@ -42,18 +42,17 @@ R"E(
 		"gasLimit": "0x1388000"
 	},
 	"accounts": {
-        "ROOT_CONTRACT_ADDRESS": {
-            "storage": ROOT_CONTRACT_STORAGE
+        "MANAGER_CONTRACT_ADDRESS": {
+            "storage": MANAGER_CONTRACT_STORAGE
         }
     }
 }
 )E";
 
     State state(State::Null);
-    NativeManager root(state);
-    root.setNativeContract(wing::AssetContractAddress, "asset");
+    DummyVM vm(wing::ManagerContractAddress, state);
 
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_STORAGE"), root.vm().toJsonMap());
-    out = std::regex_replace(out, std::regex("ROOT_CONTRACT_ADDRESS"), toHexPrefixed(wing::RootContractAddress));
+    out = std::regex_replace(out, std::regex("MANAGER_CONTRACT_ADDRESS"), toHexPrefixed(wing::ManagerContractAddress));
+    out = std::regex_replace(out, std::regex("MANAGER_CONTRACT_STORAGE"), vm.toJsonMap());
     c_genesisInfoKomodoNetwork = out;
 }

@@ -27,8 +27,9 @@ ETH_SIMPLE_EXCEPTION_VM(MethodNotFound);
 
 struct VMNotConfigured : Exception {};
 
-string getAccountStorageJson(Account const* a);
-bytes delegateCallProxyCode(Address const& _addr);
+string getAccountStorageJson(Account const*);
+bytes delegateCallProxyCode(Address const&);
+bytes delegateCallInitProxyCode(Address const&);
 
 u256 as256(int _i);
 u256 as256(std::string _s);
@@ -75,6 +76,17 @@ public:
     template <typename V> void putData(u256 _key, V const& in);
 };
 
+class DummyVM : public NativeVMFace
+{
+public:
+    DummyVM(Address _addr, State& _s): m_addr(_addr), m_s(_s) {};
+    u256 getWord(Key const& _key) override { return m_s.storage(m_addr, _key); }
+    void putWord(Key const& _key, u256 const& _val) override { m_s.setStorage(m_addr, _key, _val); }
+    std::string toJsonMap() { return getAccountStorageJson(m_s.account(m_addr)); }
+protected:
+    Address m_addr;
+    State& m_s;
+};
 
 class NativeCall;
 
@@ -92,7 +104,6 @@ public:
     {};
 
     owning_bytes_ref exec();
-    virtual void call(NativeCall& _call) = 0;
 
     void bill(u256 _gas);
 
@@ -102,24 +113,10 @@ protected:
     u256& m_io_gas;
     ExtVM& m_ext;
     OnOpFunc const& m_onOp;
-    bytes m_output;
 };
 
 
 unsigned constexpr METHOD_PAYABLE = 0;
-
-
-class DummyVM : public NativeVMFace
-{
-public:
-    DummyVM(Address _addr, State& _s): m_addr(_addr), m_s(_s) {};
-    u256 getWord(Key const& _key) override { return m_s.storage(m_addr, _key); }
-    void putWord(Key const& _key, u256 const& _val) override { m_s.setStorage(m_addr, _key, _val); }
-    std::string toJsonMap() { return getAccountStorageJson(m_s.account(m_addr)); }
-protected:
-    Address m_addr;
-    State& m_s;
-};
 
 
 class NativeCall
@@ -127,10 +124,12 @@ class NativeCall
     NativeVM& m_vm;
 public:
     ABI abi;
-    NativeCall(NativeVM& _vm): m_vm(_vm), abi(_vm.m_ext.data) {};
-    Address const& caller() const { return m_vm.m_ext.caller; }
+    ExtVM const& ext;
+
+    NativeCall(NativeVM& _vm): m_vm(_vm), abi(_vm.m_ext.data), ext(m_vm.m_ext) {};
     bool route(std::string const& _sig) { return route(_sig, 0); }
     bool route(std::string const& _sig, unsigned _flags);
+	CreateResult create(u256 _endowment, bytesConstRef _code);
 };
 
 
@@ -140,6 +139,7 @@ public:
     NativeContract(NativeVMFace &_vm): m_vm(_vm) {};
     u256 get(Key const& _key) const { return m_vm.getWord(_key); }
     void put(Key const& _key, u256 const& _val) { m_vm.putWord(_key, _val); }
+    virtual bytes call(NativeCall&) = 0;
 
     static void require(bool _pass, NativeVMErrorCode code)
     {

@@ -63,11 +63,6 @@ namespace Methods
                                     Allowance, Approve, TransferFrom};
 }
 
-#define checkRevert(c, er) \
-    { ExecutionResult r = er; \
-      BOOST_CHECK_EQUAL(r.excepted, TransactionException::RevertInstruction); \
-      BOOST_CHECK(r.output == bytes({c})); }
-
 ExecutionResult checkOk(ExecutionResult r)
 {
     BOOST_REQUIRE_EQUAL(r.excepted, TransactionException::None);

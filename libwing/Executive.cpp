@@ -327,7 +327,7 @@ bool Executive::call(CallParameters const& _p, u256 const& _gasPrice, Address co
     else
     {
         m_gas = _p.gas;
-        bool isNative = wing::NativeManager(m_s).isNativeContract(_p.codeAddress);
+        bool isNative = wing::isNativeContract(m_s, _p.codeAddress);
         if (isNative || m_s.addressHasCode(_p.codeAddress))
         {
             bytes const& c = isNative ? NullBytes : m_s.code(_p.codeAddress);
@@ -472,7 +472,7 @@ bool Executive::go(OnOpFunc const& _onOp)
             else
             {
                 m_output = m_native ?
-                      wing::NativeManager(m_s).callVM(*m_native, m_gas, *m_ext, _onOp)
+                      wing::execNative(*m_native, m_gas, *m_ext, _onOp)
                     : vm->exec(m_gas, *m_ext, _onOp);
             }
         }
