@@ -11,14 +11,18 @@
 using namespace boost::posix_time;
 using namespace std;
 
+#include <cstdint>
+#include <vector>
 #include <libdevcore/RLP.h>
-class State;
+
+using byte = uint8_t;
+using bytes = std::vector<byte>;
+
 
 class Block {
 public:
     Block(int64_t height, Commit lastCommit);
-
-    Block(int64_t _height, Commit _lastCommit, State &state);
+    //Block(int64_t _height, Commit _lastCommit, State &state);
 
     bool hashesTo(HexBytes hash);
 
@@ -51,6 +55,8 @@ public:
     const HexBytes &getLastResultsHash() const;
 
     HexBytes getHash();
+
+    bytes getBytes();
 
 
 private:

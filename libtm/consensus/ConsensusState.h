@@ -8,11 +8,15 @@
 #ifndef CONSENSUSSTATE_H_
 #define CONSENSUSSTATE_H_
 
-#include "boost/date_time/posix_time/posix_time_types.hpp"
-
-using namespace boost::posix_time;
 #include <pthread.h>
 #include <cstdlib>
+#include <boost/optional.hpp>
+#include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "boost/date_time/posix_time/posix_time.hpp"
+#include <boost/fiber/all.hpp>
+#include <boost/exception_ptr.hpp>
+#include <boost/thread.hpp>
+
 #include "../state/State.h"
 #include "../types/RoundState.h"
 #include "../events/EventSwitch.h"
@@ -24,10 +28,9 @@ using namespace boost::posix_time;
 #include "../types/Vote.h"
 #include "../types/PrivValidator.h"
 #include "../types/TimeoutTicker.h"
-#include "boost/date_time/posix_time/posix_time_types.hpp"
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "../helpers/Bridge.h"
+#include "../helpers/TmController.h"
 #include "../helpers/Finally.h"
+#include "ConsensusConfig.h"
 
 using namespace boost::posix_time;
 
@@ -37,7 +40,7 @@ class ConsensusState {
 
     //TODO communication BaseService baseService;
     ConsensusConfig consensusConfig;
-
+    TmController controller;
     PrivValidator privValidator;
 
     //internalState
@@ -49,7 +52,7 @@ class ConsensusState {
     pthread_t internalMsgQueue;
     TimeoutTicker timeoutTicker;
 
-    EventBus *eventBus;
+    EventBus eventBus;
 
     // a Write-Ahead Log ensures we can recover from any kind of crash
     // and helps us avoid signing conflicting votes
@@ -75,16 +78,19 @@ class ConsensusState {
     bool addVote(Vote vote, HexBytes peerID);
 
 public:
-    void updateToState(State state);
-
-    void enterPropose(int64_t height, int round);
-    void reconstructLastCommit(State state);
 
     ConsensusState(ConsensusConfig config, State state);
 
+    ConsensusState(const ConsensusState &cs);
     explicit ConsensusState(ConsensusConfig _config);
-
     virtual ~ConsensusState();
+
+
+    void updateToState(State state);
+
+    void enterPropose(int64_t height, int round);
+
+    void reconstructLastCommit(State state);
 
     void addVoteForCurrentRound(Vote vote);
 
@@ -113,7 +119,7 @@ public:
 
     void signAddVote(VoteType type);
 
-    void signAddVote(VoteType type, const HexBytes &bytes);
+    void signAddVote(VoteType type, const bytes &b);
 
     void enterPrecommitWait(int64_t height, int number);
 
@@ -148,6 +154,15 @@ public:
     RoundState getRoundState_copy();
 
     void sendInternalMessage(Message);
+
+    void startRoutines();
+
+    boost::optional<Block> createProposalBlock();
+
+    friend class common_test;
+
+    void addToPeerMsgQueue(Message m);
+
 };
 
 #endif /* CONSENSUSSTATE_H_ */

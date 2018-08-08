@@ -4,8 +4,7 @@
  * Created on: Jul 9, 2018
  * Author: Maru
  */
-#include <boost/exception_ptr.hpp>
-#include <boost/thread.hpp>
+
 #include "ConsensusState.h"
 
 
@@ -13,9 +12,14 @@
  * It processes votes and proposals, and upon reaching agreement,
  * commits blocks to the chain and executes them against the application.
  * The internal state machine receives input from peers, the internal validator, and from a timer.*/
-ConsensusState::ConsensusState(ConsensusConfig _config) : consensusConfig(_config), timeoutTicker(), eventSwitch() {
+ConsensusState::ConsensusState(ConsensusConfig _config) : consensusConfig(_config), timeoutTicker(), eventBus(),
+                                                          eventSwitch() {
     doWALCatchup = true;
     //TODO wal = NULL; //TODO nilWAL{};
+}
+
+ConsensusState::ConsensusState(const ConsensusState &cs) : ConsensusState(cs.consensusConfig) {
+    //FIXME
 }
 
 ConsensusState::ConsensusState(ConsensusConfig _config, State _state) : ConsensusState(_config) {
@@ -32,7 +36,7 @@ ConsensusState::~ConsensusState() {
 
 
 void
-ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature) {
+ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolRound, ErrorInvalidSignature) {
     // Already have one
     if (proposal != nullptr)
         return;
@@ -56,7 +60,7 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
     // Verify signature
     if (!(state.getValidators().getProposer().getPubKey().verifyBytes(_proposal.signBytes(state.getChainID()),
                                                                       _proposal.getSignature()))) {
-        throw ErrorInvalidProposalSignature();
+        throw ErrorInvalidSignature("proposal");
     }
     clog(dev::VerbosityInfo, channelTm) << "Received proposal: " << _proposal.toString();
 //    cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
@@ -92,9 +96,9 @@ void ConsensusState::updateToState(State _state) {
 
     // Reset fields based on state.
     ValidatorSet validators = _state.getValidators();
-    shared_ptr<VoteSet> lastPrecommits;
+    boost::optional<VoteSet> lastPrecommits;
     if (roundState.commitRoundNumber > -1 && roundState.votes.isEmpty()) {
-        if (!roundState.votes.getPrecommits(roundState.commitRoundNumber).get()->hasTwoThirdMajority()) {
+        if (!roundState.votes.getPrecommits(roundState.commitRoundNumber).get().hasTwoThirdMajority()) {
             throw Panic("updateToState(state) called but last Precommit round didn't have +2/3");
         }
         lastPrecommits = roundState.votes.getPrecommits(roundState.commitRoundNumber);
@@ -233,7 +237,20 @@ void ConsensusState::onStart() {
 
 }
 
+// timeoutRoutine: receive requests for timeouts on tickChan and fire timeouts on tockChan
+// receiveRoutine: serializes processing of proposoals, block parts, votes; coordinates state transitions
+void ConsensusState::startRoutines() {
+    timeoutTicker.start();
+    boost::fibers::fiber receiveRoutineFb(&ConsensusState::onStart, this);//TODO replace with receiveRoutine
+    receiveRoutineFb.join();
+}
 
-
-
-
+// Create the next block to propose and return it.
+// We really only need to return the parts, but the block
+// is returned for convenience so we can log the proposal block.
+// Returns nil block upon error.
+// NOTE: keep it side-effect free for clarity.
+boost::optional<Block> ConsensusState::createProposalBlock() {
+    boost::optional<Block> block; //TODO incomplete
+    return block;
+}

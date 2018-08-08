@@ -9,88 +9,70 @@
 #include <vector>
 #include <string>
 #include <libdevcore/RLP.h>
-#include "Signature.h"
+
+using byte = uint8_t;
+using bytes = std::vector<byte>;
+
 
 //TODO
-struct HexBytes {
+struct HexBytes : std::vector<byte> {
 private :
-    std::vector<uint8_t> bytes;
+
 
 public:
     HexBytes hash();
 
-    HexBytes(const std::vector<uint8_t> &bytes) : bytes(bytes) {}
+    HexBytes();
 
-    const std::string toString() const;
-    bool operator==(const HexBytes &other) {
-        if (other.bytes.size() != bytes.size()) return false;
-        for (uint i = 0; i < bytes.size(); i++) {
-            if (bytes[i] != other.bytes[i]) return false;
-        }
-        return true;
-    }
+    explicit HexBytes(const std::vector<byte> b) : bytes(b) {}
 
-    const std::vector<uint8_t> &getBites() const {
-        return bytes;
-    }
+    std::string toString() const;
+
+    bool operator==(const HexBytes &other) const;
+
 };
 
-class PeerID : public HexBytes {
-public:
-    PeerID(std::vector<uint8_t> bytes);
-};
+using PeerID = HexBytes;
+using Address = HexBytes;
+using Signature = HexBytes;
+using P2PID = HexBytes;
 
 // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
 struct BlockID {
     HexBytes bites;
     HexBytes hash;
 public:
-    static BlockID fromRLP(dev::RLP &r);
-
-    BlockID(std::vector<uint8_t> bites);
-
-//TODO set the bites
-    BlockID(int i);
+    explicit BlockID(std::vector<uint8_t> _bites);
 
     BlockID();
 
-    bool isEmpty();
+    static BlockID fromRLP(dev::RLP &r);
+
+    bool isEmpty() const;
+
+
+    // Key returns a machine-readable string representation of the BlockID
+    std::string key() const;
 
     const HexBytes &getBites() const;
 
     const HexBytes &getHash() const;
 
-    bool operator==(const BlockID &other) const {
-        return bites.getBites() == other.getBites().getBites();
-    }
+    bool operator==(const BlockID &other) const;
+
 };
 
 
-bool BlockID::isEmpty() {
-    return bites.getBites().empty();
-}
-
-const HexBytes &BlockID::getBites() const {
-    return bites;
-}
-
-const HexBytes &BlockID::getHash() const {
-    return hash;
-}
-
-bool operator==(const HexBytes &one, const HexBytes &other) {
-    return one.getBites() == other.getBites();
-}
-
 class Pubkey {
-    HexBytes address;
+    Address address;
 public:
-    const HexBytes &getAddress() const {
-        return address;
-    }
+    Address getAddress() const;
 
-    const bool &verifyBytes(HexBytes signBytes, Signature signature) const;
+    std::string toString() const;
 
+    bool verifyBytes(HexBytes signBytes, Signature signature) const;
+
+    //TODO implement
 };
 
 #endif //TM_LIGHT_HEXBYTES_H

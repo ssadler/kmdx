@@ -12,7 +12,9 @@
 std::string channelTm = "overlaydb";
 class Logger {
 public:
+    static void logRound(int64_t, int);
 
+    static void logRound(int64_t);
 };
 
 void logInfo(std::string, std::string &...);

@@ -5,6 +5,7 @@
 #ifndef TM_LIGHT_ROUNDSTATE_H
 #define TM_LIGHT_ROUNDSTATE_H
 
+#include <boost/optional.hpp>
 #include "Block.h"
 #include "Validator.h"
 #include "VoteSet.h"
@@ -35,6 +36,8 @@ typedef enum RoundStepType {
 class RoundState {
     friend class ConsensusState;
 
+    friend class common_test;
+
     int64_t height; // Height we are working on
     int roundNumber;
     RoundStepType stepType;
@@ -52,7 +55,7 @@ class RoundState {
     //PartSet* validBlockParts; // Last known block parts of POL metnioned above.
     HeightVoteSet votes;
     int commitRoundNumber;
-    shared_ptr<VoteSet> lastCommit; // Last precommits at Height-1
+    boost::optional<VoteSet> lastCommit; // Last precommits at Height-1
     ValidatorSet lastValidators;
 
 public:
@@ -70,41 +73,17 @@ public:
 
     void setValidBlock(const shared_ptr<Block> &validBlock);
 
-    void setValidRoundNumber(int i);
+    void setProposalBlock(const shared_ptr<Block> &proposalBlock);
 
+    void setValidRoundNumber(int i);
 
     void updateRoundStep(int number, RoundStepType type);
 
-
     void setHeight(int64_t i);
 
-
+    static std::string stateTypeString(RoundStepType stype);
 };
 
-std::string stateTypeString(RoundStepType stype) {
-    switch (stype) {
-        case RoundStepNewHeight:
-            return "RoundStepNewHeight";
-        case RoundStepNewRound:
-            return "RoundStepNewRound";
-        case RoundStepPropose:
-            return "RoundStepPropose";
-        case RoundStepPrevote:
-            return "RoundStepPrevote";
-        case RoundStepPrevoteWait:
-            return "RoundStepPrevoteWait";
-        case RoundStepPrecommit:
-            return "RoundStepPrecommit";
-        case RoundStepPrecommitWait:
-            return "RoundStepPrecommitWait";
-        case RoundStepCommit:
-            return "RoundStepCommit";
-        default:
-            return "unknown step";
-    }
-}
 
-
-//TODO RoundStateSimple for RPC
 
 #endif //TM_LIGHT_ROUNDSTATE_H

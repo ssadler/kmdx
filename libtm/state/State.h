@@ -1,9 +1,9 @@
 //
-// Created by Maru on 7/9/2018.
+// Created by thpn on 02/08/18.
 //
 
-#ifndef SRC_STATE_H
-#define SRC_STATE_H
+#ifndef AYETH_STATE_H
+#define AYETH_STATE_H
 
 #include "../types/Validator.h"
 #include "../consensus/ConsensusConfig.h"
@@ -14,77 +14,52 @@
 #include "../types/HexBytes.h"
 #include "../types/Validator.h"
 
-using namespace std;
 
 class State {
 public:
     State();
 
-    State(string _chainID, int _lastBlockHeight, BlockID _lastBlockID, time_t _lastBlockTime,
-          ValidatorSet _validators, ValidatorSet _lastValidators, int _lastHeightValidatorsChanged,
-          ConsensusConfig *_consensusParams, int _lastHeightConsensusParamsChanged, HexBytes _appHash);
+    State(std::string _chainID, int64_t _lastBlockHeight, BlockID _lastBlockID, boost::posix_time::ptime _lastBlockTime,
+          ValidatorSet _validators, ValidatorSet _lastValidators, int64_t _lastHeightValidatorsChanged,
+          ConsensusConfig _consensusParams, int64_t _lastHeightConsensusParamsChanged, HexBytes _appHash);
 
     virtual ~State();
 
-    const string &getChainID() const {
-        return chainID;
-    }
+    const std::string &getChainID() const;
 
-    int64_t getLastBlockHeight() const {
-        return lastBlockHeight;
-    }
+    int64_t getLastBlockHeight() const;
 
-    int64_t getLastBlockTotalTx() const {
-        return lastBlockTotalTx;
-    }
+    int64_t getLastBlockTotalTx() const;
 
-    const BlockID &getLastBlockID() const {
-        return lastBlockID;
-    }
+    const BlockID &getLastBlockID() const;
 
-    time_t getLastBlockTime() const {
-        return lastBlockTime;
-    }
+    boost::posix_time::ptime getLastBlockTime() const;
 
-    const ValidatorSet &getValidators() const {
-        return validators;
-    }
+    const ValidatorSet &getValidators() const;
 
-    const ValidatorSet &getLastValidators() const {
-        return lastValidators;
-    }
+    const ValidatorSet &getLastValidators() const;
 
-    int64_t getLastHeightValidatorsChanged() const {
-        return lastHeightValidatorsChanged;
-    }
+    int64_t getLastHeightValidatorsChanged() const;
 
-    ConsensusConfig *getConsensusParams() const {
-        return consensusParams;
-    }
+    ConsensusConfig getConsensusParams() const;
 
-    int64_t getLastHeightConsensusParamsChanged() const {
-        return lastHeightConsensusParamsChanged;
-    }
+    int64_t getLastHeightConsensusParamsChanged() const;
 
-    const HexBytes &getLastResultsHash() const {
-        return lastResultsHash;
-    }
+    const HexBytes &getLastResultsHash() const;
 
-    const HexBytes &getAppHash() const {
-        return appHash;
-    }
+    const HexBytes &getAppHash() const;
 
-    bool isEmpty();
+    bool isEmpty(); //TODO delete or implement
 
 private:
     // Immutable
-    string chainID;
+    std::string chainID;
 
     // LastBlockHeight=0 at genesis (ie. block(H=0) does not exist)
     int64_t lastBlockHeight;
     int64_t lastBlockTotalTx;
     BlockID lastBlockID;
-    time_t lastBlockTime;
+    boost::posix_time::ptime lastBlockTime;
 
     // LastValidators is used to validate block.LastCommit.
     // Validators are persisted to the database separately every time they change,
@@ -97,7 +72,7 @@ private:
 
     // Consensus parameters used for validating blocks.
     // Changes returned by EndBlock and updated after Commit.
-    ConsensusConfig *consensusParams;
+    ConsensusConfig consensusParams;
     int64_t lastHeightConsensusParamsChanged;
 
     // Merkle root of the results from executing prev block
@@ -105,7 +80,10 @@ private:
 
     // The latest AppHash we've received from calling abci.Commit()
     HexBytes appHash;
+
+    //for testing
+    static State randGenesisState(int, bool, int64_t); //TODO
 };
 
 
-#endif //SRC_STATE_H
+#endif //AYETH_STATE_H

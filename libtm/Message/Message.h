@@ -10,6 +10,7 @@
 #include "../types/Proposal.h"
 #include "../types/Vote.h"
 
+using byte = uint8_t;
 
 
 enum class MessageType {
@@ -22,52 +23,31 @@ class Message {
 public:
     Message(const PeerID peerID, MessageType messageType) : peerID(peerID), messageType(messageType) {}
 
-    const PeerID &getPeerID() const {
-        return peerID;
-    }
+    const PeerID getPeerID() const;
 
-    MessageType getMessageType() const {
-        return messageType;
-    }
+    MessageType getMessageType() const;
 
-    static std::string typeToString(MessageType type) {
-        switch (type) {
-            case MessageType::VoteType :
-                return "VoteType";
-            case MessageType::ProposalType :
-                return "ProposalType";
-            case MessageType::BlockType :
-                return "BlockType";
-            case MessageType::TickerType :
-                return "TickerType";
-            case MessageType::QuitType :
-                return "QuitType";
-        }
-    }
+    static std::string typeToString(MessageType type);
+
 
     static constexpr MessageType allTypes[] = {MessageType::VoteType, MessageType::ProposalType, MessageType::BlockType,
                                                MessageType::TickerType, MessageType::QuitType};
 
-    static MessageType typeFromString(std::string text) {
-        if (text == "VoteType") return MessageType::VoteType;
-        if (text == "ProposalType") return MessageType::ProposalType;
-        if (text == "BlockType") return MessageType::BlockType;
-        if (text == "Ticker") return MessageType::TickerType;
-        return MessageType::QuitType;
+    static MessageType typeFromString(std::string text);
 
-    }
 };
 
 class VoteMessage : public Message {
     Vote vote;
 public:
     VoteMessage(const PeerID peerID, const Vote &vote) : Message(peerID,
-                                                                  MessageType::VoteType),
-                                                          vote(vote) {}
+                                                                 MessageType::VoteType),
+                                                         vote(vote) {}
 
     static VoteMessage fromRLP(dev::RLP &r);
 
     dev::u256 toRLP();
+
 public:
     const Vote &getVote() const;
 
@@ -90,18 +70,19 @@ public:
 };
 
 class BlockMessage : public Message {
-    shared_ptr<Block> block;
+    Block block;
     BlockID blockID;
     int64_t height;
     int roundNumber;
 public:
 
     BlockMessage(const PeerID &peerID, const BlockID &blockID, const int64_t &height, int roundNumber,
-                 shared_ptr<Block> block)
+                 const Block &block)
             : Message(peerID, MessageType::BlockType), block(block), blockID(blockID), height(height),
               roundNumber(roundNumber) {}
 
     static BlockMessage fromRLP(dev::RLP &);
+
     const Block getBlock() const;
 };
 

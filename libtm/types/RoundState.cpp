@@ -45,5 +45,29 @@ void RoundState::setValidBlock(const shared_ptr<Block> &validBlock) {
     RoundState::validBlock = validBlock;
 }
 
+void RoundState::setProposalBlock(const shared_ptr<Block> &proposalBlock) {
+    RoundState::proposalBlock = proposalBlock;
+}
 
-
+std::string RoundState::stateTypeString(RoundStepType stype) {
+    switch (stype) {
+        case RoundStepNewHeight:
+            return "RoundStepNewHeight";
+        case RoundStepNewRound:
+            return "RoundStepNewRound";
+        case RoundStepPropose:
+            return "RoundStepPropose";
+        case RoundStepPrevote:
+            return "RoundStepPrevote";
+        case RoundStepPrevoteWait:
+            return "RoundStepPrevoteWait";
+        case RoundStepPrecommit:
+            return "RoundStepPrecommit";
+        case RoundStepPrecommitWait:
+            return "RoundStepPrecommitWait";
+        case RoundStepCommit:
+            return "RoundStepCommit";
+        default:
+            return "unknown step";
+    }
+}

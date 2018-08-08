@@ -5,10 +5,10 @@
 #include "ConsensusState.h"
 
 void ConsensusState::handleProposalMsg(
-        const ProposalMessage &msg) {// throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature) {
+        const ProposalMessage &msg) {// throw(ErrInvalidProposalPolRound, ErrorInvalidSignature) {
     // will not cause transition.
     // once proposal is set, we can receive block parts
-    setProposal(msg.getProposal()); //throws ErrInvalidProposalPolRound, ErrorInvalidProposalSignature
+    setProposal(msg.getProposal()); //throws ErrInvalidProposalPolRound, ErrorInvalidSignature
 }
 
 // attempt to add the vote and dupeout the validator if its a duplicate signature

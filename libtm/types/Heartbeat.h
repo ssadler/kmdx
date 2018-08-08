@@ -3,7 +3,6 @@
 //
 
 #include <err.h>
-#include "Signature.h"
 #include "HexBytes.h"
 
 #ifndef TM_LIGHT_HEARTBEAT_H

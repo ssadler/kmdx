@@ -26,8 +26,6 @@ Heartbeat  heartbeat::copy() {
 */
 
 /*String returns a string representation of the Heartbeat.*/
-#include "HexBytes.h"
-#include "Signature.h"
 #include "Heartbeat.h"
 
 /*

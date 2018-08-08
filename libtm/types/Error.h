@@ -18,11 +18,9 @@ public:
     const string &getDescription() const;
 };
 
-class ErrorInvalidProposalSignature : public Error {
+class ErrorInvalidSignature : public Error {
 public:
-    explicit ErrorInvalidProposalSignature(string desc) : Error(desc) {}
-
-    ErrorInvalidProposalSignature() : Error("ErrorInvalidProposalSignature") {}
+    explicit ErrorInvalidSignature(string desc) : Error("Error: Invalid Signature for " + desc) {}
 };
 
 class ErrInvalidProposalPolRound : public Error {
@@ -61,6 +59,14 @@ public:
 
 };
 
+class ExceptionInvalidBlock : public std::exception {
+    string desc;
+public:
+    explicit ExceptionInvalidBlock(string _desc) { desc = _desc; }
+
+};
+
+
 class SignError : public Error {
 public:
     explicit SignError(string _desc) : Error(_desc) {}
@@ -78,25 +84,30 @@ public:
 
 class ErrorUnexpectedVoteType : public Error {
 public:
-    ErrorUnexpectedVoteType() : Error("ErrorUnexpectedVoteType") {}
+//    explicit ErrorUnexpectedVoteType(VoteType type) : Error("ErrorUnexpectedVoteType");
+    ErrorUnexpectedVoteType() : Error("ErrorUnexpectedVoteType") {};
 
-    explicit ErrorUnexpectedVoteType(VoteType type);
+
 };
 
 class ErrInvalidVoteSet : public Error {
 public:
-    explicit ErrInvalidVoteSet(string desc) : Error("ErrInvalidVoteSet " + desc) {}
+    explicit ErrInvalidVoteSet(string desc) : Error("ErrInvalidVoteSet " + desc) {};
+
+};
+
+class ErrInvalidVote : public Error {
+public:
+    explicit ErrInvalidVote(string desc) : Error("ErrInvalidVote" + desc) {}
 
 };
 
 class Panic : public std::exception {
     string desc;
 public:
-    explicit Panic(string d) : desc(d) {}
-
-    const string &getDesc() const {
-        return desc;
-    }
+    explicit Panic(string d, ...) : desc(d) {} //TODO variadic
+    const string getDesc() const;
+    
 
     Panic(string d, int n...) : desc(d + to_string(n)) {//FIXME
     }
@@ -126,6 +137,11 @@ class PanicCrisis : public Panic {
     Panic inner;
 public:
     PanicCrisis(string d, Panic p) : Panic(d), inner(p) {}
+};
+
+class PanicSanity : public Panic {
+public:
+    PanicSanity(string d) : Panic(d) {}
 };
 
 #endif //TM_LIGHT_ERROR_H

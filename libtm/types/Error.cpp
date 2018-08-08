@@ -11,3 +11,6 @@ const string &Error::getDescription() const {
     return description;
 }
 
+const string Panic::getDesc() const {
+    return desc;
+}

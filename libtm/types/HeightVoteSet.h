@@ -5,7 +5,7 @@
 #ifndef TM_LIGHT_HEIGHTVOTESET_H
 #define TM_LIGHT_HEIGHTVOTESET_H
 
-
+#include <boost/optional.hpp>
 #include <memory>
 #include "VoteSet.h"
 
@@ -16,7 +16,7 @@ public :
 
     VoteSet getPrevotes(int i);
 
-    shared_ptr<VoteSet> getPrecommits(int i);
+    boost::optional<VoteSet> getPrecommits(int i);
 
     /*returns int = polRound & sets blockID */
     int polInfo(BlockID &blockID);

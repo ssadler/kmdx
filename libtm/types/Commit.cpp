@@ -4,7 +4,7 @@
 #include "Commit.h"
 
 
-// FirstPrecommit returns the first non-nullptr precommit in the commit.;
+/*// FirstPrecommit returns the first non-nullptr precommit in the commit.;
 // If all precommits are nullptr, it returns an empty precommit with height 0.;
 shared_ptr<Vote> Commit::getFirstPrecommit() {//TODO return value or reference
     if (precommits.empty()) {
@@ -23,7 +23,7 @@ shared_ptr<Vote> Commit::getFirstPrecommit() {//TODO return value or reference
 
     return shared_ptr<Vote>(new Vote(VoteTypeFirstCommit));
 
-}
+}*/
 
 // Height returns the height of the commit;
 int64_t Commit::height() {
@@ -67,7 +67,7 @@ bool Commit::isCommit() {
 
 // ValidateBasic performs basic validation that doesn't involve state data.
 void Commit::validateBasic() { //throw(ErrInvalidVoteSet) {
-    if (blockID.getBites().getBites().empty()) {
+    if (blockID.getBites().empty()) {
         throw ErrInvalidVoteSet("Commit cannot be for nullptr block");
     }
     if (precommits.empty()) {
@@ -82,7 +82,8 @@ void Commit::validateBasic() { //throw(ErrInvalidVoteSet) {
         Vote precommit = *precommits[i].get();
 // Ensure that all votes are precommits
         if (precommit.getType() != VoteTypePrecommit) {
-            throw ErrInvalidVoteSet("Invalid commit vote. Expected precommit, got " + precommit.getType());
+            throw ErrInvalidVoteSet(
+                    "Invalid commit vote. Expected precommit, got " + Vote::voteTypeToString(precommit.getType()));
         }
 // Ensure that all heights are the same
         if (precommit.getHeight() != height) {

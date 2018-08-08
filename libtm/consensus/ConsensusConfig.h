@@ -48,6 +48,9 @@ private:
 
 
 public:
+
+    static ConsensusConfig fromRLP(dev::RLP);
+
     HexBytes hash();
 
     const string &getRootDir() const;

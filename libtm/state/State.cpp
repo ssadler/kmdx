@@ -1,9 +1,57 @@
 //
-// Created by Maru on 7/9/2018.
+// Created by thpn on 02/08/18.
 //
 
 #include "State.h"
 
+const std::string &State::getChainID() const {
+    return chainID;
+}
+
+int64_t State::getLastBlockHeight() const {
+    return lastBlockHeight;
+}
+
+int64_t State::getLastBlockTotalTx() const {
+    return lastBlockTotalTx;
+}
+
+const BlockID &State::getLastBlockID() const {
+    return lastBlockID;
+}
+
+boost::posix_time::ptime State::getLastBlockTime() const {
+    return lastBlockTime;
+}
+
+const ValidatorSet &State::getValidators() const {
+    return validators;
+}
+
+const ValidatorSet &State::getLastValidators() const {
+    return lastValidators;
+}
+
+int64_t State::getLastHeightValidatorsChanged() const {
+    return lastHeightValidatorsChanged;
+}
+
+ConsensusConfig State::getConsensusParams() const {
+    return consensusParams;
+}
+
+int64_t State::getLastHeightConsensusParamsChanged() const {
+    return lastHeightConsensusParamsChanged;
+}
+
+const HexBytes &State::getLastResultsHash() const {
+    return lastResultsHash;
+}
+
+const HexBytes &State::getAppHash() const {
+    return appHash;
+}
+    
 /* State is a short description of the latest committed block of the Tendermint consensus.
 * It keeps all information necessary to validate new blocks,
 * including the last validator set and the consensus params.
@@ -11,9 +59,9 @@
 
 
 
-State::~State() {
+/*State::~State() {
     //TODO state destructor
-}
+}*/
 
 
 
@@ -21,7 +69,6 @@ State::~State() {
 //TODO copy constructor
 //}
 
-//TODO GENESIS
 //------------------------------------------------------------------------
 // Genesis
 
@@ -30,27 +77,8 @@ State::~State() {
 //
 // Used during replay and in tests.
 /** needs an initialized state */
-/*Errorf makeGenesisStateFromFile(string genDocFile, string& genDoc, State& state) {
-    Errorf err = makeGenesisDocFromFile(genDocFile, genDoc);
-    if (err != null) {
-        return err;
-    }
-    makeGenesisState(genDocFile, genDoc, state);
-    return err;
-}
 
-// MakeGenesisDocFromFile reads and unmarshals genesis doc from the given file.
-Errorf makeGenesisDocFromFile(string genDocFile, string& genDoc) {
-    err = genDocJSON(genDocFile, genDoc);
-    if (err != null) {
-        genDoc = null;
-        return Errorf("Couldn't read GenesisDoc file: %v", err);
-    }
-    err = types.GenesisDocFromJSON(genDocJSON, genDoc);
-    if (err != null) {
-        genDoc = null;
-        return Errorf("Error reading GenesisDoc: %v", err);
-    }
-    return null;
-}
-*/
+/*std::string _chainID, int _lastBlockHeight, BlockID _lastBlockID, time_t _lastBlockTime,
+        ValidatorSet _validators, ValidatorSet _lastValidators, int _lastHeightValidatorsChanged,
+        ConsensusConfig *_consensusParams, int _lastHeightConsensusParamsChanged, HexBytes _appHash*/
+

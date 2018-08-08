@@ -9,7 +9,6 @@
 #include <ctime>
 #include <cstdint>
 #include "HexBytes.h"
-#include "Signature.h"
 #include "Block.h"
 #include "RoundState.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
@@ -35,7 +34,7 @@ public:
 
 // If there is no POLRound, polRound should be -1.
     Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID) : polBlockID(
-            _polBlockID.isEmpty() ? BlockID(-1) : _polBlockID) {
+            _polBlockID.isEmpty() ? BlockID() : _polBlockID) {
         height = _height;
         roundNumber = _round;
         timestamp = boost::posix_time::second_clock::local_time();

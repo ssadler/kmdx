@@ -7,11 +7,11 @@
 
 
 #include <cstdint>
-#include "HexBytes.h"
-#include "Signature.h"
 #include <vector>
+#include "HexBytes.h"
 
 
+class Proposal;
 
 class Validator {
     HexBytes address;
@@ -19,34 +19,35 @@ class Validator {
     int64_t votingPower;
     int64_t accum;
 
+public:
+
     Validator(Pubkey pubKey, int64_t votingPower);
 
-public:
-    const HexBytes &getAddress() const {
-        return address;
-    }
+    void signProposal(const std::string &chainID, Proposal &proposal);
 
-    const Pubkey &getPubKey() const {
-        return pubKey;
-    }
+    const HexBytes &getAddress() const;
 
-    int64_t getVotingPower() const {
-        return votingPower;
-    }
+    const Pubkey &getPubKey() const;
 
-    int64_t getAccum() const {
-        return accum;
-    }
+    int64_t getVotingPower() const;
 
-    std::string toString() {
-        return address.toString();
-    }
+    int64_t getAccum() const;
+
+    std::string toString();
+
 };
 
 class ValidatorSet {
     std::vector<Validator> validators;
 public:
+
+    ValidatorSet(const std::vector<Validator> &validators);
+
+    Validator getByIndex(int index);
+
     HexBytes hash() const;
+
+    unsigned int size();
 
     Validator getProposer() const;
 

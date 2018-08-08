@@ -11,138 +11,120 @@
 #include "../Heartbeat.h"
 
 class Event {
-    virtual std::string TypeString();
+    std::string typeToString;
+
+    std::string getTypeToString();
+
+public:
+    Event(std::string typeString) : typeToString(typeString) {};
 };
 
 class EventCompleteProposal : public Event {
-    virtual std::string TypeString() {
-        return "EventCompleteProposal";
-    }
+public:
+    EventCompleteProposal() : Event("EventCompleteProposal") {}
 };
 
 
 class EventDupeout : public Event {
-    virtual std::string TypeString() {
-        return "EventDupeout";
-    }
+public:
+    EventDupeout() : Event("EventDupeout") {}
 };
 
 class EventFork : public Event {
-    virtual std::string TypeString() {
-        return "EventFork";
-    }
+public:
+    EventFork() : Event("EventFork") {}
 };
 
 class EventLock : public Event {
-    virtual std::string TypeString() {
-        return "EventLock";
-    }
+public:
+    EventLock() : Event("EventLock") {}
 };
 
 class EventNewBlock : public Event {
-    virtual std::string TypeString() {
-        return "EventNewBlock";
-    }
+public:
+    EventNewBlock() : Event("EventNewBlock") {}
 };
 
 class EventNewBlockHeader : public Event {
-    virtual std::string TypeString() {
-        return "EventNewBlockHeader";
-    }
+public:
+    EventNewBlockHeader() : Event("EventNewBlockHeader") {}
 };
 
 class EventNewRound : public Event {
-    virtual std::string TypeString() {
-        return "EventNewRound";
-    }
+public:
+    EventNewRound() : Event("EventNewRound") {}
 };
 
 class EventNewRoundStep : public Event {
-    virtual std::string TypeString() {
-        return "EventNewRoundStep";
-    }
+public:
+    EventNewRoundStep() : Event("EventNewRoundStep") {}
 };
 
 class EventPolka : public Event {
-    virtual std::string TypeString() {
-        return "EventPolka";
-    }
+public:
+    EventPolka() : Event("EventPolka") {}
 };
 
 class EventRebond : public Event {
-    virtual std::string TypeString() {
-        return "EventRebond";
-    }
+public:
+    EventRebond() : Event("EventRebond") {}
 };
 
 class EventRelock : public Event {
-    virtual std::string TypeString() {
-        return "EventRelock";
-    }
+public:
+    EventRelock() : Event("EventRelock") {}
 };
 
 class EventTimeoutPropose : public Event {
-    virtual std::string TypeString() {
-        return "EventTimeoutPropose";
-    }
+public:
+    EventTimeoutPropose() : Event("EventTimeoutPropose") {}
 };
 
 class EventTimeoutWait : public Event {
-    virtual std::string TypeString() {
-        return "EventTimeoutWait";
-    }
+public:
+    EventTimeoutWait() : Event("EventTimeoutWait") {}
 };
 
 class EventTx : public Event {
-    virtual std::string TypeString() {
-        return "EventTx";
-    }
+public:
+    EventTx() : Event("EventTx") {}
 };
 
 class EventUnbond : public Event {
-    virtual std::string TypeString() {
-        return "EventUnbond";
-    }
+public:
+    EventUnbond() : Event("EventUnbond") {}
 };
 
 class EventUnlock : public Event {
-    virtual std::string TypeString() {
-        return "EventUnlock";
-    }
+public:
+    EventUnlock() : Event("EventUnlock") {}
 };
 
 class EventVote : public Event {
-    virtual std::string TypeString() {
-        return "EventVote";
-    }
+public:
+    EventVote() : Event("EventVote") {}
 };
 
 class EventProposalHeartbeat : public Event {
-    virtual std::string TypeString() {
-        return "EventProposalHeartbeat";
-    }
+public:
+    EventProposalHeartbeat() : Event("EventProposalHeartbeat") {}
 };
 
 class EventDataVote : public Event {
     Vote vote;
-
-    virtual std::string TypeString() {
-        return "EventDataVote";
-    }
-
 public:
-    EventDataVote(Vote v) : vote(v) {}
+    EventDataVote(Vote v) : Event("EventDataVote"), vote(v) {}
+
+
 };
 
 class EventDataProposalHeartbeat : public Event {
     Heartbeat *heartbeat;
 
-    virtual std::string TypeString() {
-        return "EventDataProposalHeartbeat";
-    }
 
 public :
-    EventDataProposalHeartbeat(Heartbeat *h) {
+
+    EventDataProposalHeartbeat(Heartbeat *h) : Event("EventDataProposalHeartbeat") {
         heartbeat = h;
     }
 };
@@ -155,11 +137,7 @@ class EventDataRoundState : public Event {
     // private, not exposed to websockets
     //TODO interface{} RoundState ;
 
-    virtual std::string TypeString() {
-        return "EventDataRoundState";
-    }
-
-    EventDataRoundState(int _height, int _round, std::string _step) {
+    EventDataRoundState(int _height, int _round, std::string _step) : Event("EventDataRoundState") {
         height = _height;
         round = _round;
         step = _step;

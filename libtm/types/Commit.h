@@ -26,7 +26,7 @@ class Commit {
     std::vector<bool> bitArray;
 
 public:
-    Commit(); //FIXME maybe delete
+    Commit();
     shared_ptr<Vote> getFirstPrecommit();
 
     int round();

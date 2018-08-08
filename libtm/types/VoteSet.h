@@ -6,9 +6,29 @@
 #define TM_LIGHT_VOTESET_H
 
 #include <string>
+#include <boost/optional.hpp>
 #include "Vote.h"
 #include "Error.h"
+#include "HexBytes.h"
 #include "Validator.h"
+
+const unsigned int voteSetLength = 64;
+
+/*
+	Votes for a particular block
+	There are two ways a *blockVotes gets created for a blockKey.
+	1. first (non-conflicting) vote of a validator w/ blockKey (peerMaj23=false)
+	2. A peer claims to have a 2/3 majority w/ blockKey (peerMaj23=true)
+*/
+class BlockVotes {
+    bool peerMaj23;         // peer claims to have maj23
+    vector<bool> bitArray;  // valIndex -> hasVote?
+    vector<Vote> votes;     // valIndex -> *Vote
+    int64_t sum;            // vote sum
+
+public:
+    BlockVotes(const vector<bool> &bitArray, const vector<Vote> &votes) : bitArray(bitArray), votes(votes) {}
+};
 
 /*
     VoteSet helps collect signatures from validators at each height+round for a
@@ -53,33 +73,37 @@ class VoteSet {
     ValidatorSet valSet;
 
     //sync.Mutex mtx
-    //*cmn.BitArray votesBitArray
+    bool votesBitArray[voteSetLength];
     std::vector<Vote> votes;        // Primary votes to share
     int64_t sum;         // Sum of voting power for seen votes, discounting conflicts
-    BlockID maj23;        // First 2/3 majority seen
-    //map[string]*blockVotes  votesByBlock;  // string(blockHash|blockParts) -> blockVotes
-    //map[P2PID]BlockID       peerMaj23s   ; // Maj23 for each peer
+    boost::optional<BlockID> maj23;        // First 2/3 majority seen
+    unordered_map<std::string, BlockVotes> votesByBlock;  // string(blockHash|blockParts) -> blockVotes
+//TODO    unordered_map<P2PID, BlockID> peerMaj23s; // Maj23 for each peer
 
 private:
 
 public:
-    VoteSet();
+    VoteSet(const string &chainID, int64_t blockHeight, int round, VoteType type, ValidatorSet valSet);
 
-    bool p_addVote(Vote v); // throw(PanicNullVoteSet);
+    boost::optional<Vote> getByAddress(HexBytes address) const;
 
-    std::string toStringShort();
+    bool priv_addVote(Vote &v); // throw(PanicNullVoteSet);
+
+    std::string toStringShort() const;
+
+    bool addVerifiedVote(Vote, std::string blockKey, int64_t votingPower, boost::optional<Vote> conflicting);
+
+    boost::optional<Vote> getVote(int valIndex, std::string blockKey) const;
 
     bool hasAllVotes() const;
 
-    bool twoThirdMajority(BlockID &bytes);
+    bool twoThirdMajority(BlockID &bytes) const;
 
-    bool hasTwoThirdsAny();
+    bool hasTwoThirdsAny() const;
 
-    bool hasTwoThirdMajority();
+    bool hasTwoThirdMajority() const;
 
-    bool hasAll();
-
-    VoteSet(const string &chainID, int64_t blockHeight, int round, VoteType type, ValidatorSet valSet);
+    bool hasAll() const;
 
     bool addVote(Vote v); //throw(PanicNullVoteSet);
 
@@ -97,7 +121,9 @@ public:
 
     int64_t getSum() const;
 
-    const BlockID &getMaj23() const;
+    const boost::optional<BlockID> &getMaj23() const;
+
+    const bytes getSignatures() const;
 };
 
 
