@@ -8,13 +8,13 @@
 #define BOOST_TEST_MODULE LogManager
 
 #include <iostream>
-#include <boost/test/unit_test_suite.hpp>
-#include <boost/test/unit_test.hpp>
-#include "../types/Vote.h"
-#include <boost/test/unit_test_log.hpp>
-#include <boost/test/unit_test_log_formatter.hpp>
-#include <boost/test/unit_test_monitor.hpp>
+//#include <boost/test/unit_test_suite.hpp>
+#include <boost/test/included/unit_test.hpp>
+//#include <boost/test/unit_test_log.hpp>
+//#include <boost/test/unit_test_log_formatter.hpp>
+//#include <boost/test/unit_test_monitor.hpp>
 
+#include "../types/Vote.h"
 
 BOOST_AUTO_TEST_SUITE(tmvotestest)
 
