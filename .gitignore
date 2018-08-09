@@ -94,3 +94,4 @@ CTestTestfile.cmake
 test/testeth
 test/Testing/Temporary
 kmdx/kmdx
+libtm/tmtest
