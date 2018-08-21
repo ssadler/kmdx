@@ -6,6 +6,7 @@
 #define TM_LIGHT_COMMIT_H
 
 #include <memory>
+#include <boost/optional.hpp>
 #include "HexBytes.h"
 #include "Vote.h"
 #include "Error.h"
@@ -18,16 +19,17 @@ class Commit {
     // Any peer with a block can gossip precommits by index with a peer without recalculating the
     // active ValidatorSet.
     BlockID blockID;
-    std::vector<std::shared_ptr<Vote>> precommits;
+    std::map<int, Vote> precommits;
 
     // Volatile
-    shared_ptr<Vote> firstPrecommit;
+    boost::optional<Vote> firstPrecommit;
     HexBytes hash;
     std::vector<bool> bitArray;
 
 public:
-    Commit();
-    shared_ptr<Vote> getFirstPrecommit();
+    Commit();;
+
+    const boost::optional<Vote> getFirstPrecommit();
 
     int round();
 
@@ -39,9 +41,9 @@ public:
 
     bool isCommit();
 
-    void validateBasic(); // throw(ErrInvalidVoteSet);
+    void validateBasic(); // throw(ErrInvalidVoteSet, __FILE__, __LINE__);
 
-    vector<shared_ptr<Vote>> getPrecommits() const;
+    std::map<int, Vote> getPrecommits() const;
 
     HexBytes getHash();
 };

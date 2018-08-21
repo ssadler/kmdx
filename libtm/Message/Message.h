@@ -18,12 +18,12 @@ enum class MessageType {
 };
 
 class Message {
-    PeerID peerID;
+    Address address;
     MessageType messageType;
 public:
-    Message(const PeerID peerID, MessageType messageType) : peerID(peerID), messageType(messageType) {}
+    Message(const Address address, MessageType messageType);
 
-    const PeerID getPeerID() const;
+    Address getAddress() const;
 
     MessageType getMessageType() const;
 
@@ -35,14 +35,14 @@ public:
 
     static MessageType typeFromString(std::string text);
 
+    std::string toString() const;
+
 };
 
 class VoteMessage : public Message {
     Vote vote;
 public:
-    VoteMessage(const PeerID peerID, const Vote &vote) : Message(peerID,
-                                                                 MessageType::VoteType),
-                                                         vote(vote) {}
+    VoteMessage(const Address address, const Vote &vote);
 
     static VoteMessage fromRLP(dev::RLP &r);
 
@@ -57,16 +57,17 @@ class ProposalMessage : public Message {
 public:
     ProposalMessage(const Proposal &proposal);
 
-    static ProposalMessage fromRLP(dev::RLP &);
+    static ProposalMessage fromRLP(dev::RLP &) {
+        //TODO unimplemented
+        return ProposalMessage(Proposal(int64_t(0), -1, -1, BlockID()));
+    }
 
 private:
     Proposal proposal;
 public:
     const Proposal getProposal() const;
 
-    ProposalMessage(const PeerID &peerID, const Proposal &proposal)
-            : Message(peerID, MessageType::ProposalType),
-              proposal(proposal) {}
+    ProposalMessage(const Address &address, const Proposal &proposal);
 };
 
 class BlockMessage : public Message {
@@ -76,10 +77,8 @@ class BlockMessage : public Message {
     int roundNumber;
 public:
 
-    BlockMessage(const PeerID &peerID, const BlockID &blockID, const int64_t &height, int roundNumber,
-                 const Block &block)
-            : Message(peerID, MessageType::BlockType), block(block), blockID(blockID), height(height),
-              roundNumber(roundNumber) {}
+    BlockMessage(const Address &address, const BlockID &blockID, const int64_t &height, int roundNumber,
+                 const Block &block);
 
     static BlockMessage fromRLP(dev::RLP &);
 
@@ -88,9 +87,7 @@ public:
 
 class TickerMessage : public Message {
 public:
-    TickerMessage(const PeerID &peerID) : Message(peerID, MessageType::TickerType) {
-
-    }
+    TickerMessage(const Address &address);
 
 };
 

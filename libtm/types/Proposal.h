@@ -10,7 +10,7 @@
 #include <cstdint>
 #include "HexBytes.h"
 #include "Block.h"
-#include "RoundState.h"
+/*#include "RoundState.h"*/
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 
 
@@ -29,25 +29,16 @@ class Proposal {
     BlockID polBlockID; // zero if null.
     Signature signature;
 
+    friend class MockPV;
 
 public:
+    Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID);
 
-// If there is no POLRound, polRound should be -1.
-    Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID) : polBlockID(
-            _polBlockID.isEmpty() ? BlockID() : _polBlockID) {
-        height = _height;
-        roundNumber = _round;
-        timestamp = boost::posix_time::second_clock::local_time();
-        polRound = _polRound;
-        polBlockID = _polBlockID;
-
-    }
-
-    const HexBytes &signBytes(const string blockChainId) const;
+    HexBytes signBytes(const string blockChainId) const;
 
     int64_t getHeight() const;
 
-    const RoundState &getRoundState() const;
+    int getRoundNumber() const;
 
     int getPolRound() const;
 

@@ -7,22 +7,26 @@
 
 #include <cstdint>
 #include <vector>
-#include <libtm/types/Block.h>
+#include "../types/Block.h"
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
 
 class TmController {
 public :
-    int validateBlock(bytes b); //TODO this will probably require some state information
+    int validateBlock(bytes b);
     // currentHeight returns the last known contiguous block height.
     int64_t currentHeight();
 
-    void append(bytes block, bytes signatures);
+    void append(bytes block, std::vector<Signature> signatures);
+
+//    void append(HexBytes block, std::vector<HexBytes> signatures);
+
+    void append(HexBytes, std::vector<HexBytes, std::allocator<HexBytes> >);
 
     Block getBlockToPropose();
 
-    std::unordered_map<string, int> getGenesisParams();
+    std::unordered_map<string, int> getGenesisParams();;
 };
 
 

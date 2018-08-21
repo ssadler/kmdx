@@ -61,7 +61,9 @@ class RoundState {
 public:
     const EventDataRoundState roundStateEvent();
 
-    RoundState();
+    RoundState(std::string chainID);
+
+    RoundState(std::string chainID, int64_t height, ValidatorSet validators);
 
     bool operator==(const RoundState &other);
 
@@ -75,7 +77,7 @@ public:
 
     void setProposalBlock(const shared_ptr<Block> &proposalBlock);
 
-    void setValidRoundNumber(int i);
+    void setValidRoundNumber(int validRoundNumber);
 
     void updateRoundStep(int number, RoundStepType type);
 

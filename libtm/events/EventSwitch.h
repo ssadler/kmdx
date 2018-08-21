@@ -10,10 +10,13 @@
 #include "../types/RoundState.h"
 
 class EventSwitch {
-//TODO
+    int whatever; //FIXME rmv
+
 public:
-    void fireEvent(Event, Vote); //TODO where is this ?
-    void fireEvent(Event, RoundState &);
+    void fireEvent(Event event, Vote vote);
+
+    void fireEvent(Event event, RoundState &rs);
+
 
     void start();
 

@@ -18,8 +18,11 @@ std::string Vote::voteTypeToString(VoteType type) {
 };
 
 Vote Vote::fromRLP(dev::RLP &r) {
+    cout << r.toString();
+    cout << r[5].toString();
+    //cout<<r.payload[5].toString();
     return Vote(
-            PeerID(r[1].toBytes()),
+            Address(r[1].toBytes()),
             r[2].toInt(),
             r[3].toInt<int64_t>(),
             r[4].toInt(),
@@ -41,36 +44,32 @@ dev::RLP Vote::toRLP() {
     rlp.append(roundNumber);
     rlp.append(boost::posix_time::to_iso_string(timestamp));
     rlp.append(type);
-    rlp.append(blockID.getBites());
+    rlp.append(blockID.getBytes());
     rlp.append(signature);
     return dev::RLP(rlp.out());
     //return dev::u256(rlp.out());
 }
 
 
-Vote::Vote(const PeerID peerID, int _validatorIndex, int64_t _height, int _roundNumber,
+Vote::Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+           const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID)
+        : validatorAddress(address), blockID(_blockID) {
+    validatorIndex = _validatorIndex;
+    height = _height;
+    roundNumber = _roundNumber;
+    timestamp = _timestamp;
+    type = _type;
+}
+
+Vote::Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
            const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
-           const Signature _signature)
-        : validatorAddress(peerID), blockID(_blockID), signature(_signature) {
-    validatorIndex = _validatorIndex;
-    height = _height;
-    roundNumber = _roundNumber;
-    timestamp = _timestamp;
-    type = _type;
+           const Signature _signature) : Vote(address, _validatorIndex, _height, _roundNumber, _timestamp, _type,
+                                              _blockID) {
+    signature = _signature;
 }
 
-Vote::Vote(int _validatorIndex, const HexBytes privValAddress, int64_t _height, int _roundNumber,
-           boost::posix_time::ptime _timestamp, VoteType _type, BlockID _blockId)
-        : validatorAddress(privValAddress), blockID(_blockId), signature() {
-    validatorIndex = _validatorIndex;
-    height = _height;
-    roundNumber = _roundNumber;
-    timestamp = _timestamp;
-    type = _type;
-}
 
-Vote::Vote(VoteType _type)
-        : validatorAddress(), blockID(), signature() {
+Vote::Vote(VoteType _type) : validatorAddress(), blockID(), signature() {
 //    validatorIndex = 0;
 //    height = 0;
 //    roundNumber = 0;
@@ -78,12 +77,12 @@ Vote::Vote(VoteType _type)
     type = _type;
 }
 
-void Vote::verify(const std::string &chainID, const Pubkey &pubKey) const {
+void Vote::verify(const std::string &chainID, const PubKey &pubKey) const {
     if (pubKey.getAddress() != this->validatorAddress) {
-        throw ErrInvalidVote("invalid validator Address");
+        throw ErrInvalidVote("invalid validator Address", __FILE__, __LINE__);
     }
     if (!pubKey.verifyBytes(this->signBytes(chainID), this->signature)) {
-        throw ErrorInvalidSignature("vote");
+        throw ErrorInvalidSignature("vote", __FILE__, __LINE__);
     }
 }
 
@@ -92,7 +91,7 @@ std::string Vote::toString() const {
     return Vote::voteTypeToString(type) + " " + validatorAddress.toString();
 }
 
-const HexBytes &Vote::getValidatorAddress() const {
+const Address &Vote::getValidatorAddress() const {
     return validatorAddress;
 }
 
@@ -125,7 +124,13 @@ const Signature &Vote::getSignature() const {
 }
 
 HexBytes Vote::signBytes(std::string chainID) const {
-    cout << chainID;
-    return HexBytes(); //TODO
+    ostringstream out;
+    out << "{chain_id:" << chainID << ",type:" << "vote" << "," << blockID.toString() << ",height:" << height
+        << ",round:"
+        << roundNumber << ",timestamp:" << boost::posix_time::to_iso_string(timestamp) << ",type:"
+        << voteTypeToString(type) << "}";
+    cout << out.str();
+    std::string got = out.str();
+    return HexBytes(out.str()); //TODO
 }
 

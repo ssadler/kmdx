@@ -22,7 +22,7 @@ TMPeer::TMPeer(std::shared_ptr<p2p::SessionFace> _s, p2p::HostCapabilityFace* _h
 
 bool TMPeer::interpret(unsigned _id, RLP const& _r)
 {
-    if (_id == 1 && &_r) return true;
+    if (_id == 1 && _r.size() > 0) return true;
     return true; // TODO
 }
 }

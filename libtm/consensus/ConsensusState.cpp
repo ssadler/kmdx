@@ -12,21 +12,31 @@
  * It processes votes and proposals, and upon reaching agreement,
  * commits blocks to the chain and executes them against the application.
  * The internal state machine receives input from peers, the internal validator, and from a timer.*/
-ConsensusState::ConsensusState(ConsensusConfig _config) : consensusConfig(_config), timeoutTicker(), eventBus(),
-                                                          eventSwitch() {
+/*ConsensusState::ConsensusState(ConsensusConfig _config, TmController &_controller) : consensusConfig(_config),
+                                                                                     controller(_controller),
+                                                                                     )
+        //                                                                                     , privValidator(),
+//                                                                                     timeoutTicker(),
+//                                                                                     eventBus(),
+//                                                                                     eventSwitch()
+                                                                                     {
     doWALCatchup = true;
     //TODO wal = NULL; //TODO nilWAL{};
 }
 
-ConsensusState::ConsensusState(const ConsensusState &cs) : ConsensusState(cs.consensusConfig) {
-    //FIXME
-}
+ConsensusState::ConsensusState(const ConsensusState &cs, TmController &_controller) : ConsensusState(cs.consensusConfig,
+                                                                                                     _controller)
+{
+//FIXME
+}*/
 
-ConsensusState::ConsensusState(ConsensusConfig _config, State _state) : ConsensusState(_config) {
+ConsensusState::ConsensusState(ConsensusConfig _config, State _state, TmController &_controller) : consensusConfig(
+        _config), controller(_controller), roundState(_state.getChainID()) {
+    receiveRoutineWorker.setConsensusState(this);
     updateToState(_state);
-    // Don't call scheduleRound0 yet We do that upon Start().
+// Don't call scheduleRound0 yet We do that upon Start().
     reconstructLastCommit(_state);
-    //TODO cs.setBaseService(newBaseService(nil, "ConsensusState", cs));
+//TODO cs.setBaseService(newBaseService(nil, "ConsensusState", cs));
 }
 
 
@@ -42,7 +52,7 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
         return;
 
     //proposal doesnt apply
-    if (_proposal.getHeight() != roundState.height || !(roundState == _proposal.getRoundState())) {
+    if (_proposal.getHeight() != roundState.height || (roundState.roundNumber != _proposal.getRoundNumber())) {
         return;
     }
 
@@ -54,15 +64,16 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
     // Verify POLRound, which must be -1 or between 0 and proposal.Round exclusive.
     if (_proposal.getPolRound() != -1 &&
         (_proposal.getPolRound() < 0 || _proposal.getPolRound() <= _proposal.getPolRound())) {
-        throw ErrInvalidProposalPolRound();
+        throw ErrInvalidProposalPolRound(__FILE__, __LINE__);
     }
 
     // Verify signature
-    if (!(state.getValidators().getProposer().getPubKey().verifyBytes(_proposal.signBytes(state.getChainID()),
-                                                                      _proposal.getSignature()))) {
-        throw ErrorInvalidSignature("proposal");
+    if (!(state.get().getValidators().getProposer().get().getPubKey().verifyBytes(
+            _proposal.signBytes(state.get().getChainID()),
+            _proposal.getSignature()))) {
+        throw ErrorInvalidSignature("proposal", __FILE__, __LINE__);
     }
-    clog(dev::VerbosityInfo, channelTm) << "Received proposal: " << _proposal.toString();
+    clog(dev::VerbosityInfo, Logger::channelTm) << "Received proposal: " << _proposal.toString();
 //    cs.ProposalBlockParts = types.NewPartSetFromHeader(proposal.BlockPartsHeader)
 }
 
@@ -71,14 +82,15 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
 void ConsensusState::updateToState(State _state) {
     if (roundState.commitRoundNumber > -1 && 0 < roundState.height &&
         roundState.height != _state.getLastBlockHeight()) {
-        throw Panic("updateToState() expected state height of %v but found %v", roundState.height,
-                    _state.getLastBlockHeight());
+        throw Panic("updateToState() expected state height of %s but found %s" + to_string(roundState.height) +
+                    to_string(_state.getLastBlockHeight()), __FILE__, __LINE__);
     }
-    if (!this->state.isEmpty() && this->state.getLastBlockHeight() + 1 != roundState.height) {
+    if (this->state.is_initialized() && this->state.get().getLastBlockHeight() + 1 != roundState.height) {
         // This might happen when someone else is mutating this->state.
         // Someone forgot to pass in _state.copy() somewhere?!
-        throw Panic("Inconsistent this->state.lastBlockHeight+1 %v vs roundState.height %v",
-                    this->state.getLastBlockHeight() + 1, roundState.height);
+        throw Panic("Inconsistent this->state.lastBlockHeight+1 %s vs roundState.height %s" +
+                    to_string(this->state.get().getLastBlockHeight() + 1) + to_string(roundState.height), __FILE__,
+                    __LINE__);
     }
 
     // If (state isn't further out than this->state, just ignor)e.
@@ -86,10 +98,10 @@ void ConsensusState::updateToState(State _state) {
     // We don't want to reset e.g. the Votes, but we still want to
     // signal the new round step, because other services (eg. mempool)
     // depend on having an up-to-date peer state!
-    if (!this->state.isEmpty() && (_state.getLastBlockHeight() <= this->state.getLastBlockHeight())) {
-        clog(dev::VerbosityInfo, channelTm) << "Ignoring updateToState()" << "newHeight"
-                                            << _state.getLastBlockHeight() + 1 << "oldHeight"
-                                            << this->state.getLastBlockHeight() + 1;
+    if (this->state.is_initialized() && (_state.getLastBlockHeight() <= this->state.get().getLastBlockHeight())) {
+        clog(dev::VerbosityInfo, Logger::channelTm) << "Ignoring updateToState()" << "newHeight"
+                                                    << _state.getLastBlockHeight() + 1 << "oldHeight"
+                                                    << this->state.get().getLastBlockHeight() + 1;
         newStep();
         return;
     }
@@ -97,9 +109,13 @@ void ConsensusState::updateToState(State _state) {
     // Reset fields based on state.
     ValidatorSet validators = _state.getValidators();
     boost::optional<VoteSet> lastPrecommits;
+    /*validators := state.Validators
+    lastPrecommits := (*types.VoteSet)(nil)
+    if cs.CommitRound > -1 && cs.Votes != nil {
+                if !cs.Votes.Precommits(cs.CommitRound).HasTwoThirdsMajority() {*/
     if (roundState.commitRoundNumber > -1 && roundState.votes.isEmpty()) {
         if (!roundState.votes.getPrecommits(roundState.commitRoundNumber).get().hasTwoThirdMajority()) {
-            throw Panic("updateToState(state) called but last Precommit round didn't have +2/3");
+            throw Panic("updateToState(state) called but last Precommit round didn't have +2/3", __FILE__, __LINE__);
         }
         lastPrecommits = roundState.votes.getPrecommits(roundState.commitRoundNumber);
     }
@@ -127,9 +143,10 @@ void ConsensusState::updateToState(State _state) {
     roundState.validRoundNumber = 0;
     roundState.validBlock = nullptr;
     //roundState.validBlockParts = NULL;
-    roundState.votes = HeightVoteSet(_state.getChainID(), roundState.height, validators);
+//    HeightVoteSet hvs(_state.getChainID(), roundState.height, validators);
+//    roundState.votes = hvs; //TODO whats better here?
     roundState.commitRoundNumber = -1;
-    roundState.lastCommit = lastPrecommits;
+    roundState.lastCommit = lastPrecommits.get(); //FIXME coulfail
     roundState.lastValidators = _state.getLastValidators();
 
     this->state = _state;
@@ -138,26 +155,44 @@ void ConsensusState::updateToState(State _state) {
     newStep();
 }
 
+/** LoadSeenCommit returns the locally seen Commit for the given height.
+ * This is useful when we've seen a commit, but there has not yet been
+ * a new block at `height + 1` that includes this commit in its block.LastCommit.*/
+Commit ConsensusState::loadSeenCommit(int64_t height) {
+/*Commit commit;
+        bz := bs.db.Get(calcSeenCommitKey(height))
+if len(bz) == 0 {
+return nil
+}
+err := cdc.UnmarshalBinaryBare(bz, commit)
+if err != nil {
+panic(cmn.ErrorWrap(err, "Error reading block seen commit"))
+}
+return commit*/ //FIXME
+    if (height > 0) return Commit();
+    return Commit();
+}
+
+
 /** Reconstruct LastCommit from SeenCommit, which we saved along with the block,
 * (which happens even before saving the state) */
-void ConsensusState::reconstructLastCommit(State state) {
-    if (state.getLastBlockHeight() == 0) {
+void ConsensusState::reconstructLastCommit(State _state) {
+    if (_state.getLastBlockHeight() == 0) {
         return;
     }
 
-    Commit seenCommit = loadSeenCommit(state.getLastBlockHeight());
-    VoteSet lastPrecommits = VoteSet(state.getChainID(), state.getLastBlockHeight(), seenCommit.round(),
-                                     VoteTypePrecommit, state.getLastValidators());
-    for (uint i = 0; i < seenCommit.getPrecommits().size(); ++i) {
-        shared_ptr<Vote> precommit = seenCommit.getPrecommits()[i];
-        if (precommit == nullptr) continue;
+    Commit seenCommit = loadSeenCommit(_state.getLastBlockHeight());
+    VoteSet lastPrecommits(_state.getChainID(), _state.getLastBlockHeight(), seenCommit.round(),
+                           VoteTypePrecommit, _state.getLastValidators());
+    for (auto const &iterator : seenCommit.getPrecommits()) {
+        const Vote &precommit = iterator.second;
         try {
-            lastPrecommits.addVote(*precommit.get());
+            lastPrecommits.addVote(precommit);
         } catch (Panic &p) {
-            throw PanicCrisis("Failed to reconstruct LastCommit: %v", p);
+            throw PanicCrisis("Failed to reconstruct LastCommit:", p, __FILE__, __LINE__);
         }
         if (!lastPrecommits.hasTwoThirdMajority()) {
-            throw PanicNoPolka("Failed to reconstruct LastCommit: ");
+            throw PanicNoPolka("Failed to reconstruct LastCommit: ", __FILE__, __LINE__);
         }
     }
 }
@@ -174,7 +209,7 @@ bool ConsensusState::isProposalComplete() {
     if (proposal->getPolRound() < 0)
         return true;
     // if there's no pol, the proposer is lying or we haven't received it yet (it should exist if there's 2/3 majority)
-    return roundState.votes.getPrevotes(proposal->getPolRound()).hasTwoThirdMajority();
+    return roundState.votes.getPrevotes(proposal->getPolRound())->hasTwoThirdMajority();
 }
 
 // OnStart implements cmn.Service.
@@ -203,24 +238,26 @@ void ConsensusState::onStart() {
 
     // we may have lost some votes if the process crashed
     // reload from consensus log to catchup
-    if (doWALCatchup) {
-        try { catchupReplay(roundState.height); } catch (Panic &p) {
-            clog(dev::VerbosityError, channelTm) << "Error on catchup replay. Proceeding to start ConsensusState anyway"
-                                                 << "err" << p.getDesc();
-            // NOTE: if we ever do return an error here,
-            // make sure to stop the timeoutTicker
-        }
+    /* if (doWALCatchup) {
+         try { catchupReplay(roundState.height); } catch (Panic &p) {
+             clog(dev::VerbosityError, Logger::channelTm)
+                 << "Error on catchup replay. Proceeding to start ConsensusState anyway"
+                 << "err" << p.getDesc();
+             // NOTE: if we ever do return an error here,
+             // make sure to stop the timeoutTicker
+         }
 
-    }
+     }*/
 
-    // now start the receiveRoutine
-    boost::thread::attributes attrs;
+
 //attrs.set_stack_size((c_depthLimit - c_offloadPoint) * c_singleExecutionStackSize);
-
-    boost::exception_ptr exception;
+    receiveRoutineWorker.start(); //originally 0 -> run forever
+    /*
+    // now start the receiveRoutine
+    boost::thread::attributes attrs;boost::exception_ptr exception;
     boost::thread{attrs, [&] {
         try {
-            receiveRoutine(); //originally 0 -> run forever
+            receiveRoutineWorker.start(); //originally 0 -> run forever
         }
         catch (...) {
             exception = boost::current_exception(); // Catch all exceptions to be rethrown in parent thread.
@@ -230,10 +267,10 @@ void ConsensusState::onStart() {
 
     if (exception)
         boost::rethrow_exception(exception);
-
+*/
     // schedule the first round!
     // use GetRoundState so we don't race the receiveRoutine for access
-    scheduleRound0(getRoundState_copy());
+    scheduleRound0(getRoundState());
 
 }
 
@@ -253,4 +290,9 @@ void ConsensusState::startRoutines() {
 boost::optional<Block> ConsensusState::createProposalBlock() {
     boost::optional<Block> block; //TODO incomplete
     return block;
+}
+
+void ConsensusState::addToPeerMsgQueue(Message m) {
+    cout << m.toString();
+    //TODO
 }

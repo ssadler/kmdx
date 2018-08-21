@@ -43,3 +43,7 @@ Heartbeat::Heartbeat(const HexBytes &validatorAddress, int validatorIndex, long 
                      const Signature &signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
                                                    height(height), round(round), sequence(sequence),
                                                    signature(signature) {}
+
+const HexBytes Heartbeat::signBytes(std::string blockChainId) const {
+    return blockChainId; //TODO
+}

@@ -80,19 +80,19 @@ add_subdirectory(libdevcrypto)
 add_subdirectory(libp2p)
 add_subdirectory(libevm)
 
-add_subdirectory(libwingcore)
+#[[add_subdirectory(libwingcore)
 add_subdirectory(libwingvm)
 add_subdirectory(libwing)
 add_subdirectory(libethashseal)
 
 add_subdirectory(libwebthree)
-add_subdirectory(libweb3jsonrpc)
+add_subdirectory(libweb3jsonrpc)]]
 
-add_subdirectory(kmdx)
+#add_subdirectory(kmdx)
 
 
-if (TESTS)
+#[[if (TESTS)
     enable_testing()
     add_subdirectory(test)
-endif()
+endif()]]
 

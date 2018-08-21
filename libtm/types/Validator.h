@@ -8,55 +8,69 @@
 
 #include <cstdint>
 #include <vector>
+#include <boost/optional.hpp>
 #include "HexBytes.h"
-
-
-class Proposal;
+#include "Error.h"
+#include "Proposal.h"
+//class Proposal;
 
 class Validator {
-    HexBytes address;
-    Pubkey pubKey;
+    Address address;
+    PubKey pubKey;
     int64_t votingPower;
     int64_t accum;
+    int index;
 
 public:
 
-    Validator(Pubkey pubKey, int64_t votingPower);
+    Validator(PubKey pubKey, int64_t votingPower);
 
-    void signProposal(const std::string &chainID, Proposal &proposal);
+    Validator compareAccum(const Validator &validator) const;
 
-    const HexBytes &getAddress() const;
+    void signProposal(const std::string &chainID, Proposal &proposal); //TODO
 
-    const Pubkey &getPubKey() const;
+    const Address &getAddress() const;
+
+    const PubKey &getPubKey() const;
 
     int64_t getVotingPower() const;
 
     int64_t getAccum() const;
 
-    std::string toString();
+    std::string toString() const;
+
+    int getIndex() const;
 
 };
 
 class ValidatorSet {
     std::vector<Validator> validators;
+    boost::optional<Validator> proposer;
+
 public:
+    const static unsigned int voteSetLength = 64;
+
+    ValidatorSet();
 
     ValidatorSet(const std::vector<Validator> &validators);
 
-    Validator getByIndex(int index);
+    boost::optional<Validator> getByIndex(int index);
+
+    boost::optional<Validator> getByAddress(Address address);
 
     HexBytes hash() const;
 
-    unsigned int size();
+    static unsigned int getTotalVotingPower();
 
-    Validator getProposer() const;
+    unsigned long size();
 
-    ValidatorSet copy();
+    const boost::optional<Validator> getProposer();
 
     void incrementAccum(int i);
 
     bool hasAddress(const HexBytes bytes);
-};
 
+    boost::optional<Validator> findProposer() const;
+};
 
 #endif //SRC_VALIDATOR_H

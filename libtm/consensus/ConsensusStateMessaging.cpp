@@ -15,7 +15,7 @@ void ConsensusState::handleProposalMsg(
 // if the vote gives us a 2/3-any or 2/3-one, we transition
 void ConsensusState::handleVoteMsg(const VoteMessage &msg) {
     try {
-        tryAddVote(msg.getVote(), msg.getPeerID());
+        tryAddVote(msg.getVote(), msg.getAddress());
     } catch (ErrAddingVote &addingVote) {
         // TODO: punish peer
         // We probably don't want to stop the peer here. The vote does not
@@ -35,62 +35,3 @@ void ConsensusState::handleVoteMsg(const VoteMessage &msg) {
 void ConsensusState::recover() {
     //TODO
 }
-
-/** receiveRoutine handles messages which may cause state transitions.
-* it's argument (n) is the number of messages to process before exiting - use 0 to run forever
-* It keeps the RoundState and is the only thing that updates it.
-* Updates (state transitions) happen on timeouts, complete proposals, and 2/3 majorities.
-* ConsensusState must be locked before any internal state is updated.*/
-void ConsensusState::receiveRoutine(dev::RLP &rlp) { //FIXME replace with use of channels
-    auto guard = finally([&] {
-        try {
-            recover();
-        } catch (exception &e) {
-//clog(dev::VerbosityError, channelTm) << "CONSENSUS FAILURE!!!" << "err" << r << "stack" << string(debug.Stack()))
-            throw e;
-        }
-    });
-    /*while(1) { //steps are only used for testing
-        if (maxSteps > 0) {
-            if nSteps >= maxSteps {
-                        cs.Logger.Info("reached max steps. exiting receive routine")
-                        cs.nSteps = 0
-                        return
-                }
-        }*/
-
-    switch (Message::allTypes[rlp[0].toInt()]) {
-        case MessageType::VoteType:
-            handleVoteMsg(VoteMessage::fromRLP(rlp));
-            break;
-        case MessageType::ProposalType:
-            handleProposalMsg(ProposalMessage::fromRLP(rlp));
-            break;
-        case MessageType::BlockType:
-            handleBlockMsg(BlockMessage::fromRLP(rlp));
-            break;
-        case MessageType::TickerType:
-            //tockChan?
-            /*wal.Write(ti);
-             // if the timeout is relevant to the rs
-             // go to the next step
-             handleTimeout(dynamic_pointer_cast<TickerMessage>, roundState);
-             break;*/
-        case MessageType::QuitType:
-            return;
-            /*quit():
-
-             // NOTE: the internalMsgQueue may have signed messages from our
-             // priv_val that haven't hit the WAL, but its ok because
-             // priv_val tracks LastSig
-
-             // close wal now that we're done writing to it
-             cs.wal.Stop()
-             cs.wal.Wait()
-
-             close(cs.done)
-             return*/
-    }
-}
-
-

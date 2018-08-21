@@ -24,7 +24,7 @@ boost::posix_time::ptime State::getLastBlockTime() const {
     return lastBlockTime;
 }
 
-const ValidatorSet &State::getValidators() const {
+ValidatorSet &State::getValidators() {
     return validators;
 }
 

@@ -99,17 +99,18 @@ void TestBlock::initBlockFromJsonHeader(mObject const& _blockHeader, mObject con
     m_tempDirState = std::unique_ptr<TransientDirectory>(new TransientDirectory());
 
     m_state = std::unique_ptr<State>(new State(0,
-        OverlayDB(State::openDB(m_tempDirState.get()->path(), h256{}, WithExisting::Kill)),
-        BaseState::Empty));
-    ImportTest::importState(_stateObj, *m_state.get());
-    m_state.get()->commit(State::CommitBehaviour::KeepEmptyAccounts);
+                                               OverlayDB(State::openDB(m_tempDirstate.get()->path(), h256{},
+                                                                       WithExisting::Kill)),
+                                               BaseState::Empty));
+    ImportTest::importState(_stateObj, *m_state);
+    m_state->commit(State::CommitBehaviour::KeepEmptyAccounts);
 
     json_spirit::mObject state = _stateObj;
     dev::test::replaceCodeInState(state);
     m_accountMap = jsonToAccountMap(json_spirit::write_string(json_spirit::mValue(state), false));
 
     m_blockHeader =
-        constructBlock(_blockHeader, _stateObj.size() ? m_state.get()->rootHash() : h256{});
+            constructBlock(_blockHeader, _stateObj.size() ? m_state->rootHash() : h256{});
     recalcBlockHeaderBytes();
 }
 
@@ -443,10 +444,10 @@ void TestBlock::copyStateFrom(State const& _state)
     // share the same DB)
     m_tempDirState.reset(new TransientDirectory());
     m_state.reset(new State(0,
-        OverlayDB(State::openDB(m_tempDirState.get()->path(), h256{}, WithExisting::Kill)),
-        BaseState::Empty));
+                            OverlayDB(State::openDB(m_tempDirstate.get()->path(), h256{}, WithExisting::Kill)),
+                            BaseState::Empty));
     json_spirit::mObject obj = fillJsonWithState(_state);
-    ImportTest::importState(obj, *m_state.get());
+    ImportTest::importState(obj, *m_state);
 }
 
 void TestBlock::clearState()

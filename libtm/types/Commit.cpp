@@ -30,7 +30,7 @@ int64_t Commit::height() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit.get()->getHeight();
+    return firstPrecommit.get().getHeight();
 }
 
 /** Round returns the round of the commit */
@@ -38,7 +38,7 @@ int Commit::round() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit.get()->getRoundNumber();
+    return firstPrecommit.get().getRoundNumber();
 }
 
 
@@ -67,41 +67,43 @@ bool Commit::isCommit() {
 
 // ValidateBasic performs basic validation that doesn't involve state data.
 void Commit::validateBasic() { //throw(ErrInvalidVoteSet) {
-    if (blockID.getBites().empty()) {
-        throw ErrInvalidVoteSet("Commit cannot be for nullptr block");
+    if (blockID.getBytes().empty()) {
+        throw ErrInvalidVoteSet("Commit cannot be for nullptr block", __FILE__, __LINE__);
     }
     if (precommits.empty()) {
-        throw ErrInvalidVoteSet("No precommits in commit");
+        throw ErrInvalidVoteSet("No precommits in commit", __FILE__, __LINE__);
     }
     int64_t height = this->height();
     int round = this->round();
 
 // validate the precommits
-    for (uint i = 0; i < precommits.size(); ++i) {
+    //for (uint i = 0; i < precommits.size(); ++i) {
 
-        Vote precommit = *precommits[i].get();
+    for (auto const &iterator : precommits) {
+        const Vote &precommit = iterator.second;
 // Ensure that all votes are precommits
         if (precommit.getType() != VoteTypePrecommit) {
             throw ErrInvalidVoteSet(
-                    "Invalid commit vote. Expected precommit, got " + Vote::voteTypeToString(precommit.getType()));
+                    "Invalid commit vote. Expected precommit, got " + Vote::voteTypeToString(precommit.getType()),
+                    __FILE__, __LINE__);
         }
 // Ensure that all heights are the same
         if (precommit.getHeight() != height) {
             throw ErrInvalidVoteSet(
                     "Invalid commit precommit height. Expected " + to_string(height) + ", got " +
-                    to_string(precommit.getHeight()));
+                    to_string(precommit.getHeight()), __FILE__, __LINE__);
         }
 // Ensure that all rounds are the same
         if (precommit.getRoundNumber() != round) {
             throw ErrInvalidVoteSet("Invalid commit precommit round. Expected " + to_string(round) + ", got " +
-                                    to_string(precommit.getRoundNumber()));
+                                    to_string(precommit.getRoundNumber()), __FILE__, __LINE__);
         }
 
 
     }
 }
 
-vector<shared_ptr<Vote>> Commit::getPrecommits() const {
+std::map<int, Vote> Commit::getPrecommits() const {
     return precommits;
 }
 
@@ -109,4 +111,25 @@ vector<shared_ptr<Vote>> Commit::getPrecommits() const {
 HexBytes Commit::getHash() {
     return HexBytes(vector<uint8_t>());    //TODO
 }
+
+const boost::optional<Vote> Commit::getFirstPrecommit() {
+    boost::optional<Vote> output;
+    if (precommits.empty() == 0) {
+        return output;
+    }
+    if (firstPrecommit.is_initialized()) {
+        return firstPrecommit;
+    }
+    for (auto const &iterator : precommits) {
+        const Vote &precommit = iterator.second;
+        firstPrecommit = precommit;
+        return firstPrecommit;
+    }
+
+
+    output = Vote(VoteTypePrecommit);
+    return output;
+}
+
+Commit::Commit() {}
 

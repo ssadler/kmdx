@@ -9,13 +9,15 @@
 #include <string>
 #include <libdevcore/Log.h>
 
-std::string channelTm = "overlaydb";
 class Logger {
 public:
     static void logRound(int64_t, int);
 
     static void logRound(int64_t);
+
+    static const std::string channelTm;
 };
+
 
 void logInfo(std::string, std::string &...);
 

@@ -11,137 +11,153 @@
 using namespace std;
 
 class Error : public std::exception {
+protected:
     string description;
+    const char *file;
+    int line;
+
 public:
-    explicit Error(const string description);
+    Error(const string _description, const char *_file, int _line);;
 
     const string &getDescription() const;
 };
 
 class ErrorInvalidSignature : public Error {
 public:
-    explicit ErrorInvalidSignature(string desc) : Error("Error: Invalid Signature for " + desc) {}
+    ErrorInvalidSignature(string desc, const char *_file, int _line);
 };
 
 class ErrInvalidProposalPolRound : public Error {
 public:
-    explicit ErrInvalidProposalPolRound(string desc) : Error(desc) {}
+    ErrInvalidProposalPolRound(string desc, const char *_file, int _line);
 
-    ErrInvalidProposalPolRound() : Error("ErrInvalidProposalPolRound") {}
+    ErrInvalidProposalPolRound(const char *_file, int _line);
 };
 
 class ErrAddingVote : public Error {
 public:
-    explicit ErrAddingVote(string desc) : Error(desc) {}
+    ErrAddingVote(string desc, const char *_file, int _line);
 
-    ErrAddingVote() : Error("ErrAddingVote") {}
+    ErrAddingVote(const char *_file, int _line);
 };
 
 class ErrVoteHeightMismatch : public Error {
 public:
-    explicit ErrVoteHeightMismatch(string desc) : Error(desc) {}
+    ErrVoteHeightMismatch(string desc, const char *_file, int _line);
 
-    ErrVoteHeightMismatch() : Error("ErrVoteHeightMismatch") {}
+    ErrVoteHeightMismatch(const char *_file, int _line);
 };
 
 class ErrVoteConflictingVotes : public Error {
 public:
-    explicit ErrVoteConflictingVotes(string desc) : Error(desc) {}
+    ErrVoteConflictingVotes(string desc, const char *_file, int _line);
 
-    ErrVoteConflictingVotes() : Error("ErrVoteConflictingVotes") {}
+    ErrVoteConflictingVotes(const char *_file, int _line);
 };
 
 
-class TransitionException : public std::exception {
-    string desc;
+class ErrInvalidValidatorAddress : public Error {
 public:
-    explicit TransitionException(string _desc) { desc = _desc; }
+    ErrInvalidValidatorAddress(string desc, const char *_file, int _line);
+
+    ErrInvalidValidatorAddress(const char *_file, int _line);
+};
+
+class MyException : public std::exception {
+protected:
+    string description;
+    const char *file;
+    int line;
+public:
+    MyException(string _desc, const char *_file, int _line);
+
+    const string getDesc() const;
+};
+
+class TransitionException : public MyException {
+public:
+    TransitionException(string _desc, const char *_file, int _line);
 
 };
 
-class ExceptionInvalidBlock : public std::exception {
-    string desc;
+class ExceptionInvalidBlock : public MyException {
+
 public:
-    explicit ExceptionInvalidBlock(string _desc) { desc = _desc; }
+    ExceptionInvalidBlock(string _desc, const char *_file, int _line);
 
 };
 
 
 class SignError : public Error {
 public:
-    explicit SignError(string _desc) : Error(_desc) {}
+    SignError(string _desc, const char *_file, int _line);
 };
 
 
-class ExceptionInvalidPolRound : public std::exception {
-    string desc;
+class ExceptionInvalidPolRound : public MyException {
 public:
-    ExceptionInvalidPolRound(int expected, int found) {
-        desc = "This POLRound should be " + std::to_string(expected) + " but got " + std::to_string(found);
-    }
+    ExceptionInvalidPolRound(int expected, int found, const char *_file, int _line);
 
 };
 
 class ErrorUnexpectedVoteType : public Error {
 public:
-//    explicit ErrorUnexpectedVoteType(VoteType type) : Error("ErrorUnexpectedVoteType");
-    ErrorUnexpectedVoteType() : Error("ErrorUnexpectedVoteType") {};
+//    ErrorUnexpectedVoteType(VoteType type) : Error("ErrorUnexpectedVoteType");
+    ErrorUnexpectedVoteType(const char *_file, int _line);
+
+    ErrorUnexpectedVoteType(std::string s, const char *_file, int _line);
 
 
 };
 
 class ErrInvalidVoteSet : public Error {
 public:
-    explicit ErrInvalidVoteSet(string desc) : Error("ErrInvalidVoteSet " + desc) {};
+    ErrInvalidVoteSet(string desc, const char *_file, int _line);
 
 };
 
 class ErrInvalidVote : public Error {
 public:
-    explicit ErrInvalidVote(string desc) : Error("ErrInvalidVote" + desc) {}
+    ErrInvalidVote(string desc, const char *_file, int _line);
 
 };
 
-class Panic : public std::exception {
-    string desc;
+class Panic : public MyException {
 public:
-    explicit Panic(string d, ...) : desc(d) {} //TODO variadic
-    const string getDesc() const;
-    
+    Panic(string d, const char *_file, int _line);
 
-    Panic(string d, int n...) : desc(d + to_string(n)) {//FIXME
-    }
+    Panic(string d, const char *_file, int _line, int n...);
 };
 
 class PanicNullVoteSet : public Panic {
 public:
-    PanicNullVoteSet() : Panic("AddVote() on nil VoteSet") {}
+    PanicNullVoteSet(const char *_file, int _line);
 };
 
 class PanicNoPolka : public Panic {
 public:
-    explicit PanicNoPolka(string d) : Panic(d + "commit does not have two thirds majority") {}
+    PanicNoPolka(string d, const char *_file, int _line);
 };
 
 class PanicInvalidHash : public Panic {
 public:
-    explicit PanicInvalidHash(string d) : Panic(d) {}
+    PanicInvalidHash(string d, const char *_file, int _line);
 };
 
 class PanicEnterRound : public Panic {
 public:
-    explicit PanicEnterRound(string d) : Panic(d) {}
+    PanicEnterRound(string d, const char *_file, int _line);
 };
 
 class PanicCrisis : public Panic {
     Panic inner;
 public:
-    PanicCrisis(string d, Panic p) : Panic(d), inner(p) {}
+    PanicCrisis(string d, Panic p, const char *_file, int _line);
 };
 
 class PanicSanity : public Panic {
 public:
-    PanicSanity(string d) : Panic(d) {}
+    PanicSanity(string d, const char *_file, int _line);
 };
 
 #endif //TM_LIGHT_ERROR_H

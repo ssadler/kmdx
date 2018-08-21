@@ -15,7 +15,7 @@
 #include "boost/date_time/posix_time/posix_time.hpp"
 #include <boost/fiber/all.hpp>
 #include <boost/exception_ptr.hpp>
-#include <boost/thread.hpp>
+
 
 #include "../state/State.h"
 #include "../types/RoundState.h"
@@ -25,29 +25,30 @@
 #include "../helpers/Logger.h"
 #include "../Message/Message.h"
 #include "../types/Error.h"
-#include "../types/Vote.h"
 #include "../types/PrivValidator.h"
 #include "../types/TimeoutTicker.h"
 #include "../helpers/TmController.h"
 #include "../helpers/Finally.h"
+#include "ReceiveRoutineWorker.h"
 #include "ConsensusConfig.h"
 
 using namespace boost::posix_time;
 
-
 class ConsensusState {
-
+    friend class ReceiveRoutineWorker;
 
     //TODO communication BaseService baseService;
     ConsensusConfig consensusConfig;
-    TmController controller;
-    PrivValidator privValidator;
+    TmController &controller;
+    boost::optional<PrivValidator> privValidator;
 
     //internalState
     mutex mtx;
     RoundState roundState;
-    State state; //state until height-1
+    boost::optional<State> state; //state until height-1
     RoundStepType stepType;
+
+    ReceiveRoutineWorker receiveRoutineWorker;
     pthread_t peerMsgQueue;
     pthread_t internalMsgQueue;
     TimeoutTicker timeoutTicker;
@@ -65,26 +66,32 @@ class ConsensusState {
     EventSwitch eventSwitch;
     shared_ptr<Proposal> proposal;
 
-    void setProposal(Proposal _proposal); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
+    void setProposal(
+            Proposal _proposal); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature, __FILE__, __LINE__);
 
-    void handleProposalMsg(const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature);
+    void
+    handleProposalMsg(
+            const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature, __FILE__, __LINE__);
+
+    void tryAddVote(Vote vote, HexBytes address);
+
+    Vote signVote(VoteType type, const HexBytes &b);
 
     void handleVoteMsg(const VoteMessage &msg);
 
     void handleBlockMsg(const BlockMessage &msg);
 
-    void tryAddVote(Vote vote, HexBytes peerID);
-
-    bool addVote(Vote vote, HexBytes peerID);
+    bool addVote(Vote vote, HexBytes address);
 
 public:
 
-    ConsensusState(ConsensusConfig config, State state);
+    ConsensusState(ConsensusConfig config, State state, TmController &_controller);
 
-    ConsensusState(const ConsensusState &cs);
-    explicit ConsensusState(ConsensusConfig _config);
+    ConsensusState(const ConsensusState &cs, TmController &_controller);
+
+    ConsensusState(ConsensusConfig _config, TmController &_controller);
+
     virtual ~ConsensusState();
-
 
     void updateToState(State state);
 
@@ -119,7 +126,7 @@ public:
 
     void signAddVote(VoteType type);
 
-    void signAddVote(VoteType type, const bytes &b);
+    void signAddVote(VoteType type, const HexBytes &b);
 
     void enterPrecommitWait(int64_t height, int number);
 
@@ -131,9 +138,6 @@ public:
 
     void scheduleRound0(RoundState roundState);
 
-    void receiveRoutine();
-
-    void receiveRoutine(dev::RLP &rlp);
 
     void recover();
 
@@ -151,9 +155,11 @@ public:
 
     void decideProposal(int64_t height, int round);
 
-    RoundState getRoundState_copy();
+    const RoundState &getRoundState() const;
 
-    void sendInternalMessage(Message);
+    void sendInternalMessage(Message) {
+        //TODO unimplemented
+    }
 
     void startRoutines();
 

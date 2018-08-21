@@ -10,12 +10,21 @@
 #include "Proposal.h"
 
 class PrivValidator {
+
+protected:
+    Address address;
+    PrivKey privKey;
 public:
-    const HexBytes getAddress() const;
+    PrivValidator(const PrivKey _privKey);
+
+    PrivValidator();
+
+    Address getAddress() const;
+
+    const PubKey &getPubKey() const;
 
     std::string toString() const;
     
-
     void signProposal(string, Proposal &); //throw ErrSignProposal
     void signVote(string, Vote &); //throw ErrSignProposal
 };

@@ -19,12 +19,16 @@ public:
               const Signature &signature);
 
 private:
+    friend class MockPV;
     HexBytes validatorAddress;
     int validatorIndex;
     int64_t height;
     int round;
     int sequence;
     Signature signature;
+
+public:
+    const HexBytes signBytes(std::string blockChainId) const;
 };
 
 

@@ -19,6 +19,13 @@ bool RoundState::operator==(const RoundState &other) {
     );
 }
 
+RoundState::RoundState(std::string chainID) : votes(chainID) {//FIXME
+};
+
+RoundState::RoundState(std::string chainID, int64_t height, ValidatorSet validators) : votes(chainID, height,
+                                                                                             validators) {//FIXME
+};
+
 void RoundState::updateRoundStep(int number, RoundStepType type) {
     roundNumber = number;
     stepType = type;
@@ -70,4 +77,8 @@ std::string RoundState::stateTypeString(RoundStepType stype) {
         default:
             return "unknown step";
     }
+}
+
+const EventDataRoundState RoundState::roundStateEvent() {
+    return EventDataRoundState(height, roundNumber, stateTypeString(stepType));
 }

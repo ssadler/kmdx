@@ -1,14 +1,14 @@
 //
-// Created by utnso on 17/07/18.
+// Created by thpn on 20/08/18.
 //
 
-#ifndef TM_LIGHT_EVENT_H
-#define TM_LIGHT_EVENT_H
+#ifndef AYETH_EVENT_H
+#define AYETH_EVENT_H
 
 
 #include <string>
-#include "../Vote.h"
-#include "../Heartbeat.h"
+#include "Vote.h"
+#include "Heartbeat.h"
 
 class Event {
     std::string typeToString;
@@ -147,4 +147,4 @@ public :
 };
 
 
-#endif //TM_LIGHT_EVENT_H
+#endif //AYETH_EVENT_H

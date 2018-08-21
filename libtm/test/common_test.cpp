@@ -4,18 +4,40 @@
 
 #include "common_test.h"
 
-Vote ValidatorStub::signVote(VoteType voteType, bytes hash) {
-    Vote vote(index, privValidator.getAddress(), height, round, boost::posix_time::second_clock::local_time(), voteType,
+std::string chain_ID;
+
+Vote ValidatorStub::signVote(VoteType voteType, HexBytes hash) {
+    Vote vote(privValidator.getAddress(), index, height, round, boost::posix_time::second_clock::local_time(), voteType,
               BlockID(hash));
     privValidator.signVote(chain_ID, vote);
     return vote;
 }
 
-//for testing
+ValidatorSet
+common_test::randValidatorSet(std::vector<PrivValidator> &privValidators, int numValidators, int64_t votingPower) {
+    return randValidatorSet(privValidators, numValidators, false, votingPower);
+}
+
+ValidatorSet
+common_test::randValidatorSet(std::vector<PrivValidator> &privValidators, int numValidators, bool randPower,
+                              int64_t votingPower) {
+    std::vector<Validator> vals;
+    for (int i = 0; i < numValidators; i++) {
+        ValidatorStub vStub = common_test::randValidator(randPower, votingPower);
+        vals.push_back(vStub);
+        privValidators.push_back(vStub.getPrivValidator());
+    }
+    std::sort(privValidators.begin(), privValidators.end(),
+              [](PrivValidator one, PrivValidator other) { return one.getAddress() < other.getAddress(); });
+    return ValidatorSet(vals);
+}
+
+/*//for testing
 ConsensusState
 common_test::randGenesisState(vector<PrivValidator> privValidators, dev::RLP genesisParams, int numValidators,
-                              bool randPower, int64_t minPower) {
+                              bool randPower, int64_t minPower) { //FIXME
     vector<PrivValidator> privVals;
+
     ValidatorSet validators = randValidatorSet(privVals, numValidators, randPower, minPower);
     ValidatorSet lastValidators = randValidatorSet(privVals, numValidators, randPower, minPower);
     ConsensusConfig config;
@@ -31,10 +53,10 @@ common_test::randGenesisState(vector<PrivValidator> privValidators, dev::RLP gen
             int64_t(1), //lastHeightConsensusConfigChanged
             HexBytes(genesisParams[3].toBytes()) //appHash
     );
-    randValidatorSet(privValidators, numValidators, randPower, minPower);
+    ValidatorSet randomValSet = randValidatorSet(privValidators, numValidators, randPower, minPower);
     //ConsensusState cs(ConsensusConfig(), state);//, counter.NewCounterApplication(true))
     return ConsensusState(config, state);
-}
+}*/ //FIXME
 
 void common_test::startTestRound(ConsensusState &cs, int64_t height, int round) {
     cs.enterNewRound(height, round);
@@ -46,46 +68,61 @@ void common_test::startTestRound(ConsensusState &cs, int64_t height, int round) 
 Proposal common_test::decideProposal(ConsensusState &cs1, ValidatorStub &vs, int64_t height, int round) {
     boost::optional<Block> block = cs1.createProposalBlock();
     if (!block.is_initialized())
-        throw Panic("error creating proposal block");
+        throw Panic("error creating proposal block", __FILE__, __LINE__);
     // Make proposal
     BlockID polBlockID;
     int polRound = cs1.roundState.votes.polInfo(polBlockID);
     Proposal proposal(int64_t(height), round, polRound, polBlockID);
     try {
-        vs.signProposal(cs1.state.getChainID(), proposal);
+        vs.signProposal(cs1.state.get().getChainID(), proposal);
     } catch (Error &e) {
-        throw Panic(e.getDescription());
+        throw Panic(e.getDescription(), __FILE__, __LINE__);
     }
     return proposal;
 }
 
 void common_test::addVotes(ConsensusState &cs, std::vector<Vote> votes) {
     for (Vote &vote : votes)
-        cs.addToPeerMsgQueue(VoteMessage(PeerID(bytes()), vote));//FIXME slicing
+        cs.addToPeerMsgQueue(VoteMessage(Address(bytes()), vote));//FIXME slicing
 }
 
-void common_test::signAddVotes(ConsensusState &cs, VoteType voteType, bytes hash, vector<ValidatorStub> vss) {
+// Sign vote for type/hash/header
+Vote signVote(ValidatorStub vs, VoteType type, HexBytes hash) {//, HexBytes header) {
+    return vs.signVote(type, hash);//, header);
+}
+
+vector<Vote> common_test::signVotes(VoteType voteType, HexBytes hash, vector<ValidatorStub> vss) {
+    vector<Vote> votes;
+    for (const ValidatorStub &vs : vss) {
+        votes.push_back(signVote(vs, voteType, hash));
+    }
+    return votes;
+}
+
+void common_test::signAddVotes(ConsensusState &cs, VoteType voteType, HexBytes hash, vector<ValidatorStub> vss) {
     vector<Vote> votes = signVotes(voteType, hash, vss);
     addVotes(cs, votes);
 }
 
 void common_test::validatePrevote(ConsensusState &cs, int round, ValidatorStub privVal, HexBytes blockHash) {
-    VoteSet prevotes = cs.roundState.votes.getPrevotes(round);
-    boost::optional<Vote> vote = prevotes.getByAddress(privVal.getAddress());
+    boost::optional<VoteSet> prevotes = cs.roundState.votes.getPrevotes(round);
+    if (!prevotes.is_initialized())
+        throw Panic("Failed to find prevotes", __FILE__, __LINE__);
+    boost::optional<Vote> vote = prevotes.get().getByAddress(privVal.getAddress());
     if (!vote.is_initialized())
-        throw Panic("Failed to find prevote from validator");
+        throw Panic("Failed to find prevote from validator", __FILE__, __LINE__);
 
     if (!blockHash.empty() && !vote.get().getBlockID().getHash().empty()) { //FIXME pasamanos
         std::ostringstream out;
         out << "Expected prevote to be for nil, got %X" << vote.get().getBlockID().getHash().toString();
-        throw Panic(out.str());
+        throw Panic(out.str(), __FILE__, __LINE__);
     }
 
     if (vote.get().getBlockID().getHash() != blockHash) {
         std::ostringstream out;
         out << "Expected prevote to be for %X, got %X" << blockHash.toString() <<
             vote.get().getBlockID().getHash().toString();
-        throw Panic(out.str());
+        throw Panic(out.str(), __FILE__, __LINE__);
 
 
     }
@@ -95,12 +132,12 @@ void common_test::validateLastPrecommit(ConsensusState &cs, ValidatorStub &privV
     VoteSet votes = cs.roundState.lastCommit.get();
     boost::optional<Vote> vote = votes.getByAddress(privVal.getAddress());
     if (!vote.is_initialized())
-        throw Panic("Failed to find precommit from validator");
+        throw Panic("Failed to find precommit from validator", __FILE__, __LINE__);
     if (vote.get().getBlockID().getHash() != blockHash) {
         std::ostringstream out;
         out << "Expected precommit to be for %X, got %X" << blockHash.toString() <<
             vote.get().getBlockID().getHash().toString();
-        throw Panic(out.str());
+        throw Panic(out.str(), __FILE__, __LINE__);
 
     }
 }
@@ -110,17 +147,17 @@ void common_test::validatePrecommit(ConsensusState &cs, int thisRound, int lockR
     VoteSet precommits = cs.roundState.votes.getPrecommits(thisRound).get();
     boost::optional<Vote> vote = precommits.getByAddress(privVal.getAddress());
     if (!vote.is_initialized())
-        throw Panic("Failed to find precommit from validator");
+        throw Panic("Failed to find precommit from validator", __FILE__, __LINE__);
     if (votedBlockHash.empty() && vote.get().getBlockID().getHash().empty())
-        throw Panic("Expected precommit to be for NULL");
+        throw Panic("Expected precommit to be for NULL", __FILE__, __LINE__);
     if (vote.get().getBlockID().getHash() != votedBlockHash)
-        throw Panic("Expected precommit to be for proposal block");
+        throw Panic("Expected precommit to be for proposal block", __FILE__, __LINE__);
     if (lockedBlockHash.empty() &&
         ((cs.roundState.lockedRoundNumber != lockRound || cs.roundState.lockedBlock != nullptr))) {
         std::ostringstream out;
         out << "Expected to be locked on nil at round %d. Got locked at round %d with block %v" << lockRound <<
             cs.roundState.lockedRoundNumber << cs.roundState.lockedBlock.get()->getHash().toString();
-        throw Panic(out.str());
+        throw Panic(out.str(), __FILE__, __LINE__);
     }
     if (cs.roundState.lockedRoundNumber != lockRound || cs.roundState.lockedBlock.get()->getHash() != lockedBlockHash) {
         std::ostringstream out;
@@ -128,7 +165,7 @@ void common_test::validatePrecommit(ConsensusState &cs, int thisRound, int lockR
             lockRound <<
             cs.roundState.lockedRoundNumber << cs.roundState.lockedBlock.get()->getHash().toString()
             << lockedBlockHash.toString();
-        throw Panic(out.str());
+        throw Panic(out.str(), __FILE__, __LINE__);
     }
 }
 
@@ -137,9 +174,8 @@ void common_test::validatePrevoteAndPrecommit(ConsensusState &cs, int thisRound,
 // verify the prevote
     validatePrevote(cs, thisRound, privVal, votedBlockHash);
 // verify precommit
-    cs.mtx.lock();
+    std::lock_guard<std::mutex> lock(cs.mtx);
     validatePrecommit(cs, thisRound, lockRound, privVal, votedBlockHash, lockedBlockHash);
-    cs.mtx.unlock();
 }
 
 // genesis
@@ -165,22 +201,47 @@ chan interface{} {
     return voteCh//TODO channel
 }*/
 
-/*
-ValidatorSet common_test::randValidatorSet(vector<PrivValidator> privValidators, int nValidators, bool randPower , int64_t minPower) {
+
+/*ValidatorSet common_test::randValidatorSet(vector<PrivValidator> privValidators, int nValidators, bool randPower , int64_t minPower) {
     ValidatorSet validatorSet(vector<Validator>);
     for (int i = 0; i < nValidators; i++) {
-        validatorSet.add(newValidatorStub(privValidators[i], i));
+        validatorSet.add(ValidatorStub(privValidators[i], i));
         validatorSet.get(i).incrementHeight(); // since cs1 starts at 1
     }
     return validatorSet;
+}*/
+
+
+bool common_test::signAddVote(PrivValidator privVal, Vote &vote, VoteSet &voteSet) {
+    privVal.signVote(voteSet.chainID, vote);
+    return voteSet.addVote(vote);
 }
 
-PrivValidator common_test::randValidator(bool randPower, int64_t minPower)(boost::optional <Validator> val) {
-    PrivValidator privVal = NewMockPV();
-    votePower = minPower;
+ValidatorStub common_test::randValidator(bool randPower, int64_t minPower) {
+    PrivKey privKey(HexBytes::random(10), HexBytes::random(10));
+    MockPV privVal(privKey);
+    int64_t votePower = minPower;
     if (randPower) {
-        votePower += int64(cmn.RandUint32())
+        votePower += int64_t(std::rand());
     }
-    val = newValidator(privVal.GetPubKey(), votePower);
-    return privVal;
-}*/
+    ValidatorStub validatorStub(privVal, votePower);
+    return validatorStub;
+}
+
+ValidatorStub::ValidatorStub(const MockPV _privValidator, int64_t _votePower)
+        : Validator(_privValidator.getPubKey(), _votePower), privValidator(_privValidator) {
+}
+
+const MockPV &ValidatorStub::getPrivValidator() const {
+    return privValidator;
+}
+
+ValidatorStub::ValidatorStub(const PubKey &pubKey, int64_t votingPower, int index, int64_t height, int round,
+                             const MockPV &privValidator) : Validator(pubKey, votingPower), index(index),
+                                                            height(height),
+                                                            round(round), privValidator(privValidator) {}
+
+
+void RoundState::setValidRoundNumber(int validRoundNumber) {
+    RoundState::validRoundNumber = validRoundNumber;
+}

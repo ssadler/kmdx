@@ -23,7 +23,7 @@ public:
           ValidatorSet _validators, ValidatorSet _lastValidators, int64_t _lastHeightValidatorsChanged,
           ConsensusConfig _consensusParams, int64_t _lastHeightConsensusParamsChanged, HexBytes _appHash);
 
-    virtual ~State();
+//    virtual ~State();
 
     const std::string &getChainID() const;
 
@@ -35,7 +35,7 @@ public:
 
     boost::posix_time::ptime getLastBlockTime() const;
 
-    const ValidatorSet &getValidators() const;
+    ValidatorSet &getValidators();
 
     const ValidatorSet &getLastValidators() const;
 
@@ -48,8 +48,6 @@ public:
     const HexBytes &getLastResultsHash() const;
 
     const HexBytes &getAppHash() const;
-
-    bool isEmpty(); //TODO delete or implement
 
 private:
     // Immutable
