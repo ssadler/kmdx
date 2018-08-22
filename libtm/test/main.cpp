@@ -3,12 +3,8 @@
 // Created by thpn on 30/07/18.
 //
 
-
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE LogManager
-
 #include <iostream>
-#include <boost/test/included/unit_test.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include "../types/Vote.h"
 #include "./VoteTest.h"

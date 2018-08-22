@@ -1,6 +1,7 @@
 file(GLOB sources "*/*.cpp" "*/*.h")
-get_filename_component(test_main_cpp ${CMAKE_CURRENT_SOURCE_DIR}/test/main.cpp ABSOLUTE)
-list(REMOVE_ITEM sources "${test_main_cpp}")
+get_filename_component(test_dir ${CMAKE_CURRENT_SOURCE_DIR} ABSOLUTE)
+list(REMOVE_ITEM sources "${test_dir}/test/main.cpp")
+list(REMOVE_ITEM sources "${test_dir}/test/boost_test.cpp")
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0")
 
@@ -12,6 +13,6 @@ target_include_directories(tm PRIVATE "${UTILS_INCLUDE_DIR}" "${Boost_INCLUDE_DI
 target_link_libraries(tm PUBLIC devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time)
 
 
-add_executable(tmtest "test/main.cpp")
+add_executable(tmtest "test/main.cpp" "test/boost_test.cpp")
 target_include_directories(tmtest PRIVATE "${UTILS_INCLUDE_DIR}" "${Boost_INCLUDE_DIRS}")
 target_link_libraries(tmtest PUBLIC tm devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time)
