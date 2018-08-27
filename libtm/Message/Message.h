@@ -18,10 +18,10 @@ enum class MessageType {
 };
 
 class Message {
-    Address address;
+    Address addresstm;
     MessageType messageType;
 public:
-    Message(const Address address, MessageType messageType);
+    Message(const Address addresstm, MessageType messageType);
 
     Address getAddress() const;
 
@@ -42,7 +42,7 @@ public:
 class VoteMessage : public Message {
     Vote vote;
 public:
-    VoteMessage(const Address address, const Vote &vote);
+    VoteMessage(const Address addresstm, const Vote &vote);
 
     static VoteMessage fromRLP(dev::RLP &r);
 
@@ -59,7 +59,7 @@ public:
 
     static ProposalMessage fromRLP(dev::RLP &) {
         //TODO unimplemented
-        return ProposalMessage(Proposal(int64_t(0), -1, -1, BlockID()));
+        return ProposalMessage(Proposal(0, -1, -1, BlockID()));
     }
 
 private:
@@ -67,17 +67,17 @@ private:
 public:
     const Proposal getProposal() const;
 
-    ProposalMessage(const Address &address, const Proposal &proposal);
+    ProposalMessage(const Address &addresstm, const Proposal &proposal);
 };
 
 class BlockMessage : public Message {
     Block block;
     BlockID blockID;
-    int64_t height;
+    height_t height;
     int roundNumber;
 public:
 
-    BlockMessage(const Address &address, const BlockID &blockID, const int64_t &height, int roundNumber,
+    BlockMessage(const Address &addresstm, const BlockID &blockID, const height_t &height, int roundNumber,
                  const Block &block);
 
     static BlockMessage fromRLP(dev::RLP &);
@@ -87,7 +87,7 @@ public:
 
 class TickerMessage : public Message {
 public:
-    TickerMessage(const Address &address);
+    TickerMessage(const Address &addresstm);
 
 };
 

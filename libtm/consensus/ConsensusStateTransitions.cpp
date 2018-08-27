@@ -1,13 +1,13 @@
 
 #include "ConsensusState.h"
 
-void ConsensusState::scheduleTimeout(time_duration duration, int64_t height, int number,
+void ConsensusState::scheduleTimeout(time_duration duration, height_t height, int number,
                                      RoundStepType type) {
     if (duration == time_duration() || height == 0 || number == 0 || type == RoundStepCommit) return;
     //FIXME not urgent
 }
 
-void ConsensusState::enterCommit(int64_t height, int commitRound) {
+void ConsensusState::enterCommit(height_t height, int commitRound) {
 //logger = logWith("height", height, "commitRound", commitRound);
 
     if (roundState.height != height || RoundStepCommit <= roundState.stepType) {
@@ -32,7 +32,7 @@ void ConsensusState::enterCommit(int64_t height, int commitRound) {
         // Maybe finalize immediately.
         tryFinalizeCommit(height);
     });
-    if (!roundState.votes.getPrecommits(commitRound).get().twoThirdMajority().is_initialized()) {
+    if (!roundState.votes.getPrecommits(commitRound)->twoThirdMajority()) {
         throw PanicEnterRound("RunActionCommit() expects +2/3 precommits", __FILE__, __LINE__);
     }
 
@@ -59,7 +59,7 @@ void ConsensusState::enterCommit(int64_t height, int commitRound) {
     }*/
 }
 
-void ConsensusState::enterPrevote(int64_t _height, int _roundNumber) {
+void ConsensusState::enterPrevote(height_t _height, int _roundNumber) {
     if (roundState.height != _height
         || _roundNumber < roundState.roundNumber
         || (roundState.roundNumber == _roundNumber
@@ -95,7 +95,7 @@ void ConsensusState::enterPrevote(int64_t _height, int _roundNumber) {
     // (so we have more time to try and collect +2/3 prevotes for a single block)
 }
 
-void ConsensusState::enterPrevoteWait(int64_t _height, int _roundNumber) {
+void ConsensusState::enterPrevoteWait(height_t _height, int _roundNumber) {
     if (roundState.height != _height || _roundNumber < roundState.roundNumber ||
         (roundState.roundNumber == _roundNumber && RoundStepPrevoteWait <= roundState.stepType)) {
         clog(dev::VerbosityDebug, Logger::channelTm)
@@ -108,7 +108,7 @@ void ConsensusState::enterPrevoteWait(int64_t _height, int _roundNumber) {
         newStep();
     });
 
-    if (!roundState.votes.getPrevotes(_roundNumber).get().hasTwoThirdsAny()) {
+    if (!roundState.votes.getPrevotes(_roundNumber)->hasTwoThirdsAny()) {
         throw TransitionException(
                 "enterPrevoteWait(" + std::to_string(_height) + " " + std::to_string(_roundNumber) +
                 "), but Prevotes does not have any +2/3 votes", __FILE__, __LINE__);
@@ -122,7 +122,7 @@ void ConsensusState::enterPrevoteWait(int64_t _height, int _roundNumber) {
     scheduleTimeout(consensusConfig.getTimeoutPrevote(_roundNumber), _height, _roundNumber, RoundStepPrevoteWait);
 }
 
-void ConsensusState::enterNewRound(int64_t height, int round) {
+void ConsensusState::enterNewRound(height_t height, int round) {
     //logger := cs.logWith("height", height, "round", round);
 
     if (roundState.height != height || round < roundState.roundNumber ||
@@ -183,7 +183,7 @@ void ConsensusState::enterNewRound(int64_t height, int round) {
 //    }
 }
 
-void ConsensusState::enterPropose(int64_t height, int round) {
+void ConsensusState::enterPropose(height_t height, int round) {
     //    logger := roundState.logWith("height", height, "round", round);
 
     if (roundState.height != height || round < roundState.roundNumber ||
@@ -225,13 +225,13 @@ void ConsensusState::enterPropose(int64_t height, int round) {
 
     if (isProposer()) {
         clog(dev::VerbosityInfo, Logger::channelTm) << "enterPropose: Our turn to propose" << "proposer"
-                                                    << roundState.validators.getProposer().get().toString()
+                                                    << roundState.validators.getProposer()->toString()
                                                     << "privValidator"
                                                     << privValidator->toString();
         decideProposal(height, round);
     } else {
         clog(dev::VerbosityInfo, Logger::channelTm) << "enterPropose: Not our turn to propose" << "proposer"
-                                                    << roundState.validators.getProposer().get().toString()
+                                                    << roundState.validators.getProposer()->toString()
                                                     << "privValidator"
                                                     << privValidator->toString();
     }
@@ -243,7 +243,7 @@ void ConsensusState::enterPropose(int64_t height, int round) {
 * Lock & precommit the ProposalBlock if we have enough prevotes for it (a POL in this round)
 * else, unlock an existing lock and precommit nil if +2/3 of prevotes were nil,
 * else, precommit nil otherwise. */
-void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
+void ConsensusState::enterPrecommit(height_t height, int _roundNumber) {
     if (roundState.height != height || _roundNumber < roundState.roundNumber ||
         (roundState.roundNumber == _roundNumber && RoundStepPrecommit <= roundState.stepType)) {
         clog(dev::VerbosityDebug, Logger::channelTm)
@@ -289,7 +289,7 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
     }
 
     // +2/3 prevoted nil. Unlock and precommit nil.
-    if (!blockID.is_initialized() || blockID.get().isEmpty()) { //ZZZ
+    if (!blockID.is_initialized() || blockID->isEmpty()) { //ZZZ
         if (roundState.lockedBlock == nullptr) {
             clog(dev::VerbosityInfo, Logger::channelTm) << "enterPrecommit: +2/3 prevoted for nil.";
         } else {
@@ -308,9 +308,9 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
 
 
     // If +2/3 prevoted for proposal block, stage and precommit it
-    if (roundState.proposalBlock->hashesTo(blockID.get().getHash())) {
+    if (roundState.proposalBlock->hashesTo(blockID->getHash())) {
         clog(dev::VerbosityInfo, Logger::channelTm)
-            << "enterPrecommit: +2/3 prevoted proposal block. Locking" << "hash" << blockID.get().getHash().toString();
+            << "enterPrecommit: +2/3 prevoted proposal block. Locking" << "hash" << blockID->getHash().toString();
 
         int validationError = (controller.validateBlock(roundState.proposalBlock->getBytes()));
         if (validationError < 0)
@@ -322,7 +322,7 @@ void ConsensusState::enterPrecommit(int64_t height, int _roundNumber) {
         roundState.setLockedBlock(roundState.proposalBlock);
         //roundState.setLockedBlockParts(roundState.ProposalBlockParts)
         eventBus.publishEventLock(roundState.roundStateEvent());
-        signAddVote(VoteTypePrecommit, blockID.get().getHash());
+        signAddVote(VoteTypePrecommit, blockID->getHash());
         return;
     }
 

@@ -2,8 +2,10 @@
 // Created by utnso on 17/07/18.
 //
 
+#include "Heartbeat.h"
 /* SignBytes returns the Heartbeat bytes for signing.
 * It panics if the Heartbeat is nil. */
+
 /*
 byte  heartbeat::signBytes(chainID string) []{
     bz, err := cdc.MarshalJSON(CanonicalHeartbeat(chainID, heartbeat))
@@ -13,8 +15,8 @@ byte  heartbeat::signBytes(chainID string) []{
     return bz
 }
 */
-
 /* Copy makes a copy of the Heartbeat. */
+
 /*
 Heartbeat  heartbeat::copy() {
     if heartbeat == nil {
@@ -24,9 +26,7 @@ Heartbeat  heartbeat::copy() {
     return &heartbeatCopy
 }
 */
-
 /*String returns a string representation of the Heartbeat.*/
-#include "Heartbeat.h"
 
 /*
 string  heartbeat::string() {
@@ -39,7 +39,7 @@ string  heartbeat::string() {
                        heartbeat.Height, heartbeat.Round, heartbeat.Sequence, heartbeat.Signature)
 }
 */
-Heartbeat::Heartbeat(const HexBytes &validatorAddress, int validatorIndex, long height, int round, int sequence,
+Heartbeat::Heartbeat(const Address &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
                      const Signature &signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
                                                    height(height), round(round), sequence(sequence),
                                                    signature(signature) {}

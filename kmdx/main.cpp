@@ -187,6 +187,7 @@ int main(int argc, char** argv)
     Ethash::init();
     NoProof::init();
 
+
     /// Operating mode.
     OperationMode mode = OperationMode::Node;
 

@@ -15,7 +15,7 @@
  NOTE: Commit is empty for height 1, but never nullptr.*/
 class Commit {
 
-    // NOTE: The Precommits are in order of address to preserve the bonded ValidatorSet order.
+    // NOTE: The Precommits are in order of addresstm to preserve the bonded ValidatorSet order.
     // Any peer with a block can gossip precommits by index with a peer without recalculating the
     // active ValidatorSet.
     BlockID blockID;
@@ -27,13 +27,15 @@ class Commit {
     std::vector<bool> bitArray;
 
 public:
-    Commit();;
+    Commit();
+
+    Commit(const BlockID &blockID, const map<int, Vote> &precommits);
 
     const boost::optional<Vote> getFirstPrecommit();
 
     int round();
 
-    int64_t height();
+    height_t height();
 
     VoteType type();
 

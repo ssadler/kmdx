@@ -8,7 +8,7 @@ void EventSwitch::start() {
     //FIXME
 }
 
-void EventSwitch::fireEvent(Event event, Vote vote) {
+void EventSwitch::fireEvent(Event event, const Vote &vote) {
     if (event.getTypeToString() == "") cout << vote.toString(); //TODO unimplemented
 }
 

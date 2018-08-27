@@ -26,11 +26,11 @@ shared_ptr<Vote> Commit::getFirstPrecommit() {//TODO return value or reference
 }*/
 
 // Height returns the height of the commit;
-int64_t Commit::height() {
+height_t Commit::height() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit.get().getHeight();
+    return firstPrecommit->getHeight();
 }
 
 /** Round returns the round of the commit */
@@ -38,7 +38,7 @@ int Commit::round() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit.get().getRoundNumber();
+    return firstPrecommit->getRoundNumber();
 }
 
 
@@ -73,7 +73,7 @@ void Commit::validateBasic() { //throw(ErrInvalidVoteSet) {
     if (precommits.empty()) {
         throw ErrInvalidVoteSet("No precommits in commit", __FILE__, __LINE__);
     }
-    int64_t height = this->height();
+    height_t height = this->height();
     int round = this->round();
 
 // validate the precommits
@@ -132,4 +132,6 @@ const boost::optional<Vote> Commit::getFirstPrecommit() {
 }
 
 Commit::Commit() {}
+
+Commit::Commit(const BlockID &blockID, const map<int, Vote> &precommits) : blockID(blockID), precommits(precommits) {}
 

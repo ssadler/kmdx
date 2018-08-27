@@ -25,7 +25,7 @@ class HeightVoteSet {
 private:
     std::mutex mtx;
     std::string chainID;
-    int64_t height;
+    height_t height;
     ValidatorSet valSet;
     int roundNumber;                   // max tracked round
     std::map<int, RoundVoteSet> roundVoteSets;
@@ -36,18 +36,22 @@ public :
 
     HeightVoteSet(const string &chainID);
 
-    HeightVoteSet(const string &chainID, int64_t height, const ValidatorSet &valSet);
+    HeightVoteSet(const string &chainID, height_t height, const ValidatorSet &valSet);
 
-    boost::optional<VoteSet> getPrevotes(int round);
+    VoteSet *getPrevotes(int round);
 
-    boost::optional<VoteSet> getPrecommits(int round);
+    VoteSet *getPrecommits(int round);
 
-    boost::optional<VoteSet> getVoteSet(int round, VoteType type);
+    RoundVoteSet *getRoundVoteSet(int round);
+
+    VoteSet *getVoteSet(int round, VoteType type);
+
+    AddVoteResult setPeerMaj23(int round, VoteType _type, P2PID peerID, BlockID blockID);
 
     /*returns int = polRound & sets blockID */
     int polInfo(BlockID &blockID);
 
-    bool addVote(Vote vote, HexBytes bytes);
+    bool addVote(Vote &vote, HexBytes bytes);
 
     void setRoundNumber(int roundNumber);
 

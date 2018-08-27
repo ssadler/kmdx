@@ -3,26 +3,29 @@
 //
 #include "HeightVoteSet.h"
 
-boost::optional<VoteSet> HeightVoteSet::getPrevotes(int round) {
+VoteSet *HeightVoteSet::getPrevotes(int round) {
     std::lock_guard<std::mutex> lock(mtx);
     return getVoteSet(round, VoteTypePrevote);
 }
 
-boost::optional<VoteSet> HeightVoteSet::getPrecommits(int round) {
+VoteSet *HeightVoteSet::getPrecommits(int round) {
     std::lock_guard<std::mutex> lock(mtx);
     return getVoteSet(round, VoteTypePrecommit);
 }
 
-boost::optional<VoteSet> HeightVoteSet::getVoteSet(int round, VoteType type) {
-    boost::optional<RoundVoteSet> rvs = roundVoteSets.at(round);
-    boost::optional<VoteSet> votes;
-    if (!rvs.is_initialized())
-        return votes;
+RoundVoteSet *HeightVoteSet::getRoundVoteSet(int round) {
+    return roundVoteSets.count(round) ? &roundVoteSets.at(round) : nullptr;
+}
+
+VoteSet *HeightVoteSet::getVoteSet(int round, VoteType type) {
+    RoundVoteSet *rvs = getRoundVoteSet(round);
+    if (!rvs)
+        return nullptr;
     switch (type) {
         case VoteTypePrevote:
-            return rvs.get().getPrevotes();
+            return &rvs->getPrevotes();
         case VoteTypePrecommit:
-            return rvs.get().getPrecommits();
+            return &rvs->getPrecommits();
         default:
             std::ostringstream outString;
             outString << "Unexpected vote type %s", Vote::voteTypeToString(type);
@@ -32,7 +35,7 @@ boost::optional<VoteSet> HeightVoteSet::getVoteSet(int round, VoteType type) {
 
 HeightVoteSet::HeightVoteSet(const string &chainID) : mtx(), chainID(chainID), valSet() {}
 
-HeightVoteSet::HeightVoteSet(const string &chainID, int64_t height, const ValidatorSet &valSet)
+HeightVoteSet::HeightVoteSet(const string &chainID, height_t height, const ValidatorSet &valSet)
         : mtx(), chainID(chainID),
           height(height),
           valSet(valSet) {}
@@ -55,10 +58,10 @@ VoteSet &RoundVoteSet::getPrecommits() const {
 int HeightVoteSet::polInfo(BlockID &blockID) {
     std::lock_guard<std::mutex> lock(mtx);
     for (int r = roundNumber; r >= 0; r--) {
-        boost::optional<VoteSet> rvs = getVoteSet(r, VoteTypePrevote);
-        if (rvs.is_initialized()) {
-            if (rvs.get().hasTwoThirdMajority()) {
-                blockID = rvs.get().twoThirdMajority().get();
+        VoteSet *rvs = getVoteSet(r, VoteTypePrevote);
+        if (rvs) {
+            if (rvs->hasTwoThirdMajority()) {
+                blockID = rvs->twoThirdMajority().get();
                 return r;
             }
         }
@@ -74,7 +77,22 @@ bool HeightVoteSet::isEmpty() {
     return roundVoteSets.empty();//TODO review
 }
 
-bool HeightVoteSet::addVote(Vote vote, HexBytes bytes) {
+bool HeightVoteSet::addVote(Vote &vote, HexBytes bytes) {
     return (vote.getType() == VoteTypeFirstCommit || bytes.empty());
     //TODO unimplemented
+}
+
+AddVoteResult HeightVoteSet::setPeerMaj23(int round, VoteType _type, P2PID peerID, BlockID blockID) {
+    lock_guard<std::mutex> lock(mtx);
+    if (!Vote::isVoteTypeValid(_type)) {
+        std::string str("SetPeerMaj23: Invalid vote type: ");
+        str += Vote::voteTypeToString(_type);
+        Error(str, __FILE__, __LINE__);
+        return AddVoteResult(false, true, str);
+    }
+    VoteSet *voteSet = getVoteSet(round, _type);
+    if (!voteSet) {
+        return AddVoteResult(false, false, "we dont know about this yet."); // something we don't know about yet
+    }
+    return voteSet->setPeerMaj23(P2PID(peerID), blockID);
 }

@@ -6,6 +6,7 @@
 #define AYETH_VOTESETTEST_H
 
 #include <cstdint>
+#include "../types/Error.h"
 #include "../types/VoteSet.h"
 #include "../types/HexBytes.h"
 #include "../types/PrivValidator.h"
@@ -15,10 +16,10 @@ class VoteSetTest {
 public:
     VoteSetTest();
 
-    //VoteSet randVoteSet(int64_t height, int round, VoteType _type);
+    //VoteSet randVoteSet(height_t height, int round, VoteType _type);
     Vote withValidator(Vote _vote, HexBytes _addr, int _idx);
 
-    Vote withHeight(Vote &_vote, int64_t _height);
+    Vote withHeight(Vote &_vote, height_t _height);
 
     Vote withRound(Vote _vote, int _roundNumber);
 
@@ -28,6 +29,8 @@ public:
 
     void testAddVote();
 
+    void test2_3Majority_not_null();
+
     void test2_3Majority();
 
     void test2_3MajorityRedux();
@@ -35,6 +38,12 @@ public:
     void testBadVotes();
 
     void testConflicts();
+
+    void testMakeCommit();
+
+private:
+    void privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet &voteSet, const Vote &voteProto, int i,
+                        boost::optional<Vote> &conflicting);
 };
 
 

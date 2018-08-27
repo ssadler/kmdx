@@ -15,45 +15,50 @@ std::string Vote::voteTypeToString(VoteType type) {
         default:
             return "invalid Vote type";
     }
-};
+}
 
 Vote Vote::fromRLP(dev::RLP &r) {
-    cout << r.toString();
-    cout << r[5].toString();
-    //cout<<r.payload[5].toString();
     return Vote(
-            Address(r[1].toBytes()),
-            r[2].toInt(),
-            r[3].toInt<int64_t>(),
-            r[4].toInt(),
-            boost::posix_time::from_iso_string(r[5].toString()),
-            Vote::allVoteTypes[r[6].toInt()], BlockID(r[7].toBytes()),
-            Signature(r[8].toBytes())
+            Address(r[0].toBytes()),
+            r[1].toInt(),
+            (height_t) r[2].toPositiveInt64(),
+            r[3].toInt(),
+            boost::posix_time::from_iso_string(r[4].toString()),
+            Vote::allVoteTypes[r[5].toInt()],
+            BlockID(r[6].toBytes()),
+            r[7].isData() ? Signature(r[7].toBytes()) : Signature()
     );
+}
+
+Vote::Vote(const Vote &v) : Vote(v.validatorAddress, v.validatorIndex, v.height, v.roundNumber, v.timestamp, v.type,
+                                 v.blockID, v.signature) {
+
 }
 
 VoteType Vote::allVoteTypes[VoteTypeSize] = {
         VoteTypePrevote, VoteTypePrecommit, VoteTypeFirstCommit,
 };
 
-dev::RLP Vote::toRLP() {
-    dev::RLPStream rlp(8);
-    rlp.append(validatorAddress);
-    rlp.append(validatorIndex);
-    rlp.append(height); //FIXME int64 might not fit
-    rlp.append(roundNumber);
-    rlp.append(boost::posix_time::to_iso_string(timestamp));
-    rlp.append(type);
-    rlp.append(blockID.getBytes());
-    rlp.append(signature);
-    return dev::RLP(rlp.out());
-    //return dev::u256(rlp.out());
+dev::RLPStream Vote::toRLP() {
+    dev::RLPStream rlp;
+    bool withSignature = !signature.empty();
+    rlp.appendList(withSignature ? 8 : 7);
+    rlp << validatorAddress;
+    rlp << validatorIndex;
+    rlp << height;
+    rlp << roundNumber;
+    rlp << boost::posix_time::to_iso_string(timestamp);
+    rlp << (int) type;
+    rlp << blockID.getBytes();
+    if (withSignature)
+        rlp << signature;
+    return rlp;
 }
 
 
-Vote::Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+Vote::Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
            const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID)
-        : validatorAddress(address), blockID(_blockID) {
+        : validatorAddress(addresstm), blockID(_blockID) {
     validatorIndex = _validatorIndex;
     height = _height;
     roundNumber = _roundNumber;
@@ -61,15 +66,15 @@ Vote::Vote(const Address address, int _validatorIndex, int64_t _height, int _rou
     type = _type;
 }
 
-Vote::Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+Vote::Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
            const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
-           const Signature _signature) : Vote(address, _validatorIndex, _height, _roundNumber, _timestamp, _type,
+           const Signature _signature) : Vote(addresstm, _validatorIndex, _height, _roundNumber, _timestamp, _type,
                                               _blockID) {
     signature = _signature;
 }
 
 
-Vote::Vote(VoteType _type) : validatorAddress(), blockID(), signature() {
+Vote::Vote(VoteType _type) {//: validatorAddress(), blockID(), signature() {
 //    validatorIndex = 0;
 //    height = 0;
 //    roundNumber = 0;
@@ -99,7 +104,7 @@ int Vote::getValidatorIndex() const {
     return validatorIndex;
 }
 
-int64_t Vote::getHeight() const {
+height_t Vote::getHeight() const {
     return height;
 }
 
@@ -129,8 +134,22 @@ HexBytes Vote::signBytes(std::string chainID) const {
         << ",round:"
         << roundNumber << ",timestamp:" << boost::posix_time::to_iso_string(timestamp) << ",type:"
         << voteTypeToString(type) << "}";
-    cout << out.str();
+//    cout << out.str();
     std::string got = out.str();
     return HexBytes(out.str()); //TODO
+}
+
+void Vote::setSignature(const Signature &signature) {
+    Vote::signature = signature;
+}
+
+bool Vote::isVoteTypeValid(VoteType type) {
+    switch (type) {
+        case VoteTypePrevote:
+        case VoteTypePrecommit:
+            return true;
+        default:
+            return false;
+    }
 }
 

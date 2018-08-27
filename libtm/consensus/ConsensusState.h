@@ -73,7 +73,7 @@ class ConsensusState {
     handleProposalMsg(
             const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature, __FILE__, __LINE__);
 
-    void tryAddVote(Vote vote, HexBytes address);
+    void tryAddVote(Vote &vote, Address addresstm);
 
     Vote signVote(VoteType type, const HexBytes &b);
 
@@ -81,7 +81,7 @@ class ConsensusState {
 
     void handleBlockMsg(const BlockMessage &msg);
 
-    bool addVote(Vote vote, HexBytes address);
+    bool addVote(Vote &vote, Address addresstm);
 
 public:
 
@@ -95,53 +95,53 @@ public:
 
     void updateToState(State state);
 
-    void enterPropose(int64_t height, int round);
+    void enterPropose(height_t height, int round);
 
     void reconstructLastCommit(State state);
 
-    void addVoteForCurrentRound(Vote vote);
+    void addVoteForCurrentRound(Vote &vote);
 
     void unlockBlock(const Vote &vote, BlockID &blockId);
 
     void tryUpdateValidRoundAndBlock(const Vote &vote, BlockID &blockId);
 
-    void enterNewRound(int64_t height, int number);
+    void enterNewRound(height_t height, int number);
 
     bool isProposalComplete();
 
-    void enterPrevoteWait(int64_t height, int _roundNumber);
+    void enterPrevoteWait(height_t height, int _roundNumber);
 
-    void enterPrecommit(int64_t height, int _roundNumber);
+    void enterPrecommit(height_t height, int _roundNumber);
 
-    void enterPrevote(int64_t _height, int _roundNumber);
+    void enterPrevote(height_t _height, int _roundNumber);
 
     void newStep();
 
-    void doPrevote(int64_t height, int _roundNumber);
+    void doPrevote(height_t height, int _roundNumber);
 
-    void scheduleTimeout(time_duration prevote, int64_t height, int number,
+    void scheduleTimeout(time_duration prevote, height_t height, int number,
                          RoundStepType type);
 
-    void enterCommit(int64_t height, int number);
+    void enterCommit(height_t height, int number);
 
     void signAddVote(VoteType type);
 
     void signAddVote(VoteType type, const HexBytes &b);
 
-    void enterPrecommitWait(int64_t height, int number);
+    void enterPrecommitWait(height_t height, int number);
 
-    void handleStragglerCommit(const Vote &vote);
+    void handleStragglerCommit(Vote &vote);
 
-    void tryFinalizeCommit(int64_t height);
+    void tryFinalizeCommit(height_t height);
 
-    void finalizeCommit(int64_t height);
+    void finalizeCommit(height_t height);
 
     void scheduleRound0(RoundState roundState);
 
 
     void recover();
 
-    Commit loadSeenCommit(int64_t height); //originally from blockStore
+    Commit loadSeenCommit(height_t height); //originally from blockStore
 
     void clearProposal();
 
@@ -151,9 +151,9 @@ public:
 
     void onStart();
 
-    void catchupReplay(int64_t height);
+    void catchupReplay(height_t height);
 
-    void decideProposal(int64_t height, int round);
+    void decideProposal(height_t height, int round);
 
     const RoundState &getRoundState() const;
 

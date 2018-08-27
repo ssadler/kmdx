@@ -1,10 +1,10 @@
 #include "ConsensusState.h"
 
 
-void ConsensusState::tryAddVote(Vote vote, HexBytes address) {
+void ConsensusState::tryAddVote(Vote &vote, Address addresstm) {
     try {
         //bool added =
-        addVote(vote, address);
+        addVote(vote, addresstm);
     } catch (ErrVoteHeightMismatch &heightMismatch) {
         // If the vote height is off, we'll just ignore it,
         // But if it's a conflicting sig, add it to the cs.evpool.
@@ -27,7 +27,7 @@ void ConsensusState::tryAddVote(Vote vote, HexBytes address) {
 
 //-----------------------------------------------------------------------------
 /** returns true if it was added */
-bool ConsensusState::addVote(Vote vote, HexBytes address) {
+bool ConsensusState::addVote(Vote &vote, Address addresstm) {
     clog(dev::VerbosityDebug, Logger::channelTm) << "addVote" << "voteHeight" << vote.getHeight() << "voteType"
                                                  << Vote::voteTypeToString(vote.getType()) << "valIndex"
                                                  << vote.getValidatorIndex()
@@ -46,7 +46,7 @@ bool ConsensusState::addVote(Vote vote, HexBytes address) {
             }
             return true;
         case 0:
-            roundState.height = roundState.votes.addVote(vote, address);
+            roundState.height = roundState.votes.addVote(vote, addresstm);
             eventBus.publishEventVote(EventDataVote(vote));
             eventSwitch.fireEvent(EventVote(), vote);
             addVoteForCurrentRound(vote);
@@ -66,8 +66,9 @@ bool ConsensusState::addVote(Vote vote, HexBytes address) {
 
 }
 
-void ConsensusState::handleStragglerCommit(const Vote &vote) {
-    roundState.lastCommit->addVote(vote);
+void ConsensusState::handleStragglerCommit(Vote &vote) {
+    boost::optional<Vote> conflicting;
+    roundState.lastCommit->addVote(vote, conflicting);
     clog(dev::VerbosityInfo, Logger::channelTm) << "Added to lastPrecommits: %v"
                                                 << roundState.lastCommit->toStringShort();
     eventBus.publishEventVote(EventDataVote(vote));
@@ -84,31 +85,32 @@ void ConsensusState::handleStragglerCommit(const Vote &vote) {
 
 //my own method
 
-void ConsensusState::addVoteForCurrentRound(Vote vote) {
-    boost::optional<VoteSet> prevotes;
-    boost::optional<VoteSet> precommits;
+void ConsensusState::addVoteForCurrentRound(Vote &vote) {
+    VoteSet *prevotes;
+    VoteSet *precommits;
     boost::optional<BlockID> blockId;
     switch (vote.getType()) {
 
         case VoteTypePrevote:
             prevotes = roundState.votes.getPrevotes(vote.getRoundNumber());
+            if (!prevotes) throw PanicNullVoteSet(__FILE__, __LINE__);
             clog(dev::VerbosityInfo, Logger::channelTm) << "Added to prevote" << "vote" << vote.toString() << "prevotes"
-                                                        << prevotes.get().toStringShort();
+                                                        << prevotes->toStringShort();
             // If +2/3 prevotes for a block or nil for *any* roundNumber:
-            blockId = precommits.get().twoThirdMajority();
+            blockId = prevotes->twoThirdMajority();
 
             if (blockId.is_initialized()) {
                 // There was a polka!
-                blockId = prevotes.get().twoThirdMajority();
+                blockId = prevotes->twoThirdMajority();
                 unlockBlock(vote, blockId.get());
                 tryUpdateValidRoundAndBlock(vote, blockId.get());
             }
 
             // If +2/3 prevotes for *anything* for this or future roundNumber:
-            if (roundState.roundNumber <= vote.getRoundNumber() && prevotes.get().hasTwoThirdsAny()) {
+            if (roundState.roundNumber <= vote.getRoundNumber() && prevotes->hasTwoThirdsAny()) {
                 // Round-skip over to PrevoteWait or goto Precommit.
                 enterNewRound(roundState.height, vote.getRoundNumber()); // if the vote is ahead of us
-                if (prevotes.get().hasTwoThirdMajority()) {
+                if (prevotes->hasTwoThirdMajority()) {
                     enterPrecommit(roundState.height, vote.getRoundNumber());
                 } else {
                     enterPrevote(roundState.height, vote.getRoundNumber()); // if the vote is ahead of us
@@ -127,28 +129,29 @@ void ConsensusState::addVoteForCurrentRound(Vote vote) {
 
             break;
         case VoteTypePrecommit:
-            precommits = roundState.votes.getPrecommits(vote.getRoundNumber()).get();
+            precommits = roundState.votes.getPrecommits(vote.getRoundNumber());
+            if (!precommits) throw PanicNullVoteSet(__FILE__, __LINE__);
             clog(dev::VerbosityInfo, Logger::channelTm) << "Added to precommit" << "vote" << vote.toString()
                                                         << "precommits"
-                                                        << precommits.get().toStringShort();
+                                                        << precommits->toStringShort();
 
-            blockId = precommits.get().twoThirdMajority();
+            blockId = precommits->twoThirdMajority();
             if (blockId.is_initialized()) {
-                if (blockId.get().getHash().empty()) {
+                if (blockId->getHash().empty()) {
                     enterNewRound(roundState.height, vote.getRoundNumber() + 1);
                 } else {
                     enterNewRound(roundState.height, vote.getRoundNumber());
                     enterPrecommit(roundState.height, vote.getRoundNumber());
                     enterCommit(roundState.height, vote.getRoundNumber());
 
-                    if (consensusConfig.isSkipTimeoutCommit() && precommits.get().hasAll()) {
+                    if (consensusConfig.isSkipTimeoutCommit() && precommits->hasAll()) {
                         // if we have all the votes now,
                         // go straight to new round (skip timeout commit)
                         // cs.scheduleTimeout(time.Duration(0), cs.Height, 0, cstypes.RoundStepNewHeight)
                         enterNewRound(roundState.height, 0);
                     }
                 }
-            } else if (roundState.roundNumber <= vote.getRoundNumber() && precommits.get().hasTwoThirdsAny()) {
+            } else if (roundState.roundNumber <= vote.getRoundNumber() && precommits->hasTwoThirdsAny()) {
                 enterNewRound(roundState.height, vote.getRoundNumber());
                 enterPrecommit(roundState.height, vote.getRoundNumber());
                 enterPrecommitWait(roundState.height, vote.getRoundNumber());
@@ -201,7 +204,7 @@ void ConsensusState::unlockBlock(const Vote &vote,
 }
 
 
-void ConsensusState::doPrevote(int64_t _height, int _roundNumber) {
+void ConsensusState::doPrevote(height_t _height, int _roundNumber) {
     Logger::logRound(_height, _roundNumber);
 // If a block is locked, prevote that.
     if (roundState.lockedBlock != nullptr) {
@@ -236,7 +239,7 @@ void ConsensusState::doPrevote(int64_t _height, int _roundNumber) {
 
 
 /** Enter: any +2/3 precommits for next round.*/
-void ConsensusState::enterPrecommitWait(int64_t height, int round) {
+void ConsensusState::enterPrecommitWait(height_t height, int round) {
     if (roundState.height != height || round < roundState.roundNumber ||
         (roundState.roundNumber == round && RoundStepPrecommitWait <= roundState.stepType)) {
         clog(dev::VerbosityDebug, Logger::channelTm)
@@ -245,7 +248,7 @@ void ConsensusState::enterPrecommitWait(int64_t height, int round) {
             << RoundState::stateTypeString(roundState.stepType);
         return;
     }
-    if (!roundState.votes.getPrecommits(round).get().hasTwoThirdsAny()) {
+    if (!roundState.votes.getPrecommits(round)->hasTwoThirdsAny()) {
         throw PanicEnterRound("enterPrecommitWait(" + to_string(height) + " " + to_string(round) +
                               ") but Precommits does not have any +2/3 votes", __FILE__, __LINE__);
     }
@@ -262,7 +265,7 @@ void ConsensusState::enterPrecommitWait(int64_t height, int round) {
 
 }
 
-void ConsensusState::tryFinalizeCommit(int64_t height) {
+void ConsensusState::tryFinalizeCommit(height_t height) {
     Logger::logRound(height);
 
     if (roundState.height != height) {
@@ -271,19 +274,19 @@ void ConsensusState::tryFinalizeCommit(int64_t height) {
                 __FILE__, __LINE__);
     }
     boost::optional<BlockID> blockID = roundState.votes.getPrecommits(
-            roundState.commitRoundNumber).get().twoThirdMajority();
-    if (!blockID.is_initialized() || blockID.get().getHash().empty()) {
+            roundState.commitRoundNumber)->twoThirdMajority();
+    if (!blockID.is_initialized() || blockID->getHash().empty()) {
         clog(dev::VerbosityError, Logger::channelTm)
             << "Attempt to finalize failed. There was no +2/3 majority << or +2/3 was for <nil>.";
         return;
     }
-    if (!roundState.proposalBlock->hashesTo(blockID.get().getHash())) {
+    if (!roundState.proposalBlock->hashesTo(blockID->getHash())) {
         // TODO: this happens every time if we're not a validator (ugly logs)
         // TODO: ^^ wait, why does it matter that we're a validator?
         clog(dev::VerbosityInfo, Logger::channelTm) << "Attempt to finalize failed. We don't have the commit block."
                                                     << "proposal-block"
                                                     << roundState.proposalBlock->getHash().toString()
-                                                    << "commit-block" << blockID.get().getHash().toString();
+                                                    << "commit-block" << blockID->getHash().toString();
         return;
     }
 
@@ -292,7 +295,7 @@ void ConsensusState::tryFinalizeCommit(int64_t height) {
 }
 
 /* Increment height and goto cstypes.RoundStepNewHeight */
-void ConsensusState::finalizeCommit(int64_t _height) {
+void ConsensusState::finalizeCommit(height_t _height) {
     if (roundState.height != _height || roundState.stepType != RoundStepCommit) {
         clog(dev::VerbosityDebug, Logger::channelTm) << "finalizeCommit(%v): Invalid args. Current step: %v/%v/%v"
                                                      << _height
@@ -301,7 +304,7 @@ void ConsensusState::finalizeCommit(int64_t _height) {
         return;
     }
     boost::optional<BlockID> blockID = roundState.votes.getPrecommits(
-            roundState.commitRoundNumber).get().twoThirdMajority();
+            roundState.commitRoundNumber)->twoThirdMajority();
     Block block = *roundState.proposalBlock.get();
     //blockParts = roundState.proposalBlockParts;
     if (!blockID.is_initialized()) {
@@ -310,7 +313,7 @@ void ConsensusState::finalizeCommit(int64_t _height) {
     /*if (!blockParts.HasHeader(blockID.PartsHeader)) {
         throw Panic("Expected ProposalBlockParts header to be commit header", __FILE__, __LINE__);
     }*/
-    if (!block.hashesTo(blockID.get().getHash())) {
+    if (!block.hashesTo(blockID->getHash())) {
         throw PanicInvalidHash("Cannot finalizeCommit, ProposalBlock does not hash to commit hash", __FILE__, __LINE__);
     }
     /*if (err = roundState.blockExec.ValidateBlock(roundState.state, block); err != nil) {
@@ -330,7 +333,7 @@ void ConsensusState::finalizeCommit(int64_t _height) {
     // NOTE: the seenCommit is local justification to commit this block,
     // but may differ from the LastCommit included in the next block
     controller.append(block.getBytes(),
-                      roundState.votes.getPrecommits(roundState.commitRoundNumber).get().getSignatures());
+                      roundState.votes.getPrecommits(roundState.commitRoundNumber)->getSignatures());
     /*} else {
         // Happens during replay if we already saved the block but didn't commit
         clog(dev::VerbosityInfo, Logger::channelTm) << "Calling finalizeCommit on already stored block" << "_height" << block._height);
@@ -407,11 +410,11 @@ bool ConsensusState::isValidator() {
 }
 
 bool ConsensusState::isProposer() {
-    return roundState.validators.getProposer().get().getAddress() == privValidator->getAddress();
+    return roundState.validators.getProposer()->getAddress() == privValidator->getAddress();
 }
 
 
-void ConsensusState::decideProposal(int64_t height, int round) {
+void ConsensusState::decideProposal(height_t height, int round) {
 
     boost::optional<Block> block;
 
@@ -429,7 +432,7 @@ void ConsensusState::decideProposal(int64_t height, int round) {
     int polRound = roundState.votes.polInfo(polBlockID);
     Proposal proposal(height, round, polRound, polBlockID);
     try {
-        privValidator->signProposal(state.get().getChainID(), proposal);
+        privValidator->signProposal(state->getChainID(), proposal);
     } catch (SignError &e) {
         if (!replayMode) {
             clog(dev::VerbosityError, Logger::channelTm) << "enterPropose: Error signing proposal" << "height" << height

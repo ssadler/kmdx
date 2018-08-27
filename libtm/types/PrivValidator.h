@@ -12,7 +12,7 @@
 class PrivValidator {
 
 protected:
-    Address address;
+    Address addresstm;
     PrivKey privKey;
 public:
     PrivValidator(const PrivKey _privKey);

@@ -22,8 +22,8 @@ bool RoundState::operator==(const RoundState &other) {
 RoundState::RoundState(std::string chainID) : votes(chainID) {//FIXME
 };
 
-RoundState::RoundState(std::string chainID, int64_t height, ValidatorSet validators) : votes(chainID, height,
-                                                                                             validators) {//FIXME
+RoundState::RoundState(std::string chainID, height_t height, ValidatorSet validators) : votes(chainID, height,
+                                                                                              validators) {//FIXME
 };
 
 void RoundState::updateRoundStep(int number, RoundStepType type) {
@@ -31,7 +31,7 @@ void RoundState::updateRoundStep(int number, RoundStepType type) {
     stepType = type;
 }
 
-int64_t RoundState::getHeight() const {
+height_t RoundState::getHeight() const {
     return height;
 }
 
@@ -40,7 +40,7 @@ void RoundState::setLockedRoundNumber(int lockedRoundNumber) {
     RoundState::lockedRoundNumber = lockedRoundNumber;
 }
 
-void RoundState::setHeight(int64_t _height) {
+void RoundState::setHeight(height_t _height) {
     height = _height;
 }
 

@@ -15,7 +15,7 @@ std::string HexBytes::toString() const {
 }
 
 std::string BlockID::key() const {
-    return "{BlockID:" + bytes.toString() + "}";
+    return "{BlockID:" + hash.toString() + "}";
 }
 
 HexBytes BlockID::getBytes() const {
@@ -43,8 +43,7 @@ HexBytes HexBytes::random(int length) {
             "abcdefghijklmnopqrstuvwxyz"
             "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
             "1234567890"
-            "!@#$%^&*()"
-            "`~-_=+[{]{\\|;:'\",<.>/? ");
+    );
     std::srand(std::time(nullptr));
     bytes _bytes;
     for (int i = 0; i < length; ++i) {
@@ -54,14 +53,14 @@ HexBytes HexBytes::random(int length) {
 }
 
 bool BlockID::operator==(const BlockID &other) const {
-    return this->bytes == other.getBytes();
+    return this->hash == other.hash;
 }
 
 bool BlockID::isEmpty() const {
     return bytes.empty();
 }
 
-BlockID::BlockID() {};
+BlockID::BlockID() : bytes(HexBytes("NULL")), hash(HexBytes("NULL")) {};
 
 std::string BlockID::toString() const {
     std::ostringstream out;
@@ -72,21 +71,23 @@ std::string BlockID::toString() const {
 BlockID::BlockID(std::vector<uint8_t> _bytes) : bytes(_bytes), hash(_bytes) {}; //FIXME hash
 
 Address PubKey::getAddress() const {
-    return address;
+    return addresstm;
 }
 
-bool PubKey::verifyBytes(HexBytes signBytes, Signature signature) const {
-    return signBytes == signature; //TODO
+//input: signBytes, signature
+bool PubKey::verifyBytes(HexBytes, Signature) const {
+    return true;
+//    return signBytes == signature?true:true; //TODO
 }
 
 std::string PubKey::toString() const {
     return "{PubKey:" + getAddress().toString() + "}";
 }
 
-PubKey::PubKey(Address _address) : address(_address) {}
+PubKey::PubKey(Address _address) : addresstm(_address) {}
 
 Address PrivKey::getAddress() const {
-    return address;
+    return addresstm;
 }
 
 const PubKey &PrivKey::getPubKey() const {
@@ -97,5 +98,5 @@ HexBytes PrivKey::sign(HexBytes b) const {
     return b; //TODO
 }
 
-PrivKey::PrivKey(HexBytes _address, HexBytes _pubKey) : address(_address), pubKey(_pubKey) {}
+PrivKey::PrivKey(Address _address, HexBytes _pubKey) : addresstm(_address), pubKey(_pubKey) {}
 

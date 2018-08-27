@@ -23,8 +23,8 @@ void TmController::append(bytes block, std::vector<Signature> signatures) {
     if (block.empty() && signatures.empty()) return;
 }
 
-int64_t TmController::currentHeight() {
-    return int64_t(0); //TODO unimplemented
+height_t TmController::currentHeight() {
+    return 0; //TODO unimplemented
 }
 
 std::unordered_map<string, int> TmController::getGenesisParams() {

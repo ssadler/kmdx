@@ -12,7 +12,6 @@ void BlockVotes::setPeerMaj23(bool peerMaj23) {
     BlockVotes::peerMaj23 = peerMaj23;
 }
 
-
 const std::map<int, Vote> &BlockVotes::getVotes() const {
     return votes;
 }
@@ -33,7 +32,15 @@ void BlockVotes::addVerifiedVote(Vote vote, int64_t votingPower) {
     int valIndex = vote.getValidatorIndex();
     boost::optional<Vote> existing = get(valIndex);
     if (!existing.is_initialized()) {
-        votes.insert(std::pair<int, Vote>(valIndex, vote));
+        votes.emplace(std::pair<int, Vote>(valIndex, vote));
         sum += votingPower;
     }
+}
+
+boost::optional<Vote> BlockVotes::get(int i) {
+    return votes.count(i) ? votes.at(i) : boost::optional<Vote>();
+}
+
+bool BlockVotes::getPeerMaj23() {
+    return peerMaj23;
 }

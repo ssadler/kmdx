@@ -19,15 +19,16 @@ class State {
 public:
     State();
 
-    State(std::string _chainID, int64_t _lastBlockHeight, BlockID _lastBlockID, boost::posix_time::ptime _lastBlockTime,
-          ValidatorSet _validators, ValidatorSet _lastValidators, int64_t _lastHeightValidatorsChanged,
-          ConsensusConfig _consensusParams, int64_t _lastHeightConsensusParamsChanged, HexBytes _appHash);
+    State(std::string _chainID, height_t _lastBlockHeight, BlockID _lastBlockID,
+          boost::posix_time::ptime _lastBlockTime,
+          ValidatorSet _validators, ValidatorSet _lastValidators, height_t _lastHeightValidatorsChanged,
+          ConsensusConfig _consensusParams, height_t _lastHeightConsensusParamsChanged, HexBytes _appHash);
 
 //    virtual ~State();
 
     const std::string &getChainID() const;
 
-    int64_t getLastBlockHeight() const;
+    height_t getLastBlockHeight() const;
 
     int64_t getLastBlockTotalTx() const;
 
@@ -39,11 +40,11 @@ public:
 
     const ValidatorSet &getLastValidators() const;
 
-    int64_t getLastHeightValidatorsChanged() const;
+    height_t getLastHeightValidatorsChanged() const;
 
     ConsensusConfig getConsensusParams() const;
 
-    int64_t getLastHeightConsensusParamsChanged() const;
+    height_t getLastHeightConsensusParamsChanged() const;
 
     const HexBytes &getLastResultsHash() const;
 
@@ -54,7 +55,7 @@ private:
     std::string chainID;
 
     // LastBlockHeight=0 at genesis (ie. block(H=0) does not exist)
-    int64_t lastBlockHeight;
+    height_t lastBlockHeight;
     int64_t lastBlockTotalTx;
     BlockID lastBlockID;
     boost::posix_time::ptime lastBlockTime;
@@ -66,12 +67,12 @@ private:
     // we set s.LastHeightValidatorsChanged = s.LastBlockHeight + 1
     ValidatorSet validators;
     ValidatorSet lastValidators;
-    int64_t lastHeightValidatorsChanged;
+    height_t lastHeightValidatorsChanged;
 
     // Consensus parameters used for validating blocks.
     // Changes returned by EndBlock and updated after Commit.
     ConsensusConfig consensusParams;
-    int64_t lastHeightConsensusParamsChanged;
+    height_t lastHeightConsensusParamsChanged;
 
     // Merkle root of the results from executing prev block
     HexBytes lastResultsHash;
@@ -80,7 +81,7 @@ private:
     HexBytes appHash;
 
     //for testing
-    static State randGenesisState(int, bool, int64_t); //TODO
+    static State randGenesisState(int, bool, height_t); //TODO
 };
 
 

@@ -24,10 +24,13 @@ public:
 
     BlockVotes(bool _peerMaj23);;
 
+    boost::optional<Vote> get(int i);
 
     bool isPeerMaj23() const;
 
     void setPeerMaj23(bool peerMaj23);
+
+    bool getPeerMaj23();
 
     const std::map<int, Vote> &getVotes() const;
 

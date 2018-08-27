@@ -15,7 +15,7 @@
 //class Proposal;
 
 class Validator {
-    Address address;
+    Address addresstm;
     PubKey pubKey;
     int64_t votingPower;
     int64_t accum;
@@ -56,11 +56,11 @@ public:
 
     boost::optional<Validator> getByIndex(int index);
 
-    boost::optional<Validator> getByAddress(Address address);
+    boost::optional<Validator> getByAddress(Address addresstm);
 
     HexBytes hash() const;
 
-    static unsigned int getTotalVotingPower();
+    unsigned int getTotalVotingPower();
 
     unsigned long size();
 

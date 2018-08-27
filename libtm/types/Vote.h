@@ -25,7 +25,7 @@ enum VoteType {
 class Vote {
     Address validatorAddress;
     int validatorIndex;
-    int64_t height;
+    height_t height;
     int roundNumber;
     boost::posix_time::ptime timestamp;
     enum VoteType type;
@@ -41,14 +41,16 @@ class Vote {
 public:
     static VoteType allVoteTypes[];
 
+    Vote(const Vote &);
+
     explicit Vote(VoteType type);
 
     static std::string voteTypeToString(VoteType type);
 
-    Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+    Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
          const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID);
 
-    Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+    Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
          const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
          const Signature _signature);
 
@@ -58,7 +60,7 @@ public:
 
     std::string toString() const;
 
-    dev::RLP toRLP();
+    dev::RLPStream toRLP();
 
     void verify(const std::string &chainID, const PubKey &pubKey) const; //TODO crypto
 
@@ -66,7 +68,7 @@ public:
 
     int getValidatorIndex() const;
 
-    int64_t getHeight() const;
+    height_t getHeight() const;
 
     int getRoundNumber() const;
 
@@ -77,6 +79,10 @@ public:
     const BlockID &getBlockID() const;
 
     const Signature &getSignature() const;
+
+    void setSignature(const Signature &signature);
+
+    static bool isVoteTypeValid(VoteType type);
 };
 
 

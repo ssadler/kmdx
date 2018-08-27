@@ -8,7 +8,7 @@ const std::string &State::getChainID() const {
     return chainID;
 }
 
-int64_t State::getLastBlockHeight() const {
+height_t State::getLastBlockHeight() const {
     return lastBlockHeight;
 }
 
@@ -32,7 +32,7 @@ const ValidatorSet &State::getLastValidators() const {
     return lastValidators;
 }
 
-int64_t State::getLastHeightValidatorsChanged() const {
+height_t State::getLastHeightValidatorsChanged() const {
     return lastHeightValidatorsChanged;
 }
 
@@ -40,7 +40,7 @@ ConsensusConfig State::getConsensusParams() const {
     return consensusParams;
 }
 
-int64_t State::getLastHeightConsensusParamsChanged() const {
+height_t State::getLastHeightConsensusParamsChanged() const {
     return lastHeightConsensusParamsChanged;
 }
 

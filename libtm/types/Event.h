@@ -132,14 +132,14 @@ public :
 
 // NOTE: This goes into the replay WAL
 class EventDataRoundState : public Event {
-    int64_t height;
+    height_t height;
     int round;
     std::string step;
     // private, not exposed to websockets
     //TODO interface{} RoundState ;
 
 public :
-    EventDataRoundState(int64_t _height, int _round, std::string _step) : Event("EventDataRoundState") {
+    EventDataRoundState(height_t _height, int _round, std::string _step) : Event("EventDataRoundState") {
         height = _height;
         round = _round;
         step = _step;

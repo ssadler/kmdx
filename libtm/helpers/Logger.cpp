@@ -6,11 +6,11 @@
 
 const std::string Logger::channelTm = "overlaydb";
 
-void Logger::logRound(int64_t h, int r) {
+void Logger::logRound(height_t h, int r) {
     clog(dev::VerbosityInfo, Logger::channelTm) << "@ height %i, round%i" << h << r;
 }
 
-void Logger::logRound(int64_t h) {
+void Logger::logRound(height_t h) {
     clog(dev::VerbosityInfo, Logger::channelTm) << "@ height %i" << h;
 }
 

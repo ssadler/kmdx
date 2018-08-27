@@ -25,9 +25,9 @@ class Block {
 public:
     Block();;
 
-    Block(int64_t _height, Commit _lastCommit);
+    Block(height_t _height, Commit _lastCommit);
 
-    //Block(int64_t _height, Commit _lastCommit, State &state);
+    //Block(height_t _height, Commit _lastCommit, State &state);
 
     bool hashesTo(HexBytes hash);
 
@@ -39,11 +39,11 @@ public:
 
     const HexBytes &getBytes() const;
 
-    int64_t getHeight() const;
+    height_t getHeight() const;
 
 private:
     string chainID;
-    int64_t height;
+    height_t height;
     ptime time;
 
     int64_t numTxs;

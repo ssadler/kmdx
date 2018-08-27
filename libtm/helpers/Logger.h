@@ -8,12 +8,13 @@
 
 #include <string>
 #include <libdevcore/Log.h>
+#include "../types/HexBytes.h"
 
 class Logger {
 public:
-    static void logRound(int64_t, int);
+    static void logRound(height_t, int);
 
-    static void logRound(int64_t);
+    static void logRound(height_t);
 
     static const std::string channelTm;
 };

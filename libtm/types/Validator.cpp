@@ -4,7 +4,7 @@
 
 #include "Validator.h"
 
-Validator::Validator(PubKey _pubKey, int64_t _votingPower) : address(_pubKey.getAddress()), pubKey(_pubKey) {
+Validator::Validator(PubKey _pubKey, int64_t _votingPower) : addresstm(_pubKey.getAddress()), pubKey(_pubKey) {
     votingPower = _votingPower;
     accum = 0;
 }
@@ -23,10 +23,10 @@ boost::optional<Validator> ValidatorSet::getByIndex(int index) {
     return this->validators.at((unsigned) index);
 }
 
-boost::optional<Validator> ValidatorSet::getByAddress(Address address) {
+boost::optional<Validator> ValidatorSet::getByAddress(Address addresstm) {
 //FIXME better way to return validadtor index?
     for (Validator &v: validators) {
-        if (v.getAddress() == address)
+        if (v.getAddress() == addresstm)
             return v;
     }
     return boost::optional<Validator>();
@@ -37,7 +37,7 @@ unsigned long ValidatorSet::size() {
 }
 
 unsigned int ValidatorSet::getTotalVotingPower() {
-    return voteSetLength; //TODO change to numebr of validators online??
+    return validators.size();
 }
 
 ValidatorSet::ValidatorSet() {}
@@ -54,8 +54,8 @@ const boost::optional<Validator> ValidatorSet::getProposer() {
 boost::optional<Validator> ValidatorSet::findProposer() const {
     boost::optional<Validator> proposer;
     for (Validator const &val : validators) {
-        if (!proposer.is_initialized() || val.getAddress() != proposer.get().getAddress()) {
-            proposer = proposer.get().compareAccum(val);
+        if (!proposer.is_initialized() || val.getAddress() != proposer->getAddress()) {
+            proposer = proposer->compareAccum(val);
         }
     }
     return proposer;
@@ -97,9 +97,9 @@ Validator Validator::compareAccum(const Validator &other) const {
         return *this;
     if (this->accum < other.accum)
         return other;
-    if (this->address == other.address)
+    if (this->addresstm == other.addresstm)
         throw PanicSanity("Cannot compare identical validators", __FILE__, __LINE__);
-    return this->address < other.address ? *this : other;
+    return this->addresstm < other.addresstm ? *this : other;
 }
 
 void Validator::signProposal(const std::string &chainID, Proposal &proposal) {
@@ -108,7 +108,7 @@ void Validator::signProposal(const std::string &chainID, Proposal &proposal) {
 }
 
 const Address &Validator::getAddress() const {
-    return address;
+    return addresstm;
 }
 
 const PubKey &Validator::getPubKey() const {
@@ -124,7 +124,7 @@ int64_t Validator::getAccum() const {
 }
 
 std::string Validator::toString() const {
-    return address.toString();
+    return addresstm.toString();
 }
 
 int Validator::getIndex() const {

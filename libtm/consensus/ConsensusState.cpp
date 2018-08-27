@@ -68,8 +68,8 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
     }
 
     // Verify signature
-    if (!(state.get().getValidators().getProposer().get().getPubKey().verifyBytes(
-            _proposal.signBytes(state.get().getChainID()),
+    if (!(state->getValidators().getProposer()->getPubKey().verifyBytes(
+            _proposal.signBytes(state->getChainID()),
             _proposal.getSignature()))) {
         throw ErrorInvalidSignature("proposal", __FILE__, __LINE__);
     }
@@ -85,11 +85,11 @@ void ConsensusState::updateToState(State _state) {
         throw Panic("updateToState() expected state height of %s but found %s" + to_string(roundState.height) +
                     to_string(_state.getLastBlockHeight()), __FILE__, __LINE__);
     }
-    if (this->state.is_initialized() && this->state.get().getLastBlockHeight() + 1 != roundState.height) {
+    if (this->state.is_initialized() && this->state->getLastBlockHeight() + 1 != roundState.height) {
         // This might happen when someone else is mutating this->state.
         // Someone forgot to pass in _state.copy() somewhere?!
         throw Panic("Inconsistent this->state.lastBlockHeight+1 %s vs roundState.height %s" +
-                    to_string(this->state.get().getLastBlockHeight() + 1) + to_string(roundState.height), __FILE__,
+                    to_string(this->state->getLastBlockHeight() + 1) + to_string(roundState.height), __FILE__,
                     __LINE__);
     }
 
@@ -98,23 +98,23 @@ void ConsensusState::updateToState(State _state) {
     // We don't want to reset e.g. the Votes, but we still want to
     // signal the new round step, because other services (eg. mempool)
     // depend on having an up-to-date peer state!
-    if (this->state.is_initialized() && (_state.getLastBlockHeight() <= this->state.get().getLastBlockHeight())) {
+    if (this->state.is_initialized() && (_state.getLastBlockHeight() <= this->state->getLastBlockHeight())) {
         clog(dev::VerbosityInfo, Logger::channelTm) << "Ignoring updateToState()" << "newHeight"
                                                     << _state.getLastBlockHeight() + 1 << "oldHeight"
-                                                    << this->state.get().getLastBlockHeight() + 1;
+                                                    << this->state->getLastBlockHeight() + 1;
         newStep();
         return;
     }
 
     // Reset fields based on state.
     ValidatorSet validators = _state.getValidators();
-    boost::optional<VoteSet> lastPrecommits;
+    VoteSet *lastPrecommits;
     /*validators := state.Validators
     lastPrecommits := (*types.VoteSet)(nil)
     if cs.CommitRound > -1 && cs.Votes != nil {
                 if !cs.Votes.Precommits(cs.CommitRound).HasTwoThirdsMajority() {*/
     if (roundState.commitRoundNumber > -1 && roundState.votes.isEmpty()) {
-        if (!roundState.votes.getPrecommits(roundState.commitRoundNumber).get().hasTwoThirdMajority()) {
+        if (!roundState.votes.getPrecommits(roundState.commitRoundNumber)->hasTwoThirdMajority()) {
             throw Panic("updateToState(state) called but last Precommit round didn't have +2/3", __FILE__, __LINE__);
         }
         lastPrecommits = roundState.votes.getPrecommits(roundState.commitRoundNumber);
@@ -146,7 +146,7 @@ void ConsensusState::updateToState(State _state) {
 //    HeightVoteSet hvs(_state.getChainID(), roundState.height, validators);
 //    roundState.votes = hvs; //TODO whats better here?
     roundState.commitRoundNumber = -1;
-    roundState.lastCommit = lastPrecommits.get(); //FIXME coulfail
+    roundState.lastCommit = *lastPrecommits; //FIXME coulfail
     roundState.lastValidators = _state.getLastValidators();
 
     this->state = _state;
@@ -158,7 +158,7 @@ void ConsensusState::updateToState(State _state) {
 /** LoadSeenCommit returns the locally seen Commit for the given height.
  * This is useful when we've seen a commit, but there has not yet been
  * a new block at `height + 1` that includes this commit in its block.LastCommit.*/
-Commit ConsensusState::loadSeenCommit(int64_t height) {
+Commit ConsensusState::loadSeenCommit(height_t height) {
 /*Commit commit;
         bz := bs.db.Get(calcSeenCommitKey(height))
 if len(bz) == 0 {
@@ -184,10 +184,11 @@ void ConsensusState::reconstructLastCommit(State _state) {
     Commit seenCommit = loadSeenCommit(_state.getLastBlockHeight());
     VoteSet lastPrecommits(_state.getChainID(), _state.getLastBlockHeight(), seenCommit.round(),
                            VoteTypePrecommit, _state.getLastValidators());
-    for (auto const &iterator : seenCommit.getPrecommits()) {
-        const Vote &precommit = iterator.second;
+    for (auto &iterator : seenCommit.getPrecommits()) {
+        Vote &precommit = iterator.second;
         try {
-            lastPrecommits.addVote(precommit);
+            boost::optional<Vote> conflicting;
+            lastPrecommits.addVote(precommit, conflicting);
         } catch (Panic &p) {
             throw PanicCrisis("Failed to reconstruct LastCommit:", p, __FILE__, __LINE__);
         }

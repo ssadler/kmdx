@@ -16,7 +16,7 @@ class TmController {
 public :
     int validateBlock(bytes b);
     // currentHeight returns the last known contiguous block height.
-    int64_t currentHeight();
+    height_t currentHeight();
 
     void append(bytes block, std::vector<Signature> signatures);
 

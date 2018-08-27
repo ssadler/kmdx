@@ -38,7 +38,7 @@ class RoundState {
 
     friend class common_test;
 
-    int64_t height; // Height we are working on
+    height_t height; // Height we are working on
     int roundNumber;
     RoundStepType stepType;
     ptime startTime;
@@ -63,11 +63,11 @@ public:
 
     RoundState(std::string chainID);
 
-    RoundState(std::string chainID, int64_t height, ValidatorSet validators);
+    RoundState(std::string chainID, height_t height, ValidatorSet validators);
 
     bool operator==(const RoundState &other);
 
-    int64_t getHeight() const;
+    height_t getHeight() const;
 
     void setLockedRoundNumber(int lockedRoundNumber);
 
@@ -81,7 +81,7 @@ public:
 
     void updateRoundStep(int number, RoundStepType type);
 
-    void setHeight(int64_t i);
+    void setHeight(height_t i);
 
     static std::string stateTypeString(RoundStepType stype);
 };

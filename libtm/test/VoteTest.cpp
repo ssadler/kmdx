@@ -21,14 +21,14 @@ if err != nil {
 panic(err)
 }*/
 
-//    Vote(const Address address, int _validatorIndex, int64_t _height, int _roundNumber,
+//    Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
 //    const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
 //    const Signature _signature);
 //
 
     return Vote(Address(HexBytes("addr")),
                 56789, //ValidatorIndex
-                int64_t(12345), //Height
+                12345, //Height
                 2, //Round
                 boost::posix_time::second_clock::local_time(), //Timestamp
                 type, //Type

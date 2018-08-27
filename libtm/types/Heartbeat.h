@@ -15,14 +15,15 @@
 * representation to be in its canonical form. **/
 class Heartbeat {
 public:
-    Heartbeat(const HexBytes &validatorAddress, int validatorIndex, int64_t height, int round, int sequence,
+    Heartbeat(const Address &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
               const Signature &signature);
 
 private:
     friend class MockPV;
-    HexBytes validatorAddress;
+
+    Address validatorAddress;
     int validatorIndex;
-    int64_t height;
+    height_t height;
     int round;
     int sequence;
     Signature signature;

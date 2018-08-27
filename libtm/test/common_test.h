@@ -23,14 +23,14 @@ using bytes = std::vector<byte>;
 class ValidatorStub : public Validator {
 private :
     int index; // Validator index. NOTE: we don't assume validator set changes.
-    int64_t height;
+    height_t height;
     int round;
     MockPV privValidator;
 
     friend class common_test;
 
 public:
-    ValidatorStub(const PubKey &pubKey, int64_t votingPower, int index, int64_t height, int round,
+    ValidatorStub(const PubKey &pubKey, int64_t votingPower, int index, height_t height, int round,
                   const MockPV &privValidator);
 
     ValidatorStub(const MockPV _privValidator, int64_t _votePower);
@@ -54,10 +54,10 @@ public:
     static ConsensusState randGenesisState(vector<PrivValidator> privValidators, dev::RLP genesisParams,
                                            int numValidators, bool randPower, int64_t minPower);
 
-    void startTestRound(ConsensusState &cs, int64_t height, int round);
+    void startTestRound(ConsensusState &cs, height_t height, int round);
 
 
-    Proposal decideProposal(ConsensusState &cs1, ValidatorStub &vs, int64_t height, int round);
+    Proposal decideProposal(ConsensusState &cs1, ValidatorStub &vs, height_t height, int round);
 
     void signAddVotes(ConsensusState &cs, VoteType voteType, HexBytes hash, vector<ValidatorStub> vss);
 
@@ -71,9 +71,10 @@ public:
     void validatePrevoteAndPrecommit(ConsensusState &cs, int thisRound, int lockRound, ValidatorStub &privVal,
                                      HexBytes votedBlockHash, HexBytes lockedBlockHash);
 
-    void subscribeToVoter(ConsensusState &cs, Address address);
+    void subscribeToVoter(ConsensusState &cs, Address addresstm);
 
-    bool static signAddVote(PrivValidator privVal, Vote &vote, VoteSet &voteSet);
+    AddVoteResult static signAddVote(PrivValidator privVal, Vote &vote, VoteSet &voteSet,
+                                     boost::optional<Vote> &conflicting);
 
 private :
     vector<Vote> signVotes(VoteType voteType, HexBytes hash, vector<ValidatorStub> vss);
@@ -81,6 +82,7 @@ private :
     void addVotes(ConsensusState &cs, std::vector<Vote> votes);
 
 };
+
 
 /*
 void VoteSet::setMaj23(BlockID &_maj23) {

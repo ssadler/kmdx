@@ -10,13 +10,14 @@
 #include <string>
 #include <random>
 #include <libdevcore/RLP.h>
+#include <boost/format.hpp>
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
-
+using height_t = uint64_t;
 
 //TODO
-struct HexBytes : public std::vector<byte> {
+struct HexBytes : public bytes {
 private :
 
 
@@ -73,7 +74,7 @@ public:
 
 
 class PubKey {
-    Address address;
+    Address addresstm;
 public:
 
     explicit PubKey(Address _address);
@@ -87,11 +88,11 @@ public:
 };
 
 class PrivKey {
-    Address address;
+    Address addresstm;
     PubKey pubKey;
 public:
 
-    PrivKey(HexBytes _address, HexBytes _pubKey);
+    PrivKey(Address _address, HexBytes _pubKey);
 
     Address getAddress() const;
 

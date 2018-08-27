@@ -13,7 +13,7 @@ class EventSwitch {
     int whatever; //FIXME rmv
 
 public:
-    void fireEvent(Event event, Vote vote);
+    void fireEvent(Event event, const Vote &vote);
 
     void fireEvent(Event event, RoundState &rs);
 

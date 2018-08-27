@@ -5,7 +5,7 @@
 #include "Proposal.h"
 
 // If there is no POLRound, polRound should be -1.
-Proposal::Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID) : polBlockID(
+Proposal::Proposal(height_t _height, int _round, int _polRound, BlockID _polBlockID) : polBlockID(
         _polBlockID.isEmpty() ? BlockID() : _polBlockID) {
     height = _height;
     roundNumber = _round;
@@ -15,7 +15,7 @@ Proposal::Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlock
 
 }
 
-int64_t Proposal::getHeight() const {
+height_t Proposal::getHeight() const {
     return height;
 }
 

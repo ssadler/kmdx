@@ -21,7 +21,7 @@
 // to be considered valid. It may depend on votes from a previous roundNumber,
 // a so-called Proof-of-Lock (POL) roundNumber, as noted in the POLRound and POLBlockID.
 class Proposal {
-    int64_t height;
+    height_t height;
     int roundNumber;
     boost::posix_time::ptime timestamp;
     shared_ptr<Block> block;//should be type blockPartsHeader;
@@ -32,11 +32,11 @@ class Proposal {
     friend class MockPV;
 
 public:
-    Proposal(int64_t _height, int _round, int _polRound, BlockID _polBlockID);
+    Proposal(height_t _height, int _round, int _polRound, BlockID _polBlockID);
 
     HexBytes signBytes(const string blockChainId) const;
 
-    int64_t getHeight() const;
+    height_t getHeight() const;
 
     int getRoundNumber() const;
 
