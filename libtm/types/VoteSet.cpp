@@ -342,7 +342,7 @@ Commit VoteSet::makeCommit() {
     lock_guard<std::mutex> lock(mtx);
 
     // Make sure we have a 2/3 majority
-    if (maj23.is_initialized()) {
+    if (!maj23.is_initialized()) {
         throw PanicSanity("Cannot MakeCommit() unless a blockhash has +2/3", __FILE__, __LINE__);
     }
 
@@ -353,7 +353,8 @@ Commit VoteSet::makeCommit() {
         if (vote.is_initialized())
             precommits.emplace(std::make_pair(i, vote.get()));
     }
-    return Commit(BlockID(maj23.get()), precommits);
+    BlockID maj23id = BlockID(maj23.get());
+    return Commit(maj23id, precommits);
 }
 
 void VoteSet::setMaj23(const BlockID &_maj23) {

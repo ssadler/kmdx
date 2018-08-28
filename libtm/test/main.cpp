@@ -77,5 +77,10 @@ BOOST_AUTO_TEST_SUITE(tmvotestest)
 
     }
 
+    BOOST_AUTO_TEST_CASE (testMakeCommit) {
+        VoteSetTest vst;
+        vst.testMakeCommit();
+
+    }
 BOOST_AUTO_TEST_SUITE_END();
 

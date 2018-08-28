@@ -11,6 +11,7 @@
 #include "Vote.h"
 #include "Error.h"
 
+class VoteSetTest;
 /* Commit contains the evidence that a block was committed by a set of validators.
  NOTE: Commit is empty for height 1, but never nullptr.*/
 class Commit {
@@ -26,6 +27,7 @@ class Commit {
     HexBytes hash;
     std::vector<bool> bitArray;
 
+    friend class VoteSetTest;
 public:
     Commit();
 

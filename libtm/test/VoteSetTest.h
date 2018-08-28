@@ -42,8 +42,9 @@ public:
     void testMakeCommit();
 
 private:
-    void privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet &voteSet, const Vote &voteProto, int i,
-                        boost::optional<Vote> &conflicting);
+    AddVoteResult
+    privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet &voteSet, const Vote &voteProto, int i,
+                   boost::optional<Vote> &conflicting);
 };
 
 

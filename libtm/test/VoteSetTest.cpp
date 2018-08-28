@@ -19,10 +19,25 @@ Vote getVoteProto(height_t height) {
     return voteProto;
 }
 
-void VoteSetTest::privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet &voteSet, const Vote &voteProto,
+Vote getVoteProtoPrecommit(height_t height) {
+    int round = 0;
+    Vote voteProto(
+            Address(HexBytes::random(10)), // NOTE: must fill in // ValidatorAddress:
+            0,  // NOTE: must fill in // ValidatorIndex:
+            height, // Height:
+            round, // Round:
+            boost::posix_time::second_clock::local_time(), //Timestamp
+            VoteTypePrecommit, // Type:
+            BlockID() // BlockID:
+    );
+    return voteProto;
+}
+
+AddVoteResult
+VoteSetTest::privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet &voteSet, const Vote &voteProto,
                                  int i, boost::optional<Vote> &conflicting) {
     Vote vote = withValidator(voteProto, privValidators[i].getAddress(), i);
-    common_test::signAddVote(privValidators[i], vote, voteSet, conflicting);
+    return common_test::signAddVote(privValidators[i], vote, voteSet, conflicting);
 }
 
 Vote getVoteProto(height_t height, Address validatorAddress) {
@@ -318,7 +333,7 @@ void VoteSetTest::testConflicts() {
         Vote vote = withValidator(voteProto, privValidators[0].getAddress(), 0);
         vote = withBlockHash(vote, blockHash1);
         AddVoteResult res = common_test::signAddVote(privValidators[0], vote, voteSet, conflicting);
-        BOOST_CHECK_MESSAGE(res.isAdded(), "Expected VoteSet.Add to succeed, called SetPeerMaj23().");
+        BOOST_REQUIRE_MESSAGE(res.isAdded(), "Expected VoteSet.Add to succeed, called SetPeerMaj23().");
         BOOST_REQUIRE_MESSAGE(res.isError(), "Expected VoteSet.Add to return error, conflicting vote.");
     }
 
@@ -346,7 +361,7 @@ void VoteSetTest::testConflicts() {
 
 // check
     BOOST_REQUIRE_MESSAGE(!voteSet.hasTwoThirdMajority(), "We shouldn't have 2/3 majority yet");
-    BOOST_CHECK_MESSAGE(!voteSet.hasTwoThirdsAny(), "We shouldn't have 2/3 if any votes yet");
+    BOOST_REQUIRE_MESSAGE(!voteSet.hasTwoThirdsAny(), "We shouldn't have 2/3 if any votes yet");
 
 // val2 votes for blockHash2.
     {
@@ -359,7 +374,7 @@ void VoteSetTest::testConflicts() {
 
 
 // check
-    BOOST_CHECK_MESSAGE(!voteSet.hasTwoThirdMajority(), "We shouldn't have 2/3 majority yet");
+    BOOST_REQUIRE_MESSAGE(!voteSet.hasTwoThirdMajority(), "We shouldn't have 2/3 majority yet");
     BOOST_REQUIRE_MESSAGE(voteSet.hasTwoThirdsAny(), "We should have 2/3");
 
 
@@ -394,64 +409,48 @@ void VoteSetTest::testMakeCommit() {
     int64_t votingPower = 1;
     std::vector<PrivValidator> privValidators;
     ValidatorSet validators = common_test::randValidatorSet(privValidators, numValidators, votingPower);
-    VoteSet voteSet("test_chain_id", height, round, VoteTypePrevote, validators);
+    VoteSet voteSet("test_chain_id", height, round, VoteTypePrecommit, validators);
     HexBytes hash = HexBytes::random(10);
     boost::optional<Vote> conflicting;
-    Vote voteProto = getVoteProto(height);
-
+    Vote voteProto = getVoteProtoPrecommit(height);
+    Vote vote = withBlockHash(voteProto, hash);;
 // 6 out of 10 voted for some block.
     for (int i = 0; i < 6; i++) {
-        privValSignAdd(privValidators, voteSet, getVoteProto(height), i, conflicting);
+
+        vote = withValidator(vote, privValidators[i].getAddress(), i);
+
+        AddVoteResult res = common_test::signAddVote(privValidators[i], vote, voteSet, conflicting);
+        BOOST_REQUIRE_MESSAGE(res.isAdded(), "Expected VoteSet.Add to succeed");
     }
 // MakeCommit should fail.
-    BOOST_CHECK_THROW(voteSet.makeCommit(), Error);// "Doesn't have +2/3 majority",
+    //BOOST_CHECK_THROW(voteSet.makeCommit(), Panic);
 
-}
 // 7th voted for some other block.
-/*{
-    Vote vote = withValidator(voteProto, privValidators[6].getAddress(), 6);
-    vote = withBlockHash(vote, std::rand());
-    vote = withBlockPartsHeader(vote, PartSetHeader{123, std::rand()});
-
-    _,
-            err = common_test::signAddVote(privValidators[6], vote, voteSet)
-    if err != NULL
     {
-        t.
-                Error(err)
+        Vote vote = withValidator(voteProto, privValidators[6].getAddress(), 6);
+        vote = withBlockHash(vote, HexBytes::random(7));
+//vote = withBlockPartsHeader(vote, PartSetHeader{123, std::rand()});
+
+        AddVoteResult res = common_test::signAddVote(privValidators[6], vote, voteSet, conflicting);
+        BOOST_REQUIRE_MESSAGE(res.isAdded(), "Expected VoteSet.Add to succeed");
+        BOOST_REQUIRE_MESSAGE(!res.isError(), "Expected VoteSet.Add not to return error");
     }
-}
 
 // The 8th voted like everyone else.
-{
-    vote = withValidator(voteProto, privValidators[7].getAddress(), 7)
-    _,
-            err = common_test::signAddVote(privValidators[7], vote, voteSet)
-    if err != NULL
     {
-        t.
-                Error(err)
+        vote = withValidator(vote, privValidators[7].getAddress(), 7);
+        AddVoteResult res = common_test::signAddVote(privValidators[7], vote, voteSet, conflicting);
+        BOOST_REQUIRE_MESSAGE(res.isAdded(), "Expected VoteSet.Add to succeed");
+        BOOST_REQUIRE_MESSAGE(!res.isError(), "Expected VoteSet.Add not to return error");
     }
-}
 
-commit = voteSet.MakeCommit()
-
+    Commit commit = voteSet.makeCommit();
+    cout << "commit ok";
 // Commit should have 10 elements
-if
-    len(commit
-                .Precommits) != 10
-{
-    throw Error("Commit Precommits should have the same number of precommits as validators", __FILE__, __LINE__)
+    BOOST_REQUIRE_MESSAGE(commit.getPrecommits().size() == 8,
+                          "Commit Precommits should have the same number of precommits as validators");
+
+    BOOST_CHECK_NO_THROW(commit.validateBasic());//, "Error in Commit.ValidateBasic(): %v");
 }
 
-// Ensure that Commit precommits are ordered.
-if
-    err = commit.ValidateBasic();
-err != NULL
-{
-    throw Error("Error in Commit.ValidateBasic(): %v", err, __FILE__, __LINE__)
-}
 
-}
-
-*/

@@ -30,7 +30,7 @@ height_t Commit::height() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit->getHeight();
+    return getFirstPrecommit()->getHeight();
 }
 
 /** Round returns the round of the commit */
@@ -38,7 +38,7 @@ int Commit::round() {
     if (precommits.empty()) {
         return 0;
     }
-    return firstPrecommit->getRoundNumber();
+    return getFirstPrecommit()->getRoundNumber();
 }
 
 
@@ -114,7 +114,7 @@ HexBytes Commit::getHash() {
 
 const boost::optional<Vote> Commit::getFirstPrecommit() {
     boost::optional<Vote> output;
-    if (precommits.empty() == 0) {
+    if (precommits.empty()) {
         return output;
     }
     if (firstPrecommit.is_initialized()) {
@@ -127,7 +127,7 @@ const boost::optional<Vote> Commit::getFirstPrecommit() {
     }
 
 
-    output = Vote(VoteTypePrecommit);
+    // output = Vote(VoteTypePrecommit);
     return output;
 }
 
