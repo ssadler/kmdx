@@ -7,7 +7,7 @@
 
 #include <boost/optional.hpp>
 #include "Block.h"
-#include "Validator.h"
+#include "ValidatorSet.h"
 #include "VoteSet.h"
 #include "HeightVoteSet.h"
 #include "event/Event.h"
@@ -84,6 +84,9 @@ public:
     void setHeight(height_t i);
 
     static std::string stateTypeString(RoundStepType stype);
+
+private:
+    void setValidators(const ValidatorSet &validators);
 };
 
 

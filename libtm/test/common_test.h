@@ -10,7 +10,7 @@
 
 #include "../consensus/ConsensusState.h"
 #include "../types/VoteSet.h"
-#include "../types/Validator.h"
+#include "../types/ValidatorSet.h"
 #include "../state/State.h"
 #include "MockPV.h"
 
@@ -71,7 +71,7 @@ public:
     void validatePrevoteAndPrecommit(ConsensusState &cs, int thisRound, int lockRound, ValidatorStub &privVal,
                                      HexBytes votedBlockHash, HexBytes lockedBlockHash);
 
-    void subscribeToVoter(ConsensusState &cs, Address addresstm);
+    void subscribeToVoter(ConsensusState &cs, AddressTm addresstm);
 
     AddVoteResult static signAddVote(PrivValidator privVal, Vote &vote, VoteSet &voteSet,
                                      boost::optional<Vote> &conflicting);

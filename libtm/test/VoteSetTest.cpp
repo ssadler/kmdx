@@ -8,7 +8,7 @@ VoteSetTest::VoteSetTest() {}
 Vote getVoteProto(height_t height) {
     int round = 0;
     Vote voteProto(
-            Address(HexBytes::random(10)), // NOTE: must fill in // ValidatorAddress:
+            AddressTm(HexBytes::random(10)), // NOTE: must fill in // ValidatorAddress:
             0,  // NOTE: must fill in // ValidatorIndex:
             height, // Height:
             round, // Round:
@@ -22,7 +22,7 @@ Vote getVoteProto(height_t height) {
 Vote getVoteProtoPrecommit(height_t height) {
     int round = 0;
     Vote voteProto(
-            Address(HexBytes::random(10)), // NOTE: must fill in // ValidatorAddress:
+            AddressTm(HexBytes::random(10)), // NOTE: must fill in // ValidatorAddress:
             0,  // NOTE: must fill in // ValidatorIndex:
             height, // Height:
             round, // Round:
@@ -40,7 +40,7 @@ VoteSetTest::privValSignAdd(const vector<PrivValidator> &privValidators, VoteSet
     return common_test::signAddVote(privValidators[i], vote, voteSet, conflicting);
 }
 
-Vote getVoteProto(height_t height, Address validatorAddress) {
+Vote getVoteProto(height_t height, AddressTm validatorAddress) {
     int round = 0;
     Vote voteProto(
             validatorAddress, // NOTE: must fill in // ValidatorAddress:
@@ -54,7 +54,7 @@ Vote getVoteProto(height_t height, Address validatorAddress) {
     return voteProto;
 }
 
-// Convenience: Return new vote with different validator addresstm/index
+// Convenience: Return new vote with different validator address/index
 Vote VoteSetTest::withValidator(Vote _vote, HexBytes _addr, int _idx) {
     Vote vote(_vote);
     vote.validatorAddress = _addr;
@@ -172,7 +172,9 @@ void VoteSetTest::test2_3Majority() {
         Vote vote = withValidator(voteProto, privValidators[7].getAddress(), 7);
         common_test::signAddVote(privValidators[7], vote, voteSet, conflicting);
         BOOST_REQUIRE_MESSAGE(voteSet.hasTwoThirdMajority(), "There should be 2/3 majority");
-        BOOST_REQUIRE_MESSAGE(voteSet.twoThirdMajority()->isEmpty(), "The 2/3 majority should be for NULL");
+        BlockID maj = voteSet.twoThirdMajority().get();
+        BOOST_REQUIRE_MESSAGE(voteSet.twoThirdMajority()->isEmpty() || voteSet.twoThirdMajority()->isEmpty(),
+                              "The 2/3 majority should be for NULL");
     }
 }
 

@@ -82,3 +82,7 @@ std::string RoundState::stateTypeString(RoundStepType stype) {
 const EventDataRoundState RoundState::roundStateEvent() {
     return EventDataRoundState(height, roundNumber, stateTypeString(stepType));
 }
+
+void RoundState::setValidators(const ValidatorSet &validators) {
+    RoundState::validators = validators;
+}

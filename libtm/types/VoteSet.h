@@ -13,7 +13,7 @@
 #include "BlockVotes.h"
 #include "Error.h"
 #include "HexBytes.h"
-#include "Validator.h"
+#include "ValidatorSet.h"
 #include "../helpers/Finally.h"
 #include "AddVoteResult.h"
 
@@ -81,7 +81,7 @@ public:
 
     VoteSet();
 
-    const boost::optional<Vote> getByAddress(Address addresstm) const;
+    const boost::optional<Vote> getByAddress(AddressTm addresstm) const;
 
     const boost::optional<Vote> get(int index) const;
 
@@ -107,7 +107,7 @@ public:
 
     height_t getHeight() const;
 
-    const std::vector<Signature> getSignatures() const;
+    const std::vector<SignatureTm> getSignatures() const;
 
     const map<int, Vote> getVotes();
 

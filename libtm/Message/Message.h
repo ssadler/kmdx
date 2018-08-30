@@ -18,12 +18,12 @@ enum class MessageType {
 };
 
 class Message {
-    Address addresstm;
+    AddressTm addresstm;
     MessageType messageType;
 public:
-    Message(const Address addresstm, MessageType messageType);
+    Message(const AddressTm addresstm, MessageType messageType);
 
-    Address getAddress() const;
+    AddressTm getAddress() const;
 
     MessageType getMessageType() const;
 
@@ -42,7 +42,7 @@ public:
 class VoteMessage : public Message {
     Vote vote;
 public:
-    VoteMessage(const Address addresstm, const Vote &vote);
+    VoteMessage(const AddressTm addresstm, const Vote &vote);
 
     static VoteMessage fromRLP(dev::RLP &r);
 
@@ -67,7 +67,7 @@ private:
 public:
     const Proposal getProposal() const;
 
-    ProposalMessage(const Address &addresstm, const Proposal &proposal);
+    ProposalMessage(const AddressTm &addresstm, const Proposal &proposal);
 };
 
 class BlockMessage : public Message {
@@ -77,7 +77,7 @@ class BlockMessage : public Message {
     int roundNumber;
 public:
 
-    BlockMessage(const Address &addresstm, const BlockID &blockID, const height_t &height, int roundNumber,
+    BlockMessage(const AddressTm &addresstm, const BlockID &blockID, const height_t &height, int roundNumber,
                  const Block &block);
 
     static BlockMessage fromRLP(dev::RLP &);
@@ -87,7 +87,7 @@ public:
 
 class TickerMessage : public Message {
 public:
-    TickerMessage(const Address &addresstm);
+    TickerMessage(const AddressTm &addresstm);
 
 };
 

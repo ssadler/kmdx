@@ -16,7 +16,7 @@ MockPV::MockPV(PrivKey _privkey) : PrivValidator(_privkey) {
 }
 
 // Implements PrivValidator.
-Address MockPV::getAddress() const {
+AddressTm MockPV::getAddress() const {
     return privKey.getPubKey().getAddress();
 }
 
@@ -35,14 +35,14 @@ void MockPV::signVote(std::string chainID, Vote &vote) const {
 // Implements PrivValidator.
 void MockPV::signProposal(std::string chainID, Proposal &proposal) const {
     HexBytes signBytes = proposal.signBytes(chainID);
-    Signature sig = privKey.sign(signBytes);
+    SignatureTm sig = privKey.sign(signBytes);
 
     proposal.signature = sig;
 }
 
 // signHeartbeat signs the heartbeat without any checking.
 void MockPV::signHeartbeat(std::string chainID, Heartbeat &heartbeat) const {
-    Signature sig = privKey.sign(heartbeat.signBytes(chainID));
+    SignatureTm sig = privKey.sign(heartbeat.signBytes(chainID));
     heartbeat.signature = sig;
 }
 

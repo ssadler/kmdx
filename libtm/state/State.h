@@ -5,14 +5,14 @@
 #ifndef AYETH_STATE_H
 #define AYETH_STATE_H
 
-#include "../types/Validator.h"
+#include "../types/ValidatorSet.h"
 #include "../consensus/ConsensusConfig.h"
 
 #include <cstdint>
 #include <thread>
 #include <string>
 #include "../types/HexBytes.h"
-#include "../types/Validator.h"
+#include "../types/ValidatorSet.h"
 
 
 class State {

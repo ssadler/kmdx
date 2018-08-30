@@ -22,7 +22,12 @@ private :
 
 
 public:
-    HexBytes hash();
+    const HexBytes hash() const { //TODO
+        std::ostringstream output;
+        for (byte b : *this)
+            output << b;
+        return HexBytes(output.str());
+    }
 
     HexBytes();
 
@@ -38,9 +43,8 @@ public:
 
 };
 
-//using Address = HexBytes;
-using Address = HexBytes;
-using Signature = HexBytes;
+using AddressTm = HexBytes;
+using SignatureTm = HexBytes;
 using P2PID = HexBytes;
 
 // BlockID defines the unique ID of a block as its Hash and its PartSetHeader
@@ -74,27 +78,30 @@ public:
 
 
 class PubKey {
-    Address addresstm;
+    AddressTm addresstm;
 public:
 
-    explicit PubKey(Address _address);
+    explicit PubKey(AddressTm _address);
 
-    Address getAddress() const;
+    AddressTm getAddress() const;
 
     std::string toString() const;
 
-    bool verifyBytes(HexBytes signBytes, Signature signature) const;
+    bool verifyBytes(HexBytes signBytes, SignatureTm signature) const;
+
+    bool operator==(const PubKey &other);
 
 };
 
 class PrivKey {
-    Address addresstm;
+    AddressTm address;
     PubKey pubKey;
+    bytes key;
 public:
 
-    PrivKey(Address _address, HexBytes _pubKey);
+    PrivKey(AddressTm _address, HexBytes _pubKey);
 
-    Address getAddress() const;
+    AddressTm getAddress() const;
 
     void signBytes(HexBytes) const;
 
@@ -104,8 +111,9 @@ public:
 
     std::string toString() const;
 
-    bool verifyBytes(HexBytes signBytes, Signature signature) const;
+    bool verifyBytes(HexBytes signBytes, SignatureTm signature) const;
 
+    const bytes &getKey() const;
 };
 
 #endif //TM_LIGHT_HEXBYTES_H

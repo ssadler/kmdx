@@ -16,7 +16,7 @@ class VoteSetTest;
  NOTE: Commit is empty for height 1, but never nullptr.*/
 class Commit {
 
-    // NOTE: The Precommits are in order of addresstm to preserve the bonded ValidatorSet order.
+    // NOTE: The Precommits are in order of address to preserve the bonded ValidatorSet order.
     // Any peer with a block can gossip precommits by index with a peer without recalculating the
     // active ValidatorSet.
     BlockID blockID;

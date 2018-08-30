@@ -19,14 +19,14 @@ std::string Vote::voteTypeToString(VoteType type) {
 
 Vote Vote::fromRLP(dev::RLP &r) {
     return Vote(
-            Address(r[0].toBytes()),
+            AddressTm(r[0].toBytes()),
             r[1].toInt(),
             (height_t) r[2].toPositiveInt64(),
             r[3].toInt(),
             boost::posix_time::from_iso_string(r[4].toString()),
             Vote::allVoteTypes[r[5].toInt()],
             BlockID(r[6].toBytes()),
-            r[7].isData() ? Signature(r[7].toBytes()) : Signature()
+            r[7].isData() ? SignatureTm(r[7].toBytes()) : SignatureTm()
     );
 }
 
@@ -56,7 +56,7 @@ dev::RLPStream Vote::toRLP() {
 }
 
 
-Vote::Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
+Vote::Vote(const AddressTm addresstm, int _validatorIndex, height_t _height, int _roundNumber,
            const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID)
         : validatorAddress(addresstm), blockID(_blockID) {
     validatorIndex = _validatorIndex;
@@ -66,10 +66,10 @@ Vote::Vote(const Address addresstm, int _validatorIndex, height_t _height, int _
     type = _type;
 }
 
-Vote::Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
+Vote::Vote(const AddressTm addresstm, int _validatorIndex, height_t _height, int _roundNumber,
            const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
-           const Signature _signature) : Vote(addresstm, _validatorIndex, _height, _roundNumber, _timestamp, _type,
-                                              _blockID) {
+           const SignatureTm _signature) : Vote(addresstm, _validatorIndex, _height, _roundNumber, _timestamp, _type,
+                                                _blockID) {
     signature = _signature;
 }
 
@@ -96,7 +96,7 @@ std::string Vote::toString() const {
     return Vote::voteTypeToString(type) + " " + validatorAddress.toString();
 }
 
-const Address &Vote::getValidatorAddress() const {
+const AddressTm &Vote::getValidatorAddress() const {
     return validatorAddress;
 }
 
@@ -124,7 +124,7 @@ const BlockID &Vote::getBlockID() const {
     return blockID;
 }
 
-const Signature &Vote::getSignature() const {
+const SignatureTm &Vote::getSignature() const {
     return signature;
 }
 
@@ -139,7 +139,7 @@ HexBytes Vote::signBytes(std::string chainID) const {
     return HexBytes(out.str()); //TODO
 }
 
-void Vote::setSignature(const Signature &signature) {
+void Vote::setSignature(const SignatureTm &signature) {
     Vote::signature = signature;
 }
 

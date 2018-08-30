@@ -1,7 +1,7 @@
 #include "ConsensusState.h"
 
 
-void ConsensusState::tryAddVote(Vote &vote, Address addresstm) {
+void ConsensusState::tryAddVote(Vote &vote, AddressTm addresstm) {
     try {
         //bool added =
         addVote(vote, addresstm);
@@ -27,7 +27,7 @@ void ConsensusState::tryAddVote(Vote &vote, Address addresstm) {
 
 //-----------------------------------------------------------------------------
 /** returns true if it was added */
-bool ConsensusState::addVote(Vote &vote, Address addresstm) {
+bool ConsensusState::addVote(Vote &vote, AddressTm addresstm) {
     clog(dev::VerbosityDebug, Logger::channelTm) << "addVote" << "voteHeight" << vote.getHeight() << "voteType"
                                                  << Vote::voteTypeToString(vote.getType()) << "valIndex"
                                                  << vote.getValidatorIndex()
@@ -451,7 +451,7 @@ void ConsensusState::decideProposal(height_t height, int round) {
     // send proposal and block parts on internal msg queue
     sendInternalMessage(ProposalMessage(proposal));
     sendInternalMessage(
-            BlockMessage(Address(std::vector<uint8_t>()), polBlockID, roundState.height, roundState.roundNumber,
+            BlockMessage(AddressTm(std::vector<uint8_t>()), polBlockID, roundState.height, roundState.roundNumber,
                          block.get()));
 
     clog(dev::VerbosityInfo, Logger::channelTm) << "Signed proposal" << "height" << height << "round" << round
@@ -474,7 +474,7 @@ void ConsensusState::signAddVote(VoteType type, const HexBytes &b) {
         return;
     }
     Vote vote = signVote(type, b);
-    sendInternalMessage(VoteMessage(Address(), vote));
+    sendInternalMessage(VoteMessage(AddressTm(), vote));
     clog(dev::VerbosityInfo, Logger::channelTm) << "Signed and pushed vote" << "height" << roundState.height << "round"
                                                 << roundState.roundNumber << "vote" << vote.toString();
 //    if !cs.replayMode {
@@ -484,7 +484,7 @@ void ConsensusState::signAddVote(VoteType type, const HexBytes &b) {
 }
 
 Vote ConsensusState::signVote(VoteType type, const HexBytes &b) {
-    Address addr = privValidator->getAddress();
+    AddressTm addr = privValidator->getAddress();
 
     boost::optional<Validator> validator = roundState.validators.getByAddress(addr);
     int valIndex = validator.is_initialized() ? validator->getIndex() : 0;

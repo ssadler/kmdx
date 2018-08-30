@@ -39,8 +39,8 @@ string  heartbeat::string() {
                        heartbeat.Height, heartbeat.Round, heartbeat.Sequence, heartbeat.Signature)
 }
 */
-Heartbeat::Heartbeat(const Address &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
-                     const Signature &signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
+Heartbeat::Heartbeat(const AddressTm &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
+                     const SignatureTm &signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
                                                    height(height), round(round), sequence(sequence),
                                                    signature(signature) {}
 

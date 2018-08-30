@@ -24,7 +24,7 @@ public:
 
     void signHeartbeat(std::string chainID, Heartbeat &heartbeat) const;
 
-    Address getAddress() const;
+    AddressTm getAddress() const;
 
     PubKey getPubKey() const;
 

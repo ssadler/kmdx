@@ -24,7 +24,7 @@ int Proposal::getPolRound() const {
     return polRound;
 }
 
-const Signature &Proposal::getSignature() const {
+const SignatureTm &Proposal::getSignature() const {
     return signature;
 }
 

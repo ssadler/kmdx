@@ -27,7 +27,7 @@ class Proposal {
     shared_ptr<Block> block;//should be type blockPartsHeader;
     int polRound; // -1 if null.
     BlockID polBlockID; // zero if null.
-    Signature signature;
+    SignatureTm signature;
 
     friend class MockPV;
 
@@ -42,7 +42,7 @@ public:
 
     int getPolRound() const;
 
-    const Signature &getSignature() const;
+    const SignatureTm &getSignature() const;
 
     string toString() const;
 

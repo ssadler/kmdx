@@ -4,102 +4,19 @@
 
 #include "Validator.h"
 
-Validator::Validator(PubKey _pubKey, int64_t _votingPower) : addresstm(_pubKey.getAddress()), pubKey(_pubKey) {
+Validator::Validator(PubKey _pubKey, int64_t _votingPower) : address(_pubKey.getAddress()), pubKey(_pubKey) {
     votingPower = _votingPower;
     accum = 0;
 }
 
-
-bool ValidatorSet::hasAddress(const HexBytes bytes) {
-    for (Validator v : validators) {
-        if (v.getAddress() == bytes) return true;
-    }
-    return false;
-}
-
-boost::optional<Validator> ValidatorSet::getByIndex(int index) {
-    if (index < 0 || (unsigned) index > validators.size())
-        return boost::optional<Validator>();
-    return this->validators.at((unsigned) index);
-}
-
-boost::optional<Validator> ValidatorSet::getByAddress(Address addresstm) {
-//FIXME better way to return validadtor index?
-    for (Validator &v: validators) {
-        if (v.getAddress() == addresstm)
-            return v;
-    }
-    return boost::optional<Validator>();
-}
-
-unsigned long ValidatorSet::size() {
-    return this->validators.size();
-}
-
-unsigned int ValidatorSet::getTotalVotingPower() {
-    return validators.size();
-}
-
-ValidatorSet::ValidatorSet() {}
-
-ValidatorSet::ValidatorSet(const std::vector<Validator> &validators) : validators(validators) {}
-
-const boost::optional<Validator> ValidatorSet::getProposer() {
-    boost::optional<Validator> proposer;
-    if (validators.empty()) return proposer;
-    if (!this->proposer.is_initialized()) this->proposer = findProposer();
-    return this->proposer;
-}
-
-boost::optional<Validator> ValidatorSet::findProposer() const {
-    boost::optional<Validator> proposer;
-    for (Validator const &val : validators) {
-        if (!proposer.is_initialized() || val.getAddress() != proposer->getAddress()) {
-            proposer = proposer->compareAccum(val);
-        }
-    }
-    return proposer;
-}
-
-/* IncrementAccum increments accum of each validator and updates the
-* proposer. Panics if validator set is empty.*/
-void ValidatorSet::incrementAccum(int i) {
-    i++;
-/*// Add VotingPower * times to each validator and order into heap.
-	validatorsHeap := cmn.NewHeap()
-	for _, val := range valSet.Validators {
-		// check for overflow both multiplication and sum
-		val.Accum = safeAddClip(val.Accum, safeMulClip(val.VotingPower, int64(times)))
-		validatorsHeap.PushComparable(val, accumComparable{val})
-	}
-
-	// Decrement the validator with most accum times times
-	for i := 0; i < times; i++ {
-		mostest := validatorsHeap.Peek().(*Validator)
-		// mind underflow
-		mostest.Accum = safeSubClip(mostest.Accum, valSet.TotalVotingPower())
-
-		if i == times-1 {
-			valSet.Proposer = mostest
-		} else {
-			validatorsHeap.Update(mostest, accumComparable{mostest})
-		}
-	}*/
-}
-
-HexBytes ValidatorSet::hash() const {
-    //TODO
-    return HexBytes();
-}
-
-Validator Validator::compareAccum(const Validator &other) const {
+Validator *Validator::compareAccum(Validator &other) {
     if (this->accum > other.accum)
-        return *this;
+        return this;
     if (this->accum < other.accum)
-        return other;
-    if (this->addresstm == other.addresstm)
+        return &other;
+    if (this->address == other.address)
         throw PanicSanity("Cannot compare identical validators", __FILE__, __LINE__);
-    return this->addresstm < other.addresstm ? *this : other;
+    return this->address > other.address ? this : &other;
 }
 
 void Validator::signProposal(const std::string &chainID, Proposal &proposal) {
@@ -107,8 +24,8 @@ void Validator::signProposal(const std::string &chainID, Proposal &proposal) {
         throw SignError("unable to sign proposal", __FILE__, __LINE__); //TODO
 }
 
-const Address &Validator::getAddress() const {
-    return addresstm;
+const AddressTm &Validator::getAddress() const {
+    return address;
 }
 
 const PubKey &Validator::getPubKey() const {
@@ -124,10 +41,43 @@ int64_t Validator::getAccum() const {
 }
 
 std::string Validator::toString() const {
-    return addresstm.toString();
+    return address.toString();
 }
 
 int Validator::getIndex() const {
     return index;
 }
 
+bool Validator::operator==(const Validator &other) {
+    return (
+            this->address == other.address &&
+            this->pubKey == other.pubKey &&
+            this->votingPower == other.votingPower &&
+            this->accum == other.accum &&
+            this->index == other.index
+    );
+}
+
+void Validator::incrementAccum(int times) {
+    accum += times * votingPower;
+}
+
+void Validator::decrementAccum(int64_t n) {
+    accum -= n;
+}
+
+const HexBytes Validator::hash() const {
+    return address.hash();
+}
+
+
+bool ValidatorCompareByAddress::operator()(const Validator &one, const Validator &other) {
+    AddressTm t = one.getAddress();
+    AddressTm o = other.getAddress();
+    if (t.size() == o.size()) return 0;
+    for (unsigned int i = 0; i < t.size(); ++i) {
+        if (t[i] != o[i]) return (t[i] > o[i]);
+    }
+    return false;
+}
+//};

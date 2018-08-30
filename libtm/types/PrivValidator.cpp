@@ -2,7 +2,7 @@
 // Created by utnso on 16/07/18.
 //
 #include "PrivValidator.h"
-#include "../../libethcore/BasicAuthority.h"
+//#include "../../libethcore/BasicAuthority.h"
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
@@ -15,7 +15,7 @@ std::string PrivValidator::toString() const {
     return this->getAddress().toString();
 }
 
-Address PrivValidator::getAddress() const {
+AddressTm PrivValidator::getAddress() const {
     return addresstm;
 }
 
@@ -25,20 +25,17 @@ void PrivValidator::signProposal(string, Proposal &) {
 
 void PrivValidator::signVote(string chainId, Vote &vote) {
     //TODO
-    Signature sig = this->privKey.sign(chainId);
-    HexBytes hash = vote.getBlockID().getHash();
-
-    bytes _bytes;
-    for (byte b : sig) {
-        _bytes.push_back(b);
-    }
-    for (byte h : hash) {
-        _bytes.push_back(h);
-    }
-    vote.setSignature(HexBytes(_bytes));
+    cout << chainId;
+    dev::Secret s(privKey.getKey());
+    dev::Signature sig = dev::sign(s, dev::sha3(vote.toRLP().out()));
+    vote.setSignature(SignatureTm(sig.asBytes()));
 }
 
 
 const PubKey &PrivValidator::getPubKey() const {
     return privKey.getPubKey();
+}
+
+const PrivKey &PrivValidator::getPrivKey() const {
+    return privKey;
 }

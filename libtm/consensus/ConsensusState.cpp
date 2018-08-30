@@ -30,7 +30,7 @@ ConsensusState::ConsensusState(const ConsensusState &cs, TmController &_controll
 //FIXME
 }*/
 
-ConsensusState::ConsensusState(ConsensusConfig _config, State _state, TmController &_controller) : consensusConfig(
+ConsensusState::ConsensusState(ConsensusConfig _config, State &_state, TmController &_controller) : consensusConfig(
         _config), controller(_controller), roundState(_state.getChainID()) {
     receiveRoutineWorker.setConsensusState(this);
     updateToState(_state);
@@ -79,7 +79,7 @@ ConsensusState::setProposal(Proposal _proposal) { //throw(ErrInvalidProposalPolR
 
 /* Updates ConsensusState and increments height to match that of state.
 * The round becomes 0 and cs.Step becomes cstypes.RoundStepNewHeight. */
-void ConsensusState::updateToState(State _state) {
+void ConsensusState::updateToState(State &_state) {
     if (roundState.commitRoundNumber > -1 && 0 < roundState.height &&
         roundState.height != _state.getLastBlockHeight()) {
         throw Panic("updateToState() expected state height of %s but found %s" + to_string(roundState.height) +
@@ -133,7 +133,7 @@ void ConsensusState::updateToState(State _state) {
              roundState.commitTime;
     roundState.startTime = t + consensusConfig.getTimeoutCommit();
 
-    roundState.validators = validators;
+    roundState.setValidators(validators);
     roundState.proposal = nullptr;
     roundState.proposalBlock = nullptr;
     //roundState.proposalBlockParts = NULL;
@@ -176,7 +176,7 @@ return commit*/ //FIXME
 
 /** Reconstruct LastCommit from SeenCommit, which we saved along with the block,
 * (which happens even before saving the state) */
-void ConsensusState::reconstructLastCommit(State _state) {
+void ConsensusState::reconstructLastCommit(State &_state) {
     if (_state.getLastBlockHeight() == 0) {
         return;
     }

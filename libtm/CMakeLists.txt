@@ -14,9 +14,9 @@ set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} QMAKE_CXXFLAGS -= -O3")
 add_library(tm ${sources})
 
 target_include_directories(tm PRIVATE "${UTILS_INCLUDE_DIR}" "${Boost_INCLUDE_DIRS}")
-target_link_libraries(tm PUBLIC devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time)
+target_link_libraries(tm PUBLIC devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time devcrypto)
 
 
 add_executable(tmtest "test/main.cpp" "test/boost_test.cpp")
 target_include_directories(tmtest PRIVATE "${UTILS_INCLUDE_DIR}" "${Boost_INCLUDE_DIRS}")
-target_link_libraries(tmtest PUBLIC tm devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time)
+target_link_libraries(tmtest PUBLIC tm devcore PRIVATE Boost::system Boost::fiber Boost::context Boost::log Boost::thread Boost::date_time devcrypto)

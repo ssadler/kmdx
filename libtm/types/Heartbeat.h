@@ -15,18 +15,18 @@
 * representation to be in its canonical form. **/
 class Heartbeat {
 public:
-    Heartbeat(const Address &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
-              const Signature &signature);
+    Heartbeat(const AddressTm &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
+              const SignatureTm &signature);
 
 private:
     friend class MockPV;
 
-    Address validatorAddress;
+    AddressTm validatorAddress;
     int validatorIndex;
     height_t height;
     int round;
     int sequence;
-    Signature signature;
+    SignatureTm signature;
 
 public:
     const HexBytes signBytes(std::string blockChainId) const;

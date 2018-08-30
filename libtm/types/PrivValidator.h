@@ -6,20 +6,22 @@
 #define TM_LIGHT_PRIVVALIDATOR_H
 
 
+#include "../../libdevcrypto/Common.h"
+#include "../../libdevcore/SHA3.h"
 #include "HexBytes.h"
 #include "Proposal.h"
 
 class PrivValidator {
 
 protected:
-    Address addresstm;
+    AddressTm addresstm;
     PrivKey privKey;
 public:
     PrivValidator(const PrivKey _privKey);
 
     PrivValidator();
 
-    Address getAddress() const;
+    AddressTm getAddress() const;
 
     const PubKey &getPubKey() const;
 
@@ -27,6 +29,7 @@ public:
     
     void signProposal(string, Proposal &); //throw ErrSignProposal
     void signVote(string, Vote &); //throw ErrSignProposal
+    const PrivKey &getPrivKey() const;
 };
 
 

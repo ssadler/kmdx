@@ -23,14 +23,14 @@ enum VoteType {
 
 
 class Vote {
-    Address validatorAddress;
+    AddressTm validatorAddress;
     int validatorIndex;
     height_t height;
     int roundNumber;
     boost::posix_time::ptime timestamp;
     enum VoteType type;
     BlockID blockID;
-    Signature signature; // comes from crypto package
+    SignatureTm signature;
 
     friend class MockPV;
 
@@ -47,12 +47,12 @@ public:
 
     static std::string voteTypeToString(VoteType type);
 
-    Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
+    Vote(const AddressTm addresstm, int _validatorIndex, height_t _height, int _roundNumber,
          const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID);
 
-    Vote(const Address addresstm, int _validatorIndex, height_t _height, int _roundNumber,
+    Vote(const AddressTm addresstm, int _validatorIndex, height_t _height, int _roundNumber,
          const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
-         const Signature _signature);
+         const SignatureTm _signature);
 
     HexBytes signBytes(std::string chainID) const; //TODO
 
@@ -64,7 +64,7 @@ public:
 
     void verify(const std::string &chainID, const PubKey &pubKey) const; //TODO crypto
 
-    const Address &getValidatorAddress() const;
+    const AddressTm &getValidatorAddress() const;
 
     int getValidatorIndex() const;
 
@@ -78,9 +78,9 @@ public:
 
     const BlockID &getBlockID() const;
 
-    const Signature &getSignature() const;
+    const SignatureTm &getSignature() const;
 
-    void setSignature(const Signature &signature);
+    void setSignature(const SignatureTm &signature);
 
     static bool isVoteTypeValid(VoteType type);
 };

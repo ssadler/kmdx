@@ -83,7 +83,7 @@ Proposal common_test::decideProposal(ConsensusState &cs1, ValidatorStub &vs, hei
 
 void common_test::addVotes(ConsensusState &cs, std::vector<Vote> votes) {
     for (Vote &vote : votes)
-        cs.addToPeerMsgQueue(VoteMessage(Address(bytes()), vote));//FIXME slicing
+        cs.addToPeerMsgQueue(VoteMessage(AddressTm(bytes()), vote));//FIXME slicing
 }
 
 // Sign vote for type/hash/header
@@ -185,7 +185,7 @@ void common_test::validatePrevoteAndPrecommit(ConsensusState &cs, int thisRound,
 }
 
 // genesis
-/*void common_test::subscribeToVoter(ConsensusState &cs, Address addresstm) {
+/*void common_test::subscribeToVoter(ConsensusState &cs, Address address) {
 chan interface{} {
     voteCh0 := make(chan interface{})
     err := cs.eventBus.Subscribe(context.Background(), testSubscriber, types.EventQueryVote, voteCh0)

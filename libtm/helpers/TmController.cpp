@@ -19,7 +19,7 @@ int TmController::validateBlock(bytes b) {
     //TODO this will probably require some state information
 }
 
-void TmController::append(bytes block, std::vector<Signature> signatures) {
+void TmController::append(bytes block, std::vector<SignatureTm> signatures) {
     if (block.empty() && signatures.empty()) return;
 }
 

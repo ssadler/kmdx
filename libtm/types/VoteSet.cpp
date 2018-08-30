@@ -5,7 +5,7 @@
 // Created by utnso on 11/07/18.
 //
 
-const boost::optional<Vote> VoteSet::getByAddress(Address addresstm) const {
+const boost::optional<Vote> VoteSet::getByAddress(AddressTm addresstm) const {
     for (auto const &iterator : votes) {
         Vote const &vote = iterator.second;
         if (vote.getValidatorAddress() == addresstm)
@@ -58,14 +58,14 @@ AddVoteResult VoteSet::priv_addVote(Vote &vote, boost::optional<Vote> &conflicti
 
     cout << vote.getValidatorIndex();
     int valIndex = vote.getValidatorIndex();
-    Address valAddr = vote.getValidatorAddress();
+    AddressTm valAddr = vote.getValidatorAddress();
     std::string blockKey = vote.getBlockID().key();
 
 // Ensure that validator index was set
     if (valIndex < 0) {
         return AddVoteResult(false, true, "Index < 0");
     } else if (valAddr.empty()) {
-        return AddVoteResult(false, true, "Empty addresstm");
+        return AddVoteResult(false, true, "Empty address");
     }
 
 // Make sure the step matches.
@@ -89,11 +89,11 @@ AddVoteResult VoteSet::priv_addVote(Vote &vote, boost::optional<Vote> &conflicti
         return AddVoteResult(false, true, out.str());
     }
 
-// Ensure that the signer has the right addresstm
+// Ensure that the signer has the right address
     if (valAddr != val->getAddress()) {
         std::ostringstream out;
         out
-                << "vote.ValidatorAddress (%s) does not match addresstm (%s) for vote.ValidatorIndex (%d)\n Ensure the genesis file is correct across all validators."
+                << "vote.ValidatorAddress (%s) does not match address (%s) for vote.ValidatorIndex (%d)\n Ensure the genesis file is correct across all validators."
                 << valAddr.toString() << val->getAddress().toString() << valIndex;
         return AddVoteResult(false, true, out.str());
     }
@@ -102,8 +102,6 @@ AddVoteResult VoteSet::priv_addVote(Vote &vote, boost::optional<Vote> &conflicti
     boost::optional<Vote> existing = this->getVote(valIndex, blockKey);
     if (existing.is_initialized()) {
         if (existing->getSignature() == vote.getSignature()) {
-            cout << "existing: " << existing->getSignature().toString() << " new vote: "
-                 << vote.getSignature().toString();
             return AddVoteResult(false, true, "duplicate vote");
         }
         std::ostringstream out;
@@ -273,8 +271,8 @@ height_t VoteSet::getHeight() const {
     return height;
 };
 
-const std::vector<Signature> VoteSet::getSignatures() const {
-    std::vector<Signature> output;
+const std::vector<SignatureTm> VoteSet::getSignatures() const {
+    std::vector<SignatureTm> output;
     for (auto const &iterator : votes) {
         output.push_back(iterator.second.getSignature());
     }

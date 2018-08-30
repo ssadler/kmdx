@@ -9,6 +9,8 @@
 #include "../types/Vote.h"
 #include "./VoteTest.h"
 #include "./VoteSetTest.h"
+#include "./ValidatorSetTest.h"
+
 
 
 BOOST_AUTO_TEST_SUITE(tmvotestest)
@@ -23,7 +25,7 @@ BOOST_AUTO_TEST_SUITE(tmvotestest)
 
     BOOST_AUTO_TEST_CASE (voteconvTm) {
 
-        Address addresstm(HexBytes::random(10));
+        AddressTm addresstm(HexBytes::random(10));
         int index = 1;
         height_t height = 5000;
         int round = 3;
@@ -84,3 +86,26 @@ BOOST_AUTO_TEST_SUITE(tmvotestest)
     }
 BOOST_AUTO_TEST_SUITE_END();
 
+BOOST_AUTO_TEST_SUITE(validatorSetTestSuite)
+
+    BOOST_AUTO_TEST_CASE (testValidatorSetBasic) {
+        ValidatorSetTest valst;
+        valst.testValidatorSetBasic();
+    }
+
+    BOOST_AUTO_TEST_CASE (testProposerSelection1) {
+        ValidatorSetTest valst;
+        valst.testProposerSelection1();
+    }
+
+    BOOST_AUTO_TEST_CASE (testProposerSelection2) {
+        ValidatorSetTest valst;
+        valst.testProposerSelection2();
+    }
+
+    BOOST_AUTO_TEST_CASE (testProposerSelection3) {
+        ValidatorSetTest valst;
+        valst.testProposerSelection3();
+    }
+
+BOOST_AUTO_TEST_SUITE_END();

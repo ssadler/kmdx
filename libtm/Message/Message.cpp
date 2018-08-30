@@ -6,7 +6,7 @@
 
 using byte = uint8_t;
 
-Address Message::getAddress() const {
+AddressTm Message::getAddress() const {
     return addresstm;
 }
 
@@ -22,15 +22,15 @@ const Proposal ProposalMessage::getProposal() const {
     return proposal;
 }
 
-ProposalMessage::ProposalMessage(const Address &addresstm, const Proposal &proposal)
+ProposalMessage::ProposalMessage(const AddressTm &addresstm, const Proposal &proposal)
         : Message(addresstm, MessageType::ProposalType),
           proposal(proposal) {}
 
-ProposalMessage::ProposalMessage(const Proposal &proposal) : ProposalMessage(Address(), proposal) {}
+ProposalMessage::ProposalMessage(const Proposal &proposal) : ProposalMessage(AddressTm(), proposal) {}
 
 
 VoteMessage VoteMessage::fromRLP(dev::RLP &r) {
-    return VoteMessage(Address(r[0].toVector<uint8_t>()), Vote::fromRLP(r));
+    return VoteMessage(AddressTm(r[0].toVector<uint8_t>()), Vote::fromRLP(r));
 }
 
 std::string Message::typeToString(MessageType type) {
@@ -65,7 +65,7 @@ MessageType Message::typeFromString(std::string text) {
 
 }
 
-Message::Message(const Address addresstm, MessageType messageType) : addresstm(addresstm), messageType(messageType) {}
+Message::Message(const AddressTm addresstm, MessageType messageType) : addresstm(addresstm), messageType(messageType) {}
 
 std::string Message::toString() const {
     return "{Message:{type:" + typeToString(messageType) + "},Address:{" + getAddress().toString() + "}}";
@@ -78,24 +78,24 @@ dev::u256 VoteMessage::toRLP() {
     return dev::u256(rlp.out());
 }
 
-VoteMessage::VoteMessage(const Address addresstm, const Vote &vote) : Message(addresstm,
-                                                                              MessageType::VoteType),
-                                                                      vote(vote) {}
+VoteMessage::VoteMessage(const AddressTm addresstm, const Vote &vote) : Message(addresstm,
+                                                                                MessageType::VoteType),
+                                                                        vote(vote) {}
 
 const Block BlockMessage::getBlock() const {
     return block;
 }
 
-BlockMessage::BlockMessage(const Address &addresstm, const BlockID &blockID, const height_t &height, int roundNumber,
+BlockMessage::BlockMessage(const AddressTm &addresstm, const BlockID &blockID, const height_t &height, int roundNumber,
                            const Block &block)
         : Message(addresstm, MessageType::BlockType), block(block), blockID(blockID), height(height),
           roundNumber(roundNumber) {}
 
 BlockMessage BlockMessage::fromRLP(dev::RLP &) {
 //    BlockID blockID;
-    return BlockMessage(Address(), BlockID(), -1, -1, Block()); //TODO unimplemented
+    return BlockMessage(AddressTm(), BlockID(), -1, -1, Block()); //TODO unimplemented
 }
 
-TickerMessage::TickerMessage(const Address &addresstm) : Message(addresstm, MessageType::TickerType) {
+TickerMessage::TickerMessage(const AddressTm &addresstm) : Message(addresstm, MessageType::TickerType) {
 
 }

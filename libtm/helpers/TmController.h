@@ -18,7 +18,7 @@ public :
     // currentHeight returns the last known contiguous block height.
     height_t currentHeight();
 
-    void append(bytes block, std::vector<Signature> signatures);
+    void append(bytes block, std::vector<SignatureTm> signatures);
 
 //    void append(HexBytes block, std::vector<HexBytes> signatures);
 

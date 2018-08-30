@@ -73,7 +73,7 @@ class ConsensusState {
     handleProposalMsg(
             const ProposalMessage &msg); //throw(ErrInvalidProposalPolRound, ErrorInvalidProposalSignature, __FILE__, __LINE__);
 
-    void tryAddVote(Vote &vote, Address addresstm);
+    void tryAddVote(Vote &vote, AddressTm addresstm);
 
     Vote signVote(VoteType type, const HexBytes &b);
 
@@ -81,11 +81,11 @@ class ConsensusState {
 
     void handleBlockMsg(const BlockMessage &msg);
 
-    bool addVote(Vote &vote, Address addresstm);
+    bool addVote(Vote &vote, AddressTm addresstm);
 
 public:
 
-    ConsensusState(ConsensusConfig config, State state, TmController &_controller);
+    ConsensusState(ConsensusConfig config, State &state, TmController &_controller);
 
     ConsensusState(const ConsensusState &cs, TmController &_controller);
 
@@ -93,11 +93,11 @@ public:
 
     virtual ~ConsensusState();
 
-    void updateToState(State state);
+    void updateToState(State &state);
 
     void enterPropose(height_t height, int round);
 
-    void reconstructLastCommit(State state);
+    void reconstructLastCommit(State &state);
 
     void addVoteForCurrentRound(Vote &vote);
 
