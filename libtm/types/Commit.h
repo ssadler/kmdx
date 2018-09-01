@@ -39,7 +39,7 @@ public:
 
     height_t height();
 
-    VoteType type();
+    VoteType type() const;
 
     ulong size();
 

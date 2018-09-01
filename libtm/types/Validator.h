@@ -17,8 +17,8 @@
 class ValidatorSetTest;
 
 class Validator {
-    AddressTm address;
     PubKey pubKey;
+    AddressTm address;
     int64_t votingPower;
     int64_t accum;
     int index;
@@ -29,6 +29,10 @@ public:
 
     Validator(PubKey pubKey, int64_t votingPower);
 
+    Validator(PubKey pubKey, int64_t votingPower, int _index); //for testing
+    Validator(dev::Secret secret, int64_t _votingPower);
+
+    Validator(dev::Secret secret, int64_t _votingPower, int _index); //for testing
     Validator *compareAccum(Validator &validator);
 
     void signProposal(const std::string &chainID, Proposal &proposal); //TODO

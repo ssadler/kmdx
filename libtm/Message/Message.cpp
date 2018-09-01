@@ -23,11 +23,25 @@ const Proposal ProposalMessage::getProposal() const {
 }
 
 ProposalMessage::ProposalMessage(const AddressTm &addresstm, const Proposal &proposal)
-        : Message(addresstm, MessageType::ProposalType),
-          proposal(proposal) {}
+        : Message(addresstm, MessageType::ProposalType), proposal(proposal) {}
 
-ProposalMessage::ProposalMessage(const Proposal &proposal) : ProposalMessage(AddressTm(), proposal) {}
+ProposalMessage::ProposalMessage(const Proposal &proposal)
+        : ProposalMessage(AddressTm(), proposal) {}
 
+ProposalMessage ProposalMessage::fromRLP(dev::RLP &r) {
+    return ProposalMessage(
+            AddressTm(r[0].toBytes()),
+            Proposal::fromRLP(r[1])
+    );
+}
+
+dev::RLPStream ProposalMessage::toRLP() {
+    dev::RLPStream out;
+    out.appendList(2);
+    out << addresstm;
+    out << dev::RLP(proposal.toRLP().out());
+    return out;
+}
 
 VoteMessage VoteMessage::fromRLP(dev::RLP &r) {
     return VoteMessage(AddressTm(r[0].toVector<uint8_t>()), Vote::fromRLP(r));

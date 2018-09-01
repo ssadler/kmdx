@@ -68,6 +68,9 @@ public:
 // and true. If returns nil and false if validator is not present in the set.
     bool remove(Validator &val);
 
+    // Verify that +2/3 of the set had signed the given signBytes
+    void verifyCommit(const std::string &chainID, const BlockID &blockID, height_t height, Commit &commit);
 };
+
 
 #endif //AYETH_VALIDATORSET_H

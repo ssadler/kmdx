@@ -11,6 +11,8 @@
 #include <random>
 #include <libdevcore/RLP.h>
 #include <boost/format.hpp>
+#include <libdevcrypto/Hash.h>
+#include <libdevcrypto/Common.h>
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
@@ -22,12 +24,7 @@ private :
 
 
 public:
-    const HexBytes hash() const { //TODO
-        std::ostringstream output;
-        for (byte b : *this)
-            output << b;
-        return HexBytes(output.str());
-    }
+    const HexBytes hash() const;
 
     HexBytes();
 
@@ -40,6 +37,10 @@ public:
     bool operator==(const HexBytes &other) const;
 
     static HexBytes random(int length);
+
+    const static HexBytes fromRLP(dev::RLP r);
+
+    const dev::RLPStream toRLP() const;
 
 };
 
@@ -55,13 +56,19 @@ struct BlockID {
     friend class VoteSetTest;
 
 public:
-    explicit BlockID(std::vector<uint8_t> _bytes);
+    explicit BlockID(std::vector<uint8_t> _bytes);//FIXME rmv
+
+    explicit BlockID(HexBytes _bytes);
 
     BlockID();
 
     std::string toString() const;
 
-    static BlockID fromRLP(dev::RLP &r);
+//    static BlockID fromRLP(dev::RLP &r);
+
+    static BlockID fromRLP(dev::RLP r);
+
+    dev::RLPStream toRLP();
 
     bool isEmpty() const;
 
@@ -79,9 +86,13 @@ public:
 
 class PubKey {
     AddressTm addresstm;
+    dev::Public key;
 public:
+    PubKey(dev::Public _key, AddressTm _addresstm);
 
     explicit PubKey(AddressTm _address);
+
+    explicit PubKey(dev::Secret);
 
     AddressTm getAddress() const;
 
@@ -94,12 +105,15 @@ public:
 };
 
 class PrivKey {
+    dev::Secret key;
     AddressTm address;
     PubKey pubKey;
-    bytes key;
 public:
-
     PrivKey(AddressTm _address, HexBytes _pubKey);
+
+    PrivKey();
+
+    PrivKey(dev::Secret);
 
     AddressTm getAddress() const;
 
@@ -113,7 +127,7 @@ public:
 
     bool verifyBytes(HexBytes signBytes, SignatureTm signature) const;
 
-    const bytes &getKey() const;
+    const dev::Secret getKey() const;
 };
 
 #endif //TM_LIGHT_HEXBYTES_H

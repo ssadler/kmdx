@@ -51,9 +51,17 @@ func BenchmarkValidatorSetCopy(b *testing.B) {
 
     void testProposerSelection1();
 
-    void testProposerSelection2();
+    void testProposerSelectionProportional();
+
+    void testProposerSelectionTwice();
+
+    void testProposerSelectionNotTwice();
+
+    void testProposerSelectionByAddress();
 
     void testProposerSelection3();
+
+    void testValidatorSetVerifyCommit();
 };
 
 

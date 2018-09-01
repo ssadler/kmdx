@@ -430,7 +430,7 @@ void ConsensusState::decideProposal(height_t height, int round) {
     // Make proposal
     BlockID polBlockID;
     int polRound = roundState.votes.polInfo(polBlockID);
-    Proposal proposal(height, round, polRound, polBlockID);
+    Proposal proposal(height, round, boost::posix_time::second_clock::local_time(), polRound, polBlockID);
     try {
         privValidator->signProposal(state->getChainID(), proposal);
     } catch (SignError &e) {

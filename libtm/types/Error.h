@@ -63,6 +63,11 @@ public:
     ErrInvalidValidatorAddress(const char *_file, int _line);
 };
 
+class ErrInvalidCommit : public Error {
+public:
+    ErrInvalidCommit(string desc, const char *_file, int _line);
+};
+
 class MyException : public std::exception {
 protected:
     string description;

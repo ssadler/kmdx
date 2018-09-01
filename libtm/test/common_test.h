@@ -35,6 +35,8 @@ public:
 
     ValidatorStub(const MockPV _privValidator, int64_t _votePower);
 
+    ValidatorStub(std::string _name, int64_t _votePower);
+
     const MockPV &getPrivValidator() const;
 
     Vote signVote(VoteType voteType, HexBytes hash);//, bytes header);

@@ -78,6 +78,12 @@ ErrInvalidValidatorAddress::ErrInvalidValidatorAddress(const char *_file, int _l
     cout << description << endl << "file:" << file << ", line:" << line << endl;
 }
 
+ErrInvalidCommit::ErrInvalidCommit(string desc, const char *_file, int _line) : Error(
+        desc, _file, _line) {
+    cout << description << endl << "file:" << file << ", line:" << line << endl;
+}
+
+
 MyException::MyException(string _desc, const char *_file, int _line) : description(_desc), file(_file), line(_line) {
     cout << description << endl << "file:" << file << ", line:" << line << endl;
 }

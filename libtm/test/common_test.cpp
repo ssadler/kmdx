@@ -72,7 +72,7 @@ Proposal common_test::decideProposal(ConsensusState &cs1, ValidatorStub &vs, hei
     // Make proposal
     BlockID polBlockID;
     int polRound = cs1.roundState.votes.polInfo(polBlockID);
-    Proposal proposal(height, round, polRound, polBlockID);
+    Proposal proposal(height, round, boost::posix_time::second_clock::local_time(), polRound, polBlockID);
     try {
         vs.signProposal(cs1.state->getChainID(), proposal);
     } catch (Error &e) {
@@ -225,8 +225,7 @@ AddVoteResult common_test::signAddVote(PrivValidator privVal, Vote &vote, VoteSe
 }
 
 ValidatorStub common_test::randValidator(bool randPower, int64_t minPower) {
-    PrivKey privKey(HexBytes::random(10), HexBytes::random(10));
-    MockPV privVal(privKey);
+    MockPV privVal("abcdefabcdef1234");
     int64_t votePower = minPower;
     if (randPower) {
         votePower += int64_t(std::rand());
@@ -238,6 +237,9 @@ ValidatorStub common_test::randValidator(bool randPower, int64_t minPower) {
 ValidatorStub::ValidatorStub(const MockPV _privValidator, int64_t _votePower)
         : Validator(_privValidator.getPubKey(), _votePower), privValidator(_privValidator) {
 }
+
+ValidatorStub::ValidatorStub(std::string _name, int64_t _votePower)
+        : Validator(MockPV(_name).getPubKey(), _votePower), privValidator(_name) {}
 
 const MockPV &ValidatorStub::getPrivValidator() const {
     return privValidator;

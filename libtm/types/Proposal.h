@@ -14,7 +14,7 @@
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 
 
-
+class VoteTest;
 // Proposal defines a block proposal for the consensus.
 // It refers to the block only by its PartSetHeader.
 // It must be signed by the correct proposer for the given Height/Round
@@ -31,8 +31,10 @@ class Proposal {
 
     friend class MockPV;
 
+    friend class VoteTest;
+
 public:
-    Proposal(height_t _height, int _round, int _polRound, BlockID _polBlockID);
+    Proposal(height_t _height, int _round, boost::posix_time::ptime _timestamp, int _polRound, BlockID _polBlockID);
 
     HexBytes signBytes(const string blockChainId) const;
 
@@ -46,6 +48,9 @@ public:
 
     string toString() const;
 
+    dev::RLPStream toRLP();
+
+    static Proposal fromRLP(dev::RLP r);
 };
 
 

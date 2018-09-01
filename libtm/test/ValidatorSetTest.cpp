@@ -49,9 +49,15 @@ void ValidatorSetTest::testValidatorSetBasic() {
 
 void ValidatorSetTest::testProposerSelection1() {
     std::vector<Validator> validators;
-    Validator foo(PubKey(AddressTm("foo")), 1000);
-    Validator bar(PubKey(AddressTm("bar")), 300);
-    Validator baz(PubKey(AddressTm("baz")), 330);
+    Validator foo(PrivKey(dev::Secret("ffff")).getKey(), 1000, 0);
+    Validator bar(PrivKey(dev::Secret("bbba")).getKey(), 300, 1);
+    Validator baz(PrivKey(dev::Secret("bbbb")).getKey(), 330, 2);
+    // Validator foo(PubKey(AddressTm("foo")), 1000);
+    // Validator 1(PubKey(AddressTm("1")), 300);
+    // Validator baz(PubKey(AddressTm("baz")), 330);
+//    ValidatorStub foo("ffffffffffffffffffffffffffffffff", 1000);
+//    ValidatorStub 1("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba", 300);
+//    ValidatorStub baz("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc", 330);
     validators.push_back(foo);
     validators.push_back(bar);
     validators.push_back(baz);
@@ -60,119 +66,134 @@ void ValidatorSetTest::testProposerSelection1() {
     ostringstream proposers;
     for (int i = 0; i < 99; i++) {
         Validator *prop = vset.getProposer();
-        proposers << " " << prop->toString();
+        proposers << " " << prop->index;
         vset.incrementAccum(1);
     }
     cout << proposers.str();
     std::string expected(
-            " foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo foo baz bar foo foo foo baz foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo");
+            " 0 2 0 1 0 0 2 0 1 0 0 2 0 0 1 0 2 0 0 1 0 0 2 0 1 0 0 2 0 1 0 0 2 0 0 1 0 2 0 0 1 0 2 0 0 1 0 2 0 0 1 0 2 0 0 0 2 1 0 0 0 2 0 1 0 0 2 0 1 0 0 2 0 1 0 0 2 0 1 0 0 2 0 0 1 0 2 0 0 1 0 2 0 0 1 0 2 0 0");
+    // " foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo foo baz bar foo foo foo baz foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo bar foo foo baz foo foo bar foo baz foo foo bar foo baz foo foo bar foo baz foo foo");
+//            " ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbba ffffffffffffffffffffffffffffffff bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc ffffffffffffffffffffffffffffffff ffffffffffffffffffffffffffffffff");
     BOOST_REQUIRE_EQUAL(expected, proposers.str());
-//"Expected sequence of proposers was\n%v\nbut got \n%v", expected, strings.join(proposers, " "))
+}
+// when all voting power is same, we go in order of addresses
+
+void ValidatorSetTest::testProposerSelectionByAddress() {
+    std::vector<Validator> validators;
+//    Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
+//    Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
+//    Validator addr2(PubKey(AddressTm(HexBytes("2"))), 100);
+    Validator addr0(PrivKey(dev::Secret("1111")).getKey(), 100, 0);
+    Validator addr1(PrivKey(dev::Secret("2222")).getKey(), 100, 1);
+    Validator addr2(PrivKey(dev::Secret("3333")).getKey(), 100, 2);
+    validators.push_back(addr0);
+    validators.push_back(addr1);
+    validators.push_back(addr2);
+    ValidatorSet vset(validators);
+    vset.incrementAccum(1);
+    for (unsigned int i = 0; i < vset.size() * 5; i++) {
+        int ii = (i) % vset.size();
+        //            int ii = i;
+        Validator *prop = vset.getProposer();
+        BOOST_CHECK_EQUAL(ii, prop->getIndex());
+//        BOOST_CHECK_EQUAL(vset.getByIndex(ii)->getAddress().toString(), prop->getAddress().toString());
+        vset.incrementAccum(1);
+    }
 }
 
-void ValidatorSetTest::testProposerSelection2() {
-    // when all voting power is same, we go in order of addresses
-    /* {
-         std::vector<Validator> validators;
-
-         Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
-         Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
-         Validator addr2(PubKey(AddressTm(HexBytes("2"))), 100);
-         validators.push_back(addr0);
-         validators.push_back(addr1);
-         validators.push_back(addr2);
-         ValidatorSet vset(validators);
-         vset.incrementAccum(1);
-         for (unsigned int i = 0; i < vset.size() *5; i++) {
-             int ii = (i) % vset.size();
- //            int ii = i;
-             Validator *prop = vset.getProposer();
-             BOOST_CHECK_EQUAL(vset.getByIndex(ii)->getAddress().toString(), prop->getAddress().toString());
-             vset.incrementAccum(1);
-         }
-     }*/
 // One validator has more than the others, but not enough to propose twice in a row
-    {
+void ValidatorSetTest::testProposerSelectionNotTwice() {
+    std::vector<Validator> validators;
+//        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
+//        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
+//        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 400);
+    Validator addr0(PrivKey(dev::Secret("0")).getKey(), 100);
+    Validator addr1(PrivKey(dev::Secret("1")).getKey(), 100);
+    Validator addr2(PrivKey(dev::Secret("2")).getKey(), 400);
+    validators.push_back(addr0);
+    validators.push_back(addr1);
+    validators.push_back(addr2);
+    ValidatorSet vset(validators);
+    vset.incrementAccum(1);
 
-        std::vector<Validator> validators;
-        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
-        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
-        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 400);
-        validators.push_back(addr0);
-        validators.push_back(addr1);
-        validators.push_back(addr2);
-        ValidatorSet vset(validators);
-        vset.incrementAccum(1);
+    Validator *prop = vset.getProposer();
+    BOOST_CHECK_EQUAL(prop->getAddress().toString(),
+                      addr2.getAddress().toString()); //"Expected address with highest voting power to be first proposer
+    vset.incrementAccum(1);
+    prop = vset.getProposer();
+    BOOST_CHECK_EQUAL(prop->getAddress().toString(),
+                      addr0.getAddress().toString()); //"Expected smallest address to be validator"
+}
 
-        Validator *prop = vset.getProposer();
-        BOOST_CHECK_EQUAL(prop->getAddress().toString(),
-                          addr2.getAddress().toString()); //"Expected address with highest voting power to be first proposer
-        vset.incrementAccum(1);
-        prop = vset.getProposer();
-        BOOST_CHECK_EQUAL(prop->getAddress().toString(),
-                          addr0.getAddress().toString()); //"Expected smallest address to be validator"
-    }
-    // One validator has more than the others, and enough to be proposer twice in a row
-    {
+// One validator has more than the others, and enough to be proposer twice in a row
+void ValidatorSetTest::testProposerSelectionTwice() {
 
-        std::vector<Validator> validators;
-        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
-        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
-        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 401);
-        validators.push_back(addr0);
-        validators.push_back(addr1);
-        validators.push_back(addr2);
-        ValidatorSet vset(validators);
-        vset.incrementAccum(1);
-        Validator *prop = vset.getProposer();
-        BOOST_CHECK_EQUAL(prop->getAddress().toString(),
-                          addr2.getAddress().toString()); //"Expected address with highest voting power to be first proposer
-        vset.incrementAccum(1);
-        prop = vset.getProposer();
-        BOOST_CHECK_EQUAL(prop->getAddress().toString(),
-                          addr2.getAddress().toString()); //"Expected address with highest voting power to be second proposer"
-        vset.incrementAccum(1);
-        prop = vset.getProposer();
-        BOOST_CHECK_EQUAL(prop->getAddress().toString(),
-                          addr0.getAddress().toString()); //"Expected smallest address to be validator"
-        vset.incrementAccum(1);
-    }
+    std::vector<Validator> validators;
+//        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 100);
+//        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 100);
+//        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 401);
+    Validator addr0(PrivKey(dev::Secret("0")).getKey(), 100);
+    Validator addr1(PrivKey(dev::Secret("1")).getKey(), 100);
+    Validator addr2(PrivKey(dev::Secret("2")).getKey(), 401);
+    validators.push_back(addr0);
+    validators.push_back(addr1);
+    validators.push_back(addr2);
+    ValidatorSet vset(validators);
+    vset.incrementAccum(1);
+    Validator *prop = vset.getProposer();
+    //"Expect address with highest voting power to be first proposer
+    BOOST_CHECK_EQUAL(prop->getAddress().toString(), addr2.getAddress().toString());
+    vset.incrementAccum(1);
+    prop = vset.getProposer();
+    //"Expect address with highest voting power to be second proposer"
+    BOOST_CHECK_EQUAL(prop->getAddress().toString(), addr2.getAddress().toString());
+    vset.incrementAccum(1);
+    prop = vset.getProposer();
+    //"Expect smallest address to be validator"
+    BOOST_CHECK_EQUAL(prop->getAddress().toString(), addr0.getAddress().toString());
+    vset.incrementAccum(1);
+}
 
 // each validator should be the proposer a proportional number of times
-    {
-        std::vector<Validator> validators;
-        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 4);
-        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 5);
-        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 3);
-        validators.push_back(addr0);
-        validators.push_back(addr1);
-        validators.push_back(addr2);
-        ValidatorSet vset(validators);
+void ValidatorSetTest::testProposerSelectionProportional() {
+    std::vector<Validator> validators;
+//        Validator addr0(PubKey(AddressTm(HexBytes("0"))), 4);
+//        Validator addr1(PubKey(AddressTm(HexBytes("1"))), 5);
+//        Validator addr2(PubKey(AddressTm(HexBytes("2"))), 3);
+    Validator addr0(PrivKey(dev::Secret("0")).getKey(), 4, 0);
+    Validator addr1(PrivKey(dev::Secret("1")).getKey(), 5, 1);
+    Validator addr2(PrivKey(dev::Secret("2")).getKey(), 3, 2);
+    validators.push_back(addr0);
+    validators.push_back(addr1);
+    validators.push_back(addr2);
+    ValidatorSet vset(validators);
+    vset.incrementAccum(1);
+    int proposalCount[]{0, 0, 0};
+    int n = 1;
+    for (int i = 0; i < 120 * n; i++) {
+        Validator *prop = vset.getProposer();
+        proposalCount[prop->getIndex()]++;
         vset.incrementAccum(1);
-        int proposalCount[]{0, 0, 0};
-        int n = 1;
-        for (int i = 0; i < 120 * n; i++) {
-            Validator *prop = vset.getProposer();
-            int address = prop->getAddress()[0] - '0';
-            proposalCount[address]++;
-            vset.incrementAccum(1);
-        }
-        BOOST_REQUIRE_EQUAL(40,
-                            proposalCount[0]); // Expected prop count for validator with 4/12 of voting power to be %d/%d. Got %d/%d", 40*N, 120*N, propCount[0], 120*N)
-        BOOST_REQUIRE_EQUAL(50,
-                            proposalCount[1]); // Expected prop count for validator with 5/12 of voting power to be %d/%d. Got %d/%d", 50*N, 120*N, propCount[1], 120*N)
-        BOOST_REQUIRE_EQUAL(30,
-                            proposalCount[2]); // Expected prop count for validator with 3/12 of voting power to be %d/%d. Got %d/%d", 30*N, 120*N, propCount[2], 120*N)
     }
+    // Expect prop count for validator with 4/12 of voting power to be 40
+    BOOST_REQUIRE_EQUAL(40, proposalCount[0]);
+    // Expect prop count for validator with 5/12 of voting power to be 50
+    BOOST_REQUIRE_EQUAL(50, proposalCount[1]);
+    // Expect prop count for validator with 3/12 of voting power to be 30
+    BOOST_REQUIRE_EQUAL(30, proposalCount[2]);
 }
 
 
 void ValidatorSetTest::testProposerSelection3() {
     std::vector<Validator> validators;
-    Validator addr0(PubKey(AddressTm(HexBytes("a"))), 1);
-    Validator addr1(PubKey(AddressTm(HexBytes("b"))), 1);
-    Validator addr2(PubKey(AddressTm(HexBytes("c"))), 1);
-    Validator addr3(PubKey(AddressTm(HexBytes("d"))), 1);
+//    Validator addr0(PubKey(AddressTm(HexBytes("a"))), 1);
+//    Validator addr1(PubKey(AddressTm(HexBytes("b"))), 1);
+//    Validator addr2(PubKey(AddressTm(HexBytes("c"))), 1);
+//    Validator addr3(PubKey(AddressTm(HexBytes("d"))), 1);
+    Validator addr0(PrivKey(dev::Secret("a")).getKey(), 1);
+    Validator addr1(PrivKey(dev::Secret("b")).getKey(), 1);
+    Validator addr2(PrivKey(dev::Secret("c")).getKey(), 1);
+    Validator addr3(PrivKey(dev::Secret("d")).getKey(), 1);
     validators.push_back(addr0);
     validators.push_back(addr1);
     validators.push_back(addr2);
@@ -212,6 +233,7 @@ void ValidatorSetTest::testProposerSelection3() {
         j += times;
     }
 };
+
 /*
 func newValidator(address []byte, power int64) *Validator {
 return &Validator{Address: address, VotingPower: power}
@@ -335,62 +357,53 @@ func TestSafeSubClip(t *testing.t) {
 }
 
 //-------------------------------------------------------------------
+*/
+void ValidatorSetTest::testValidatorSetVerifyCommit() {
+    PrivKey privKey;
+    PubKey pubKey = privKey.getPubKey();
+    Validator v1(pubKey, 1000);
+    ValidatorSet vset({v1});
 
-func TestValidatorSetVerifyCommit(t *testing.t) {
-    privKey = ed25519.genPrivKey()
-    pubKey = privKey.pubKey()
-    v1 = NewValidator(pubKey, 1000)
-    vset = NewValidatorSet([]*Validator{v1})
+    std::string chainID = "mychainID";
+    BlockID blockID(HexBytes("hello"));
+    height_t height(5);
 
-    chainID = "mychainID"
-    blockID = BlockID{Hash: []byte("hello")}
-    height = int64(5)
-    vote = &Vote{
-            ValidatorAddress: v1.address,
-            ValidatorIndex:   0,
-            Height:           height,
-            Round:            0,
-            Timestamp:        time.now().uTC(),
-            Type:             VoteTypePrecommit,
-            BlockID:          blockID,
-    }
-    sig, err = privKey.sign(vote.signBytes(chainID))
-    assert.noError(t, err)
-    vote.signature = sig
-    commit = &Commit{
-            BlockID:    blockID,
-            Precommits: []*Vote{vote},
-    }
+    Vote vote(v1.address,
+              0,
+              height,
+              0,
+              boost::posix_time::second_clock::local_time(),
+              VoteTypePrecommit,
+              blockID
+    );
+    SignatureTm sig;
+    BOOST_REQUIRE_NO_THROW(sig = privKey.sign(vote.signBytes(chainID)));
+    vote.setSignature(sig);
+    std::map<int, Vote> precommits;
+    precommits.emplace(0, vote);
+    Commit commit(blockID, precommits);
 
-    badChainID = "notmychainID"
-    badBlockID = BlockID{Hash: []byte("goodbye")}
-    badHeight = height + 1
-    badCommit = &Commit{
-            BlockID:    blockID,
-            Precommits: []*Vote{nil},
-    }
+    Vote nullVote(v1.address,
+                  0,
+                  height,
+                  0,
+                  boost::posix_time::second_clock::local_time(),
+                  VoteTypePrecommit,
+                  BlockID()
+    );
 
-    // test some error cases
-    // TODO: test more cases!
-    cases = []struct {
-        chainID string
-        blockID BlockID
-        height  int64
-        commit  *Commit
-    }{
-        {badChainID, blockID, height, commit},
-        {chainID, badBlockID, height, commit},
-        {chainID, blockID, badHeight, commit},
-        {chainID, blockID, height, badCommit},
-    }
+    std::string badChainID = "notmychainID";
+    BlockID badBlockID(HexBytes("goodbye"));
+    height_t badHeight = height + 1;
+    std::map<int, Vote> badPrecommits;
+    badPrecommits.emplace(0, nullVote);
+    Commit badCommit(badBlockID, badPrecommits);
 
-    for i, c = range cases {
-            err = vset.verifyCommit(c.chainID, c.blockID, c.height, c.commit)
-            assert.notNil(t, err, i)
-    }
+    BOOST_CHECK_THROW(vset.verifyCommit(badChainID, blockID, height, commit), Error);
+    BOOST_CHECK_THROW(vset.verifyCommit(chainID, badBlockID, height, commit), Error);
+    BOOST_CHECK_THROW(vset.verifyCommit(chainID, blockID, badHeight, commit), Error);
+    BOOST_CHECK_THROW(vset.verifyCommit(chainID, blockID, height, badCommit), Error);
 
     // test a good one
-    err = vset.verifyCommit(chainID, blockID, height, commit)
-    assert.nil(t, err)
+    BOOST_CHECK_NO_THROW(vset.verifyCommit(chainID, blockID, height, commit));
 }
-*/

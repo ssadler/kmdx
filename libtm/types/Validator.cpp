@@ -4,10 +4,21 @@
 
 #include "Validator.h"
 
-Validator::Validator(PubKey _pubKey, int64_t _votingPower) : address(_pubKey.getAddress()), pubKey(_pubKey) {
+Validator::Validator(PubKey _pubKey, int64_t _votingPower) : pubKey(_pubKey), address(_pubKey.getAddress()) {
     votingPower = _votingPower;
     accum = 0;
 }
+
+Validator::Validator(PubKey _pubKey, int64_t _votingPower, int _index) :
+        Validator(_pubKey, _votingPower) { index = _index; }
+
+Validator::Validator(dev::Secret secret, int64_t _votingPower) : pubKey(secret), address(pubKey.getAddress()) {
+    votingPower = _votingPower;
+    accum = 0;
+}
+
+Validator::Validator(dev::Secret secret, int64_t _votingPower, int _index) : Validator(secret,
+                                                                                       _votingPower) { index = _index; }
 
 Validator *Validator::compareAccum(Validator &other) {
     if (this->accum > other.accum)

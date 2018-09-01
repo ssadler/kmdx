@@ -43,7 +43,7 @@ int Commit::round() {
 
 
 // Type returns the vote type of the commit, which is always VoteTypePrecommit;
-VoteType Commit::type() {
+VoteType Commit::type() const {
     return VoteTypePrecommit;
 }
 

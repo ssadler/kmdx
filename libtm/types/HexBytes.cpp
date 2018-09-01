@@ -2,6 +2,7 @@
 // Created by thpn on 08/08/18.
 //
 
+#include <libdevcrypto/Common.h>
 #include "HexBytes.h"
 
 HexBytes::HexBytes() {};
@@ -55,6 +56,24 @@ HexBytes HexBytes::random(int length) {
     return HexBytes(_bytes);
 }
 
+const HexBytes HexBytes::hash() const { //TODO
+    std::ostringstream output;
+    for (byte b : *this)
+        output << b;
+    return HexBytes(output.str());
+}
+
+const dev::RLPStream HexBytes::toRLP() const {
+    dev::RLPStream out;
+    out.appendList(1);
+    out << *this;
+    return out;
+}
+
+const HexBytes HexBytes::fromRLP(dev::RLP r) {
+    return HexBytes(r[0].toBytes());
+}
+
 bool BlockID::operator==(const BlockID &other) const {
     return this->hash == other.hash;
 }
@@ -71,7 +90,17 @@ std::string BlockID::toString() const {
     return out.str();
 }
 
-BlockID::BlockID(std::vector<uint8_t> _bytes) : bytes(_bytes), hash(_bytes) {}; //FIXME hash
+BlockID::BlockID(std::vector<uint8_t> _bytes) : bytes(_bytes), hash(_bytes) {
+//FIXME hash
+}
+
+BlockID::BlockID(HexBytes _bytes) : bytes(_bytes), hash(_bytes) {
+//FIXME hash
+}
+
+BlockID BlockID::fromRLP(dev::RLP r) {
+    return BlockID(r[0].toBytes());
+}
 
 AddressTm PubKey::getAddress() const {
     return addresstm;
@@ -79,8 +108,9 @@ AddressTm PubKey::getAddress() const {
 
 //input: signBytes, signature
 bool PubKey::verifyBytes(HexBytes, SignatureTm) const {
+    //return(dev::verify(dev::Public(this->key), dev::Signature(sig),  dev::sha3(hexBytes.toString())));
     return true;
-//    return signBytes == signature?true:true; //TODO
+    //TODO
 }
 
 std::string PubKey::toString() const {
@@ -92,6 +122,10 @@ PubKey::PubKey(AddressTm _address) : addresstm(_address) {}
 bool PubKey::operator==(const PubKey &other) {
     return this->addresstm == other.addresstm;
 }
+
+PubKey::PubKey(dev::Public _key, AddressTm _addresstm) : addresstm(_addresstm), key(_key) {}
+
+PubKey::PubKey(dev::Secret secret) : addresstm(dev::toAddress(secret).asBytes()), key(dev::toPublic(secret)) {};
 
 AddressTm PrivKey::getAddress() const {
     return address;
@@ -105,8 +139,7 @@ HexBytes PrivKey::sign(HexBytes b) const {
     return b; //TODO
 }
 
-PrivKey::PrivKey(AddressTm _address, HexBytes _pubKey) : address(_address), pubKey(_pubKey),
-                                                         key(HexBytes::random(32)) {}
+
 
 std::string PrivKey::toString() const {
     std::ostringstream out;
@@ -115,7 +148,24 @@ std::string PrivKey::toString() const {
     return out.str();
 }
 
-const bytes &PrivKey::getKey() const {
+const dev::Secret PrivKey::getKey() const {
     return key;
 }
 
+PrivKey::PrivKey(AddressTm _address, HexBytes _pubKey) : key(HexBytes::random(32)), address(_address),
+                                                         pubKey(_pubKey) {}
+
+PrivKey::PrivKey(dev::Secret secret) :
+        key(secret), address(dev::toAddress(secret).asBytes()), pubKey(dev::toPublic(secret), address) {
+    key = secret;
+}
+
+PrivKey::PrivKey() : PrivKey(dev::Secret()) {}
+//, address(dev::toAddress(key).asBytes()), pubKey(dev::toPublic(key), address) {}
+
+dev::RLPStream BlockID::toRLP() {
+    dev::RLPStream output;
+    output.appendList(1);
+    output << bytes;
+    return output;
+}

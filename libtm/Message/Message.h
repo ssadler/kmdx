@@ -18,6 +18,7 @@ enum class MessageType {
 };
 
 class Message {
+protected:
     AddressTm addresstm;
     MessageType messageType;
 public:
@@ -54,20 +55,20 @@ public:
 };
 
 class ProposalMessage : public Message {
-public:
-    ProposalMessage(const Proposal &proposal);
-
-    static ProposalMessage fromRLP(dev::RLP &) {
-        //TODO unimplemented
-        return ProposalMessage(Proposal(0, -1, -1, BlockID()));
-    }
-
 private:
     Proposal proposal;
 public:
+    ProposalMessage(const AddressTm &addresstm, const Proposal &proposal);
+
+//for internal messages
+    ProposalMessage(const Proposal &proposal);
+
     const Proposal getProposal() const;
 
-    ProposalMessage(const AddressTm &addresstm, const Proposal &proposal);
+    static ProposalMessage fromRLP(dev::RLP &r);
+
+    dev::RLPStream toRLP();
+
 };
 
 class BlockMessage : public Message {

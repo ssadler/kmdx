@@ -17,7 +17,7 @@ unsigned long ValidatorSet::size() {
     return this->validators.size();
 }
 
-int64_t ValidatorSet::getTotalVotingPower() {
+int64_t ValidatorSet::getTotalVotingPower() { //FIXME change name
     int64_t sum = 0;
     for (Validator &val:validators) {
         sum += val.getVotingPower();
@@ -73,25 +73,6 @@ void ValidatorSet::incrementAccum(int times) {
         if (i == times - 1)
             proposer = (Validator *) m.base();
     }
-/*	validatorsHeap := cmn.NewHeap()
-	for _, val := range valSet.Validators {
-		// check for overflow both multiplication and sum
-		val.Accum = safeAddClip(val.Accum, safeMulClip(val.VotingPower, int64(times)))
-		validatorsHeap.PushComparable(val, accumComparable{val})
-	}
-
-	// Decrement the validator with most accum times times
-	for i := 0; i < times; i++ {
-		mostest := validatorsHeap.Peek().(*Validator)
-		// mind underflow
-		mostest.Accum = safeSubClip(mostest.Accum, valSet.TotalVotingPower())
-
-		if i == times-1 {
-			valSet.Proposer = mostest
-		} else {
-			validatorsHeap.Update(mostest, accumComparable{mostest})
-		}
-	}*/
 }
 
 HexBytes ValidatorSet::hash() const {
@@ -167,4 +148,71 @@ bool ValidatorSet::update(Validator &val) {
     proposer = nullptr;
     //totalVotingPower = 0;
     return true;
+}
+
+void ValidatorSet::verifyCommit(const std::string &chainID, const BlockID &blockID, height_t height, Commit &commit) {
+    if (size() != commit.getPrecommits().size()) {
+        ostringstream out;
+        out << "Invalid commit -- wrong set size: %v vs %v";
+        out << commit.getPrecommits().size();
+        out << size();
+        throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+    }
+    if (height != commit.height()) {
+        ostringstream out;
+        out << "Invalid commit -- wrong height: %v vs %v";
+        out << commit.height();
+        out << height;
+        throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+    }
+
+    int64_t talliedVotingPower(0);
+    int round = commit.round();
+
+    for (auto const &iterator : commit.getPrecommits()) {
+        const Vote &precommit = iterator.second;
+        if (precommit.getHeight() != height) {
+            ostringstream out;
+            out << "Invalid commit -- wrong height: %v vs %v";
+            out << height;
+            out << precommit.getHeight();
+            throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+        }
+        if (precommit.getRoundNumber() != round) {
+            ostringstream out;
+            out << "Invalid commit -- wrong round: %v vs %v";
+            out << round;
+            out << precommit.getRoundNumber();
+            throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+        }
+        if (precommit.getType() != VoteTypePrecommit) {
+            ostringstream out;
+            out << "Invalid commit -- not precommit @ index %v";
+            out << iterator.first;
+            throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+        }
+        Validator val = getByIndex(iterator.first).get();
+        // Validate signature
+        HexBytes precommitSignBytes = precommit.signBytes(chainID);
+        if (!val.getPubKey().verifyBytes(precommitSignBytes, precommit.getSignature())) {
+            ostringstream out;
+            out << "Invalid commit -- invalid signature: %v";
+            throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
+        }
+        if (!(blockID == precommit.getBlockID())) {
+            continue; // Not an error, but doesn't count
+        }
+        // Good precommit!
+        talliedVotingPower += val.getVotingPower();
+    }
+
+    if (talliedVotingPower > getTotalVotingPower() * 2 / 3) {
+        return;
+    }
+    ostringstream out;
+    out << "Invalid commit -- insufficient voting power: got %v, needed %v";
+    out << talliedVotingPower;
+    out << getTotalVotingPower() * 2 / 3 + 1;
+
+    throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
 }

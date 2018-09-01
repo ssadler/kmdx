@@ -11,9 +11,10 @@
 // MockPV implements PrivValidator without any safety or persistence.
 // Only use it for testing.
 
-
 MockPV::MockPV(PrivKey _privkey) : PrivValidator(_privkey) {
 }
+
+MockPV::MockPV(std::string _name) : PrivValidator(dev::Secret(_name)), name(_name) {}
 
 // Implements PrivValidator.
 AddressTm MockPV::getAddress() const {

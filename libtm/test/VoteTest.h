@@ -10,13 +10,13 @@
 #include <boost/core/ref.hpp>
 
 #include "../types/Vote.h"
+#include "../Message/Message.h"
 #include "./MockPV.h"
 #include "../types/Error.h"
 
 
 class VoteTest {
 private:
-    bool bleh;
 public :
     void testVoteSignable();
 
@@ -25,6 +25,14 @@ public :
     void testIsVoteTypeValid();
 
     void testVoteVerify();
+
+    void voteRlpTest();
+
+    void proposalRlpTest();
+
+    void blockIdRlpTest();
+
+    void proposalMessageRlpTest();
 };
 
 #endif //AYETH_VOTETEST_H

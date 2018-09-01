@@ -13,10 +13,12 @@
 
 
 class MockPV : public PrivValidator {
-//    PrivKey privprivKey;
 public:
+    std::string name;
 
     MockPV(PrivKey _privkey);
+
+    MockPV(std::string _name);
 
     void signVote(std::string chainID, Vote &vote) const;
 
