@@ -20,14 +20,13 @@ class VoteTest;
 // It must be signed by the correct proposer for the given Height/Round
 // to be considered valid. It may depend on votes from a previous roundNumber,
 // a so-called Proof-of-Lock (POL) roundNumber, as noted in the POLRound and POLBlockID.
-class Proposal {
+class Proposal : public Signable{
     height_t height;
     int roundNumber;
     boost::posix_time::ptime timestamp;
     shared_ptr<Block> block;//should be type blockPartsHeader;
     int polRound; // -1 if null.
     BlockID polBlockID; // zero if null.
-    SignatureTm signature;
 
     friend class MockPV;
 
@@ -36,15 +35,13 @@ class Proposal {
 public:
     Proposal(height_t _height, int _round, boost::posix_time::ptime _timestamp, int _polRound, BlockID _polBlockID);
 
-    HexBytes signBytes(const string blockChainId) const;
+    Proposal(height_t _height, int _round, boost::posix_time::ptime _timestamp, int _polRound, BlockID _polBlockID, SignatureTm _sig);
 
     height_t getHeight() const;
 
     int getRoundNumber() const;
 
     int getPolRound() const;
-
-    const SignatureTm &getSignature() const;
 
     string toString() const;
 

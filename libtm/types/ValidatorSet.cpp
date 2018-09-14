@@ -196,7 +196,8 @@ void ValidatorSet::verifyCommit(const std::string &chainID, const BlockID &block
         HexBytes precommitSignBytes = precommit.signBytes(chainID);
         if (!val.getPubKey().verifyBytes(precommitSignBytes, precommit.getSignature())) {
             ostringstream out;
-            out << "Invalid commit -- invalid signature: %v";
+            out << "Invalid commit -- invalid signature:";
+            out << precommit.getSignature().toString();
             throw ErrInvalidCommit(out.str(), __FILE__, __LINE__);
         }
         if (!(blockID == precommit.getBlockID())) {

@@ -27,7 +27,7 @@ void ConsensusState::tryAddVote(Vote &vote, AddressTm addresstm) {
 
 //-----------------------------------------------------------------------------
 /** returns true if it was added */
-bool ConsensusState::addVote(Vote &vote, AddressTm addresstm) {
+bool ConsensusState::addVote(Vote &vote, P2PID pid) {
     clog(dev::VerbosityDebug, Logger::channelTm) << "addVote" << "voteHeight" << vote.getHeight() << "voteType"
                                                  << Vote::voteTypeToString(vote.getType()) << "valIndex"
                                                  << vote.getValidatorIndex()
@@ -46,7 +46,8 @@ bool ConsensusState::addVote(Vote &vote, AddressTm addresstm) {
             }
             return true;
         case 0:
-            roundState.height = roundState.votes.addVote(vote, addresstm);
+            if (!roundState.votes.addVote(vote, pid).isAdded())
+                return false;
             eventBus.publishEventVote(EventDataVote(vote));
             eventSwitch.fireEvent(EventVote(), vote);
             addVoteForCurrentRound(vote);
@@ -58,7 +59,7 @@ bool ConsensusState::addVote(Vote &vote, AddressTm addresstm) {
                 clog(dev::VerbosityInfo, Logger::channelTm) << "Vote ignored and not added" << "voteHeight"
                                                             << vote.getHeight()
                                                             << "csHeight"
-                                                            << roundState.height;//<<                         "err"<< err;
+                                                            << roundState.height;//<<                         "err" << err;
                 throw ErrVoteHeightMismatch(__FILE__, __LINE__);
             }
     }
@@ -466,6 +467,51 @@ const RoundState &ConsensusState::getRoundState() const {
 
 void ConsensusState::handleBlockMsg(const BlockMessage &msg) {
     cout << msg.toString(); //TODO unimplemented
+}
+
+void ConsensusState::handleTimeout(const TickerMessage &msg) {
+    clog << "Received tock" << "timeout" << msg.getDuration() << "height" << msg.getHeight() << "round"
+         << msg.getRoundNumber() << "step" << RoundState::stateTypeString(msg.getStepType());
+
+    // timeouts must be for current height, round, step
+    if (msg.getHeight() != roundState.height || msg.getRoundNumber() < roundState.roundNumber ||
+        (msg.getRoundNumber() == roundState.roundNumber && msg.getStepType() < roundState.stepType)) {
+        clog(dev::VerbosityInfo, Logger::channelTm) << "Ignoring tock because we're ahead" << "height"
+                                                    << roundState.height << "round" << roundState.roundNumber <<
+                                                    "step" << RoundState::stateTypeString(roundState.stepType);
+        return;
+    }
+
+    // the timeout will now cause a state transition
+    std::lock_guard<std::mutex> lock(mtx);
+
+    switch (msg.getStepType()) {
+        case RoundStepNewHeight:
+            // NewRound event fired from enterNewRound.
+            // XXX: should we fire timeout here (for timeout commit)?
+            enterNewRound(msg.getHeight(), 0);
+            break;
+        case RoundStepNewRound:
+            enterPropose(msg.getHeight(), 0);
+            break;
+        case RoundStepPropose:
+            eventBus.publishEventTimeoutPropose(EventDataRoundState(roundState.height, roundState.roundNumber,
+                                                                    RoundState::stateTypeString(roundState.stepType)));
+            enterPrevote(msg.getHeight(), msg.getRoundNumber());
+            break;
+        case RoundStepPrevoteWait:
+            eventBus.publishEventTimeoutWait(EventDataRoundState(roundState.height, roundState.roundNumber,
+                                                                 RoundState::stateTypeString(roundState.stepType)));
+            enterPrecommit(msg.getHeight(), msg.getRoundNumber());
+            break;
+        case RoundStepPrecommitWait:
+            eventBus.publishEventTimeoutWait(EventDataRoundState(roundState.height, roundState.roundNumber,
+                                                                 RoundState::stateTypeString(roundState.stepType)));
+            enterNewRound(msg.getHeight(), msg.getRoundNumber() + 1);
+            break;
+        default:
+            throw Panic("Invalid timeout step:" + RoundState::stateTypeString(msg.getStepType()), __FILE__, __LINE__);
+    }
 }
 
 void ConsensusState::signAddVote(VoteType type, const HexBytes &b) {

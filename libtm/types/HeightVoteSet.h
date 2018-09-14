@@ -29,7 +29,7 @@ private:
     ValidatorSet valSet;
     int roundNumber;                   // max tracked round
     std::map<int, RoundVoteSet> roundVoteSets;
-    std::map<P2PID, int> peerCatchupRounds; // keys: peer.ID; values: at most 2 rounds
+    std::multimap<P2PID, int> peerCatchupRounds; // keys: peer.ID; values: at most 2 rounds
 
 public :
     HeightVoteSet(const HeightVoteSet &);
@@ -51,7 +51,9 @@ public :
     /*returns int = polRound & sets blockID */
     int polInfo(BlockID &blockID);
 
-    bool addVote(Vote &vote, HexBytes bytes);
+    AddVoteResult addVote(Vote &, P2PID);
+
+    void addRound(int round);
 
     void setRoundNumber(int roundNumber);
 

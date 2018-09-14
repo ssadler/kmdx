@@ -13,6 +13,7 @@
 #include <boost/format.hpp>
 #include <libdevcrypto/Hash.h>
 #include <libdevcrypto/Common.h>
+#include <libdevcore/SHA3.h>
 
 using byte = uint8_t;
 using bytes = std::vector<byte>;
@@ -24,13 +25,16 @@ private :
 
 
 public:
-    const HexBytes hash() const;
+
+    explicit HexBytes(dev::h256 hash);
 
     HexBytes();
 
-    HexBytes(std::string);
+    explicit HexBytes(std::string);
 
     explicit HexBytes(const std::vector<byte> b) : bytes(b) {}
+
+    const HexBytes hash() const;
 
     std::string toString() const;
 

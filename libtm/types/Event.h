@@ -9,6 +9,7 @@
 #include <string>
 #include "Vote.h"
 #include "Heartbeat.h"
+#include "RoundStepType.h"
 
 class Event {
     std::string typeToString;
@@ -17,7 +18,7 @@ public:
 
     std::string getTypeToString() const;
 
-    Event(std::string typeString);;
+    Event(std::string typeString);
 };
 
 class EventCompleteProposal : public Event {
@@ -139,12 +140,9 @@ class EventDataRoundState : public Event {
     //TODO interface{} RoundState ;
 
 public :
-    EventDataRoundState(height_t _height, int _round, std::string _step) : Event("EventDataRoundState") {
-        height = _height;
-        round = _round;
-        step = _step;
-    }
+    EventDataRoundState(height_t _height, int _round, std::string _step);
 };
+
 
 
 #endif //AYETH_EVENT_H

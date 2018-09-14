@@ -56,7 +56,7 @@ void RoundState::setProposalBlock(const shared_ptr<Block> &proposalBlock) {
     RoundState::proposalBlock = proposalBlock;
 }
 
-std::string RoundState::stateTypeString(RoundStepType stype) {
+const std::string RoundState::stateTypeString(RoundStepType stype) {
     switch (stype) {
         case RoundStepNewHeight:
             return "RoundStepNewHeight";

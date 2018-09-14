@@ -2,7 +2,7 @@
 // Created by thpn on 08/08/18.
 //
 
-#include <libdevcrypto/Common.h>
+
 #include "HexBytes.h"
 
 HexBytes::HexBytes() {};
@@ -74,6 +74,12 @@ const HexBytes HexBytes::fromRLP(dev::RLP r) {
     return HexBytes(r[0].toBytes());
 }
 
+HexBytes::HexBytes(dev::h256 hash) {
+    for (auto a : hash){
+        push_back(a);
+    }
+}
+
 bool BlockID::operator==(const BlockID &other) const {
     return this->hash == other.hash;
 }
@@ -107,10 +113,10 @@ AddressTm PubKey::getAddress() const {
 }
 
 //input: signBytes, signature
-bool PubKey::verifyBytes(HexBytes, SignatureTm) const {
-    //return(dev::verify(dev::Public(this->key), dev::Signature(sig),  dev::sha3(hexBytes.toString())));
+bool PubKey::verifyBytes(HexBytes, SignatureTm ) const {
+//    return(dev::verify(dev::Public(this->key), dev::Signature(signature),  dev::sha3(signBytes.toString())));
     return true;
-    //TODO
+
 }
 
 std::string PubKey::toString() const {
@@ -136,10 +142,8 @@ const PubKey &PrivKey::getPubKey() const {
 }
 
 HexBytes PrivKey::sign(HexBytes b) const {
-    return b; //TODO
+    return SignatureTm(dev::sign(key, dev::sha3(b)).asBytes());
 }
-
-
 
 std::string PrivKey::toString() const {
     std::ostringstream out;
@@ -157,11 +161,10 @@ PrivKey::PrivKey(AddressTm _address, HexBytes _pubKey) : key(HexBytes::random(32
 
 PrivKey::PrivKey(dev::Secret secret) :
         key(secret), address(dev::toAddress(secret).asBytes()), pubKey(dev::toPublic(secret), address) {
-    key = secret;
+    //TODO copy secret key -  getting null!!!
 }
 
 PrivKey::PrivKey() : PrivKey(dev::Secret()) {}
-//, address(dev::toAddress(key).asBytes()), pubKey(dev::toPublic(key), address) {}
 
 dev::RLPStream BlockID::toRLP() {
     dev::RLPStream output;

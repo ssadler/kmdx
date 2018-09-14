@@ -39,7 +39,7 @@ ReceiveRoutineWorker::ReceiveRoutineWorker() {
 
 void ReceiveRoutineWorker::receiveRoutine() {
     while (1) {
-        dev::RLP *msg = 0;
+        dev::RLP msg;
         {
 // Wait for a message to be added to the queue
             unique_lock<mutex> lk(mtx);
@@ -53,31 +53,31 @@ void ReceiveRoutineWorker::receiveRoutine() {
             m_queue.pop();
             switch (Message::allTypes[msg[0].toInt()]) {
                 case MessageType::VoteType:
-                    cs->handleVoteMsg(VoteMessage::fromRLP(*msg));
+                    cs->handleVoteMsg(VoteMessage::fromRLP(msg));
                     break;
                 case MessageType::ProposalType:
-                    cs->handleProposalMsg(ProposalMessage::fromRLP(*msg));
+                    cs->handleProposalMsg(ProposalMessage::fromRLP(msg));
                     break;
                 case MessageType::BlockType:
-                    cs->handleBlockMsg(BlockMessage::fromRLP(*msg));
+                    cs->handleBlockMsg(BlockMessage::fromRLP(msg));
                     break;
                 case MessageType::TickerType:
                     //tockChan?
-                    /*wal.Write(ti);
+//                    wal.Write(ti);
                      // if the timeout is relevant to the rs
                      // go to the next step
-                     handleTimeout(dynamic_pointer_cast<TickerMessage>, roundState);
-                     break;*/
+                    cs->handleTimeout(TickerMessage::fromRLP(msg));
+                    break;
                 case MessageType::QuitType: {
 /*                    m_timerExit = true;
                     timerThread.join();*/
 
-                    delete msg;
+//                    delete msg;
                     std::unique_lock<std::mutex> lk(mtx);
                     while (!m_queue.empty()) {
                         msg = m_queue.front();
                         m_queue.pop();
-                        delete msg;
+//                        delete msg;
                     }
 
                     cout << "Exit thread receive routine";
@@ -106,12 +106,21 @@ void ReceiveRoutineWorker::setConsensusState(ConsensusState *_cs) {
     cs = _cs;
 }
 
-void ReceiveRoutineWorker::start() {
-    //TODO unimplemented
+bool ReceiveRoutineWorker::start() {
+    if (!m_thread)
+        m_thread = new thread(&ReceiveRoutineWorker::receiveRoutine, this);
+    return true;
 }
 
-void ReceiveRoutineWorker::enqueue(dev::RLP) {
-    //TODO unimplemented
+void ReceiveRoutineWorker::enqueue(dev::RLP msg) {
+    //ASSERT_TRUE(m_thread);
+
+//    Message* threadMsg = new ThreadMsg(MSG_POST_USER_DATA, data);
+
+    // Add user data msg to queue and notify worker thread
+    std::unique_lock<std::mutex> lk(mtx);
+    m_queue.push(msg);
+    m_cv.notify_one();
 }
 
 void ReceiveRoutineWorker::stop() {

@@ -4,6 +4,8 @@
 
 #include "EventBus.h"
 
+
+
 bool EventBus::publishEventVote(EventDataVote eventDataVote) {
     cout << eventDataVote.getTypeToString();
 //FIXME unimplemented
@@ -45,3 +47,7 @@ void EventBus::publishEventNewRound(const EventDataRoundState state) {
     cout << state.getTypeToString();
 //FIXME unimplemented
 }
+
+void EventBus::publishEventTimeoutPropose(const EventDataRoundState) {}
+
+void EventBus::publishEventTimeoutWait(const EventDataRoundState) {}

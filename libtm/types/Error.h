@@ -127,6 +127,14 @@ public:
 
 };
 
+class ErrorGotVoteFromUnwantedRound : public Error {
+public:
+    ErrorGotVoteFromUnwantedRound(string desc, const char *_file, int _line);
+    ErrorGotVoteFromUnwantedRound(const char *_file, int _line);
+
+};
+
+
 class Panic : public MyException {
 public:
     Panic(string d, const char *_file, int _line);

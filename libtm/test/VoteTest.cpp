@@ -38,7 +38,8 @@ void VoteTest::testVoteSignable() {
 }
 
 void VoteTest::testVoteVerifySignature() {
-    MockPV privVal("abcdefabcdef1234abcdefabcdef1234");
+//    MockPV privVal("abcdefabcdef1234abcdefabcdef1234");
+    PrivValidator privVal;
     PubKey pubKey = privVal.getPubKey();
     Vote vote = examplePrecommit();
     HexBytes signBytes = vote.signBytes("test_chain_id");
@@ -48,7 +49,7 @@ void VoteTest::testVoteVerifySignature() {
     //  require.NoError(t, err)
 
     // verify the same vote
-    bool valid = pubKey.verifyBytes(vote.signBytes("test_chain_id"), vote.getSignature());
+    bool valid = pubKey.verifyBytes(signBytes, vote.getSignature());
     BOOST_REQUIRE(valid);
 
 // serialize, deserialize and verify again....

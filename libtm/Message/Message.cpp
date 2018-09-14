@@ -110,6 +110,47 @@ BlockMessage BlockMessage::fromRLP(dev::RLP &) {
     return BlockMessage(AddressTm(), BlockID(), -1, -1, Block()); //TODO unimplemented
 }
 
-TickerMessage::TickerMessage(const AddressTm &addresstm) : Message(addresstm, MessageType::TickerType) {
 
+TickerMessage::TickerMessage(height_t height, unsigned int roundNumber,
+                             RoundStepType stepType, const time_duration &duration) : Message(AddressTm(),
+                                                                                               MessageType::TickerType),
+                                                                                       height(height),
+                                                                                       roundNumber(roundNumber),
+                                                                                       stepType(stepType),
+                                                                                       duration(duration) {}
+
+TickerMessage TickerMessage::fromRLP(dev::RLP o) {
+    return TickerMessage(
+            height_t(o[0].toPositiveInt64()),
+            o[1].toInt(), // roundNumber;
+//            o[2].toInt(),
+            allRoundStepTypes[o[2].toInt()], // stepType;
+            boost::posix_time::duration_from_string(o[3].toString()) //duration;
+    );
+}
+
+dev::RLPStream TickerMessage::toRLP() {
+    dev::RLPStream o;
+    o.appendList(4);
+    o << height;
+    o << roundNumber;
+    o << stepType;
+    o << boost::posix_time::to_iso_string(duration);
+    return o;
+}
+
+height_t TickerMessage::getHeight() const {
+    return height;
+}
+
+int TickerMessage::getRoundNumber() const {
+    return roundNumber;
+}
+
+RoundStepType TickerMessage::getStepType() const {
+    return stepType;
+}
+
+const time_duration &TickerMessage::getDuration() const {
+    return duration;
 }

@@ -126,6 +126,18 @@ ErrInvalidVote::ErrInvalidVote(string desc, const char *_file, int _line) : Erro
     cout << description << endl << "file:" << file << ", line:" << line << endl;
 }
 
+ErrorGotVoteFromUnwantedRound::ErrorGotVoteFromUnwantedRound(string desc, const char *_file, int _line) : Error(
+        "ErrorGotVoteFromUnwantedRound" + desc, _file,
+        _line) {
+    cout << description << endl << "file:" << file << ", line:" << line << endl;
+}
+
+ErrorGotVoteFromUnwantedRound::ErrorGotVoteFromUnwantedRound(const char *_file, int _line) : Error(
+        "ErrorGotVoteFromUnwantedRound", _file,
+        _line) {
+    cout << description << endl << "file:" << file << ", line:" << line << endl;
+}
+
 PanicNullVoteSet::PanicNullVoteSet(const char *_file, int _line) : Panic("AddVote() on nil VoteSet", _file, _line) {
     cout << description << endl << "file:" << file << ", line:" << line << endl;
 }

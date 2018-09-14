@@ -40,10 +40,7 @@ string  heartbeat::string() {
 }
 */
 Heartbeat::Heartbeat(const AddressTm &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
-                     const SignatureTm &signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
-                                                   height(height), round(round), sequence(sequence),
-                                                   signature(signature) {}
+                     const SignatureTm _signature) : validatorAddress(validatorAddress), validatorIndex(validatorIndex),
+                                                   height(height), round(round), sequence(sequence)
+                                                   {signature = _signature;}
 
-const HexBytes Heartbeat::signBytes(std::string blockChainId) const {
-    return blockChainId; //TODO
-}

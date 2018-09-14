@@ -9,6 +9,11 @@ Proposal::Proposal(height_t _height, int _round, boost::posix_time::ptime _times
                    BlockID _polBlockID) :
         height(_height), roundNumber(_round), timestamp(_timestamp), polRound(_polRound), polBlockID(_polBlockID) {}
 
+Proposal::Proposal(height_t _height, int _round, boost::posix_time::ptime _timestamp, int _polRound,
+                   BlockID _polBlockID, SignatureTm _signature) : Proposal(_height, _round, _timestamp, _polRound, _polBlockID) {
+    signature = _signature;
+
+}
 height_t Proposal::getHeight() const {
     return height;
 }
@@ -17,24 +22,24 @@ int Proposal::getPolRound() const {
     return polRound;
 }
 
-const SignatureTm &Proposal::getSignature() const {
-    return signature;
-}
-
 int Proposal::getRoundNumber() const {
     return roundNumber;
 }
 
-HexBytes Proposal::signBytes(const string blockChainId) const {
-    return HexBytes(blockChainId); //TODO
-}
-
 string Proposal::toString() const {
-    return "Proposal"; //FIXME
+    ostringstream out;
+    out << height;
+    out << roundNumber;
+    out << boost::posix_time::to_iso_string(timestamp);
+    out << block->getBytes().toString();
+    out << polRound;
+    out << polBlockID.toString();
+    out << signature.toString();
+    return out.str();
 }
 
 Proposal Proposal::fromRLP(dev::RLP r) {
-    BlockID bid = BlockID::fromRLP(r[4]);
+//    BlockID bid = BlockID::fromRLP(r[4]);
     return Proposal(
             (height_t) r[0].toPositiveInt64() // height
             , r[1].toInt() // roundNumber
@@ -42,20 +47,22 @@ Proposal Proposal::fromRLP(dev::RLP r) {
 //            , r[3].toInt() // block
             , r[3].toInt() // polRound
 //            , BlockID()
-            , bid // polBlockID
-//            , SignatureTm(r[6].toBytes()) // signature
+            , BlockID::fromRLP(r[4])// bid // polBlockID
+            , r[5].isData() ? SignatureTm(r[5].toBytes()) : SignatureTm()
     );
 }
 
 dev::RLPStream Proposal::toRLP() {
     dev::RLPStream rlp;
-    rlp.appendList(5);
+    bool withSignature = !signature.empty();
+    rlp.appendList(withSignature ? 6 : 5);
     rlp << height;
     rlp << roundNumber;
     rlp << boost::posix_time::to_iso_string(timestamp);
 //    rlp << block.toRLP();
     rlp << polRound;
     rlp << dev::RLP(polBlockID.toRLP().out());
-//    rlp << signature;
+    if (withSignature)
+        rlp << signature;
     return rlp;
 }

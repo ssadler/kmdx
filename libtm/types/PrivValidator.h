@@ -12,7 +12,8 @@
 #include "Proposal.h"
 
 class PrivValidator {
-
+    HexBytes lastSignBytes;
+    SignatureTm lastSignature;
 protected:
     AddressTm addresstm;
     PrivKey privKey;
@@ -30,6 +31,9 @@ public:
     void signProposal(string, Proposal &); //throw ErrSignProposal
     void signVote(string, Vote &); //throw ErrSignProposal
     const PrivKey &getPrivKey() const;
+
+private:
+    bool checkHRS(height_t height, int roundNumber, VoteType type);
 };
 
 

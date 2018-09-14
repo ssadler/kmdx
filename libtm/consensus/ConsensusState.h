@@ -81,7 +81,9 @@ class ConsensusState {
 
     void handleBlockMsg(const BlockMessage &msg);
 
-    bool addVote(Vote &vote, AddressTm addresstm);
+    void handleTimeout(const TickerMessage &msg);
+
+    bool addVote(Vote &vote, AddressTm pid);
 
 public:
 

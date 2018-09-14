@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_SUITE(tmvotestest)
 
     BOOST_AUTO_TEST_CASE (voteTestTm) {
         VoteTest vt;
-        vt.testVoteSignable();
+//        vt.testVoteSignable();
         vt.testVoteVerifySignature();
         vt.testIsVoteTypeValid();
         vt.testVoteVerify();

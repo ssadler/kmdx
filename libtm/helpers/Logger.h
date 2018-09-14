@@ -24,6 +24,6 @@ void logInfo(std::string, std::string &...);
 
 void logError(std::string &...);
 
-void logDebug(std::string &...);
+void logDebug(std::string ...);
 
 #endif //TM_LIGHT_LOGGER_H

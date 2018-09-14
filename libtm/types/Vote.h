@@ -13,6 +13,7 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "boost/date_time/posix_time/posix_time_types.hpp"
 #include <boost/test/unit_test.hpp>
+#include "Signable.h"
 #include "HexBytes.h"
 #include "Error.h"
 
@@ -22,7 +23,7 @@ enum VoteType {
 };
 
 
-class Vote {
+class Vote : public Signable {
     AddressTm validatorAddress;
     int validatorIndex;
     height_t height;
@@ -30,7 +31,7 @@ class Vote {
     boost::posix_time::ptime timestamp;
     enum VoteType type;
     BlockID blockID;
-    SignatureTm signature;
+//    SignatureTm signature;
 
     friend class MockPV;
 
@@ -54,13 +55,13 @@ public:
          const boost::posix_time::ptime &_timestamp, VoteType _type, const BlockID _blockID,
          const SignatureTm _signature);
 
-    HexBytes signBytes(std::string chainID) const; //TODO
+//    HexBytes signBytes(std::string chainID) const; //TODO
 
     static Vote fromRLP(dev::RLP &);
 
     std::string toString() const;
 
-    dev::RLPStream toRLP();
+    dev::RLPStream toRLP() const;
 
     void verify(const std::string &chainID, const PubKey &pubKey) const; //TODO crypto
 
@@ -78,9 +79,9 @@ public:
 
     const BlockID &getBlockID() const;
 
-    const SignatureTm &getSignature() const;
+//    const SignatureTm &getSignature() const;
 
-    void setSignature(const SignatureTm &signature);
+//    void setSignature(const SignatureTm &signature);
 
     static bool isVoteTypeValid(VoteType type);
 };

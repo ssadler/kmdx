@@ -6,7 +6,7 @@
 #define TM_LIGHT_EVENTSWITCH_H
 
 
-#include "../types/event/Event.h"
+#include "../types/Event.h"
 #include "../types/RoundState.h"
 
 class EventSwitch {

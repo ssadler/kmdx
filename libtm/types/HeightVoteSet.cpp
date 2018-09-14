@@ -1,6 +1,7 @@
 //
 // Created by utnso on 11/07/18.
 //
+#include "../helpers/Logger.h"
 #include "HeightVoteSet.h"
 
 VoteSet *HeightVoteSet::getPrevotes(int round) {
@@ -68,6 +69,16 @@ int HeightVoteSet::polInfo(BlockID &blockID) {
     }
     return -1;
 }
+void HeightVoteSet::addRound(int round) {
+    if (roundVoteSets.find(round)!=roundVoteSets.end())
+        throw PanicSanity("addRound() for an existing round", __FILE__, __LINE__);
+
+    VoteSet pv(chainID, height, roundNumber, VoteTypePrevote, valSet);
+    VoteSet pc(chainID, height, roundNumber, VoteTypePrecommit, valSet);
+    RoundVoteSet rvs(pv, pc);
+    roundVoteSets.emplace(std::make_pair(round, rvs));
+    clog(dev::VerbosityInfo, Logger::channelTm)<<"addRound(round)" << " round:" << round;
+}
 
 void HeightVoteSet::setRoundNumber(int _roundNumber) {
     this->roundNumber = _roundNumber;
@@ -77,9 +88,25 @@ bool HeightVoteSet::isEmpty() {
     return roundVoteSets.empty();//TODO review
 }
 
-bool HeightVoteSet::addVote(Vote &vote, HexBytes bytes) {
-    return (vote.getType() == VoteTypeFirstCommit || bytes.empty());
-    //TODO unimplemented
+AddVoteResult HeightVoteSet::addVote(Vote &vote, P2PID peerID) {
+    lock_guard<std::mutex> lock(mtx);
+    if (!Vote::isVoteTypeValid(vote.getType())) {
+        return AddVoteResult(false, false, "Vote type invalid");
+    }
+    VoteSet* voteSet = getVoteSet(vote.getRoundNumber(), vote.getType());
+    if (!voteSet) {
+        if (peerCatchupRounds.count(peerID) < 2) {
+                addRound(vote.getRoundNumber());
+                voteSet = getVoteSet(vote.getRoundNumber(), vote.getType());
+//                peerCatchupRounds[peerID] = append(rndz, vote.getRoundNumber());
+                peerCatchupRounds.emplace(peerID, vote.getRoundNumber());
+            } else {
+                // punish peer
+                throw ErrorGotVoteFromUnwantedRound(__FILE__, __LINE__);
+            }
+        }
+        boost::optional<Vote> conflicting;
+    return voteSet->addVote(vote, conflicting);
 }
 
 AddVoteResult HeightVoteSet::setPeerMaj23(int round, VoteType _type, P2PID peerID, BlockID blockID) {

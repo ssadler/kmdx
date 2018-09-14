@@ -4,6 +4,7 @@
 
 #include <err.h>
 #include "HexBytes.h"
+#include "Signable.h"
 
 #ifndef TM_LIGHT_HEARTBEAT_H
 #define TM_LIGHT_HEARTBEAT_H
@@ -13,10 +14,10 @@
 * Note: We aren't adding ",omitempty" to Heartbeat's
 * json field tags because we always want the JSON
 * representation to be in its canonical form. **/
-class Heartbeat {
+class Heartbeat : public Signable {
 public:
     Heartbeat(const AddressTm &validatorAddress, int validatorIndex, height_t height, int round, int sequence,
-              const SignatureTm &signature);
+              const SignatureTm signature);
 
 private:
     friend class MockPV;
@@ -26,10 +27,8 @@ private:
     height_t height;
     int round;
     int sequence;
-    SignatureTm signature;
 
 public:
-    const HexBytes signBytes(std::string blockChainId) const;
 };
 
 

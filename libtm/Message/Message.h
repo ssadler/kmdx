@@ -9,6 +9,7 @@
 #include <libdevcore/RLP.h>
 #include "../types/Proposal.h"
 #include "../types/Vote.h"
+#include "../types/RoundStepType.h"
 
 using byte = uint8_t;
 
@@ -87,9 +88,25 @@ public:
 };
 
 class TickerMessage : public Message {
+    height_t height; // Height we are working on
+    int roundNumber;
+    RoundStepType stepType;
+    time_duration duration;
 public:
-    TickerMessage(const AddressTm &addresstm);
+    TickerMessage(height_t height, unsigned int roundNumber,
+                  RoundStepType stepType, const time_duration &duration);
 
+    static TickerMessage fromRLP(dev::RLP);
+
+    dev::RLPStream toRLP();
+
+    height_t getHeight() const;
+
+    int getRoundNumber() const;
+
+    RoundStepType getStepType() const;
+
+    const time_duration &getDuration() const;
 };
 
 #endif //TM_LIGHT_MESSAGE_H

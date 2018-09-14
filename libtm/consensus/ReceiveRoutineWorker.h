@@ -19,8 +19,9 @@ class ConsensusState;
 class ReceiveRoutineWorker {
     ConsensusState *cs;
     std::condition_variable m_cv;
-    std::queue<dev::RLP *> m_queue;
+    std::queue<dev::RLP> m_queue;
     std::mutex mtx;
+    std::thread* m_thread;
 
 private:
 
@@ -29,7 +30,7 @@ private:
 public:
     ReceiveRoutineWorker();
 
-    void start();
+    bool start();
 
     void enqueue(dev::RLP);
 

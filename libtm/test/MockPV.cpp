@@ -28,9 +28,14 @@ PubKey MockPV::getPubKey() const {
 
 // Implements PrivValidator.
 void MockPV::signVote(std::string chainID, Vote &vote) const {
-    HexBytes signBytes = vote.signBytes(chainID);
-    HexBytes sig = privKey.sign(signBytes);
-    vote.signature = sig;
+//    HexBytes signBytes = vote.signBytes(chainID);
+//    HexBytes sig = privKey.sign(signBytes);
+//    vote.setSignature(sig);
+    dev::Secret s(privKey.getKey());
+    dev::Signature sig = dev::sign(s, dev::sha3(vote.signBytes(chainID)));
+    SignatureTm stm(sig.asBytes());
+    vote.setSignature(stm);
+//    vote.setSignature(SignatureTm(sig.asBytes()));
 }
 
 // Implements PrivValidator.
@@ -38,13 +43,13 @@ void MockPV::signProposal(std::string chainID, Proposal &proposal) const {
     HexBytes signBytes = proposal.signBytes(chainID);
     SignatureTm sig = privKey.sign(signBytes);
 
-    proposal.signature = sig;
+    proposal.setSignature(sig);
 }
 
 // signHeartbeat signs the heartbeat without any checking.
 void MockPV::signHeartbeat(std::string chainID, Heartbeat &heartbeat) const {
     SignatureTm sig = privKey.sign(heartbeat.signBytes(chainID));
-    heartbeat.signature = sig;
+    heartbeat.setSignature(sig);
 }
 
 // String returns a string representation of the MockPV.

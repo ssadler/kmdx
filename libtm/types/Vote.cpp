@@ -1,6 +1,7 @@
 //
 // Created by utnso on 12/07/18.
 //
+
 #include "Vote.h"
 
 
@@ -39,7 +40,7 @@ VoteType Vote::allVoteTypes[VoteTypeSize] = {
         VoteTypePrevote, VoteTypePrecommit, VoteTypeFirstCommit,
 };
 
-dev::RLPStream Vote::toRLP() {
+dev::RLPStream Vote::toRLP() const {
     dev::RLPStream rlp;
     bool withSignature = !signature.empty();
     rlp.appendList(withSignature ? 8 : 7);
@@ -92,8 +93,17 @@ void Vote::verify(const std::string &chainID, const PubKey &pubKey) const {
 }
 
 std::string Vote::toString() const {
-    //TODO
-    return Vote::voteTypeToString(type) + " " + validatorAddress.toString();
+    ostringstream out;
+    out << validatorAddress.toString();
+    out << validatorIndex;
+    out << height;
+    out << roundNumber;
+    out << boost::posix_time::to_iso_string(timestamp);
+    out << (int) type;
+    out << blockID.getBytes().toString();
+    if (!signature.empty())
+        out << signature.toString();
+    return out.str();
 }
 
 const AddressTm &Vote::getValidatorAddress() const {
@@ -124,24 +134,20 @@ const BlockID &Vote::getBlockID() const {
     return blockID;
 }
 
-const SignatureTm &Vote::getSignature() const {
-    return signature;
-}
+//const SignatureTm &Vote::getSignature() const {
+//    return signature;
+//}
 
-HexBytes Vote::signBytes(std::string chainID) const {
-    ostringstream out;
-    out << "{chain_id:" << chainID << ",type:" << "vote" << "," << blockID.toString() << ",height:" << height
-        << ",round:"
-        << roundNumber << ",timestamp:" << boost::posix_time::to_iso_string(timestamp) << ",type:"
-        << voteTypeToString(type) << "}";
-//    cout << out.str();
-    std::string got = out.str();
-    return HexBytes(out.str()); //TODO
-}
-
+/*HexBytes Vote::signBytes(std::string chainID) const {
+    HexBytes out(dev::sha3(chainID + toString()).asBytes());
+    return out;
+//    std::string got = out.str();
+//    return HexBytes(out.str()); //TODO
+}*/
+/*
 void Vote::setSignature(const SignatureTm &signature) {
     Vote::signature = signature;
-}
+}*/
 
 bool Vote::isVoteTypeValid(VoteType type) {
     switch (type) {

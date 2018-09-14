@@ -6,29 +6,19 @@
 #define TM_LIGHT_ROUNDSTATE_H
 
 #include <boost/optional.hpp>
+#include "./RoundStepType.h"
 #include "Block.h"
 #include "ValidatorSet.h"
 #include "VoteSet.h"
 #include "HeightVoteSet.h"
-#include "event/Event.h"
 #include "boost/date_time/posix_time/posix_time_types.hpp"
+#include "Event.h"
 
 using namespace boost::posix_time;
 
 
 class Proposal;
 
-typedef enum RoundStepType {
-    RoundStepNewHeight = 0x01, // Wait til CommitTime + timeoutCommit
-    // NOTE: RoundStepNewHeight acts as RoundStepCommitWait.
-            RoundStepNewRound = 0x02, // Setup new roundNumber and go to RoundStepPropose
-    RoundStepPropose = 0x03, // Did propose, gossip proposal
-    RoundStepPrevote = 0x04, // Did prevote, gossip prevotes
-    RoundStepPrevoteWait = 0x05, // Did receive any +2/3 prevotes, start timeout
-    RoundStepPrecommit = 0x06, // Did precommit, gossip precommits
-    RoundStepPrecommitWait = 0x07, // Did receive any +2/3 precommits, start timeout
-    RoundStepCommit = 0x08, // Entered commit state machine
-} RoundStepType;
 
 /**RoundState defines the internal consensus state.
  NOTE: Not thread safe. Should only be manipulated by functions downstream
@@ -59,7 +49,7 @@ class RoundState {
     ValidatorSet lastValidators;
 
 public:
-    const EventDataRoundState roundStateEvent();
+    const EventDataRoundState roundStateEvent(); //FIXME does this belong here?
 
     RoundState(std::string chainID);
 
@@ -83,7 +73,7 @@ public:
 
     void setHeight(height_t i);
 
-    static std::string stateTypeString(RoundStepType stype);
+    static const std::string stateTypeString(RoundStepType stype);
 
 private:
     void setValidators(const ValidatorSet &validators);
