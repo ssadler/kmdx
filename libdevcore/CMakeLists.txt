@@ -11,3 +11,7 @@ target_link_libraries(devcore PUBLIC eth-buildinfo Boost::filesystem Boost::syst
 find_package(LevelDB)
 target_include_directories(devcore SYSTEM PUBLIC ${LEVELDB_INCLUDE_DIRS})
 target_link_libraries(devcore PRIVATE ${LEVELDB_LIBRARIES})
+
+add_executable(maketrie "make_trie" "make_trie.cpp")
+#target_include_directories(devcore)
+target_link_libraries(maketrie PUBLIC devcore)

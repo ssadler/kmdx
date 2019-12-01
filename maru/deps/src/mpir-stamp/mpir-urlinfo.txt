@@ -1,0 +1,3 @@
+repository='external project URL'
+module='https://github.com/chfast/mpir/archive/cmake.tar.gz'
+tag='SHA256=d32ea73cb2d8115a8e59b244f96f29bad7ff03367162b660bae6495826811e06'

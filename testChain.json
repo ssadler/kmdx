@@ -1,0 +1,53 @@
+{
+        "sealEngine": "Ethash",
+        "params": {
+                "accountStartNonce": "0x00",
+                "homesteadForkBlock": "0x00",
+                "daoHardforkBlock": "0x00",
+                "EIP150ForkBlock": "0x00",
+                "EIP158ForkBlock": "0x00",
+                "byzantiumForkBlock": "0x00",
+                "networkID" : "0x10",
+                "chainID": "0x10",
+                "maximumExtraDataSize": "0x20",
+                "tieBreakingGas": false,
+                "minGasLimit": "0x1388",
+                "maxGasLimit": "7fffffffffffffff",
+                "gasLimitBoundDivisor": "0x0400",
+                "minimumDifficulty": "0x02000",
+                "difficultyBoundDivisor": "0x0800",
+                "durationLimit": "0x0d",
+                "blockReward": "0x4563918244F40000"
+        },
+        "genesis": {
+                "nonce": "0x0000000000000000",
+                "difficulty": "0x200000000",
+                "mixHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "author": "0x0000000000000000000000000000000000000000",
+                "timestamp": "0x00",
+                "parentHash": "0x0000000000000000000000000000000000000000000000000000000000000000",
+                "extraData": "0x11bbe8db4e347b4e8c937c1c8370e4b5ed33adb3db69cbdb7a38e1e50b1b82fa",
+                "gasLimit": "0x1388000"
+        },
+        "accounts": {
+        "0x0300000000000000000000000000000000000000": {
+            "storage": {
+        "0xc71ad4334396503eb0ef2d4a229d9b236462be63176256569f9c88459a8dec05" : "0x05617373657400000000000000000000000000000000000000000000000000"
+}
+        },
+        "0x7777777777777777777777777777777777777777": {
+            "code": "0x366000600037600060003660007303010000000000000000000000000000000000005af43d600060003e3d6000f3",
+            "storage": {
+        "0x6c36223290bd3b7c85d6080354199709dfdd05c42756ae6f8edba873ae2adcd1" : "0x064d696e657273000000000000000000000000000000000000000000000000",
+        "0x77f8d6b87b608ffdf69481e7cd997b7752680cc842ed736e28dc4227904e671d" : "0x034d4e52000000000000000000000000000000000000000000000000000000",
+        "0x92e37b5783fa59e8538e1debce31f4f7731a444a52dfbf211783fb22ef5ccf05" : "0x12",
+        "0xc5930565f8646edc3dc613eb690a4d2501341795d728fcf8bb10a837afc0da1f" : "0x016e3600",
+        "0xd1cd27a89508e1cfd5cf72b44a7d07b75793ffe0a8a95417fe8deae166cab0e6" : "0x1bc16d674ec80000"
+}
+        },
+        "0x77952ce83ca3cad9f7adcfabeda85bd2f1f52008": {
+            "balance": "2000000000000000000000000"
+        }
+    }
+}
+
